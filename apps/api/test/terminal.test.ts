@@ -252,6 +252,44 @@ describe('terminal stream', () => {
     c.ws.close();
   });
 
+  it('resume stays gap-free, duplicate-free and ordered while output flows during attach→resume (B1)', async () => {
+    const s = await createOk();
+    const a = await connect(s.id);
+    await a.waitFor('\u001b]133;A');
+    a.send({
+      type: 'input',
+      data: 'i=0; while [ $i -lt 40 ]; do echo tick-$i; i=$((i+1)); sleep 0.02; done; echo DONE-$((7+7))\n',
+    });
+    await a.waitFor('tick-2');
+    const lastSeen = Math.max(...a.seqs);
+    a.ws.terminate();
+    await a.closed;
+
+    const b = new Client(s.id);
+    await b.opened();
+    await new Promise((r) => setTimeout(r, 150)); // output keeps flowing before resume arrives
+    expect(b.seqs).toEqual([]); // nothing is streamed before resume
+    b.send({ type: 'resume', afterSeq: lastSeen });
+    await b.waitFor('DONE-14');
+    const seqs = b.seqs;
+    expect(seqs[0]).toBe(lastSeen + 1);
+    for (let i = 1; i < seqs.length; i++) expect(seqs[i]).toBe((seqs[i - 1] ?? 0) + 1);
+    b.ws.close();
+  });
+
+  it('closes cleanly (does not hang) while a stream socket is still attached (B2)', async () => {
+    const s = await createOk();
+    const c = await connect(s.id);
+    await c.waitFor('\u001b]133;A');
+    const done = await Promise.race([
+      app.close().then(() => 'closed'),
+      new Promise((r) => setTimeout(() => r('hung'), 4000)),
+    ]);
+    expect(done).toBe('closed');
+    await c.closed;
+    await start(); // afterEach closes a live app
+  });
+
   it('runs two sessions in parallel without crosstalk', async () => {
     const [s1, s2] = [await createOk(), await createOk()];
     const [a, b] = [await connect(s1.id), await connect(s2.id)];

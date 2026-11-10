@@ -45,7 +45,8 @@ export class Session {
   private chunks: Chunk[] = [];
   private bufferedBytes = 0;
   private lastSeq = 0;
-  private readonly sockets = new Map<Subscriber, number>(); // subscriber -> last seq it has been sent
+  // subscriber -> last seq it has been sent; undefined while pending (attached, `resume` not yet received)
+  private readonly sockets = new Map<Subscriber, number | undefined>();
 
   constructor(
     readonly info: Omit<TerminalSession, 'state'>,
@@ -57,7 +58,7 @@ export class Session {
       this.state = 'exited';
       this.exitCode = code;
       this.touch();
-      for (const s of this.sockets.keys()) this.sendEnd(s);
+      for (const [s, sent] of this.sockets) if (sent !== undefined) this.sendEnd(s);
     });
     this.state = 'running';
   }
@@ -83,7 +84,7 @@ export class Session {
         this.bufferedBytes -= this.chunks.shift()?.data.length ?? 0;
       }
       for (const [sub, sent] of this.sockets) {
-        if (chunk.seq > sent) {
+        if (sent !== undefined && chunk.seq > sent) {
           this.sockets.set(sub, chunk.seq);
           sub.send(outputFrame(chunk));
         }
@@ -96,11 +97,11 @@ export class Session {
     if (this.exitCode !== undefined) sub.send({ type: 'exit', code: this.exitCode });
   }
 
-  /** Attach a socket. It receives live output only until it sends resume (see `resume`). */
+  /** Attach a socket. It receives no output until it sends `resume`, so replay and live output never overlap. */
   attach(sub: Subscriber): boolean {
     if (this.sockets.size >= MAX_SOCKETS_PER_SESSION) return false;
     this.touch();
-    this.sockets.set(sub, this.lastSeq);
+    this.sockets.set(sub, undefined);
     sub.send({ type: 'state', state: this.state });
     return true;
   }
@@ -110,11 +111,13 @@ export class Session {
   }
 
   /**
-   * Replays retained output after `afterSeq`, then continues live. Done synchronously so nothing is missed or
-   * sent twice. Output older than the ring buffer is gone; the first replayed seq shows the gap, if any.
+   * Replays retained output after `afterSeq`, then continues live. The socket was held pending since attach and
+   * this runs synchronously, so nothing is missed, sent twice or reordered. Only valid once per socket. Output older than the ring buffer is gone; the first replayed seq shows the gap, if any.
    */
   resume(sub: Subscriber, afterSeq: number): boolean {
-    if (!this.sockets.has(sub) || afterSeq > this.lastSeq) return false;
+    if (!this.sockets.has(sub) || this.sockets.get(sub) !== undefined || afterSeq > this.lastSeq) {
+      return false;
+    }
     for (const c of this.chunks) if (c.seq > afterSeq) sub.send(outputFrame(c));
     this.sockets.set(sub, this.lastSeq);
     if (this.state === 'exited') this.sendEnd(sub);

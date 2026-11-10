@@ -120,7 +120,8 @@ export function registerTerminalRoutes(app: FastifyInstance, config: ApiConfig):
     });
   }
 
-  app.addHook('onClose', async () => {
+  // preClose runs before the HTTP server starts closing; upgraded sockets would otherwise keep it open forever.
+  app.addHook('preClose', async () => {
     for (const c of wss.clients) c.terminate();
     wss.close();
     await sessions.close();
