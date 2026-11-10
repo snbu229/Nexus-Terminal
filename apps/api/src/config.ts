@@ -15,6 +15,12 @@ export interface ApiConfig {
   /** Exact Host header values accepted (DNS-rebinding guard). Lower-case, no wildcards. */
   allowedHosts: readonly string[];
   logLevel: string;
+  /** Cap on concurrent terminal sessions (exited ones count until deleted or reaped). */
+  maxSessions: number;
+  /** A session with no attached socket and no activity for this long is closed and removed. */
+  idleTimeoutMs: number;
+  /** Bytes of output kept per session for resume replay (older output is dropped). */
+  replayBufferBytes: number;
 }
 
 export const DEFAULT_HOST = '127.0.0.1';
@@ -62,6 +68,15 @@ function parseAllowedHosts(raw: string | undefined): string[] {
   return entries;
 }
 
+function positiveInt(raw: string | undefined, name: string, fallback: number, max: number): number {
+  if (raw === undefined || raw.trim() === '') return fallback;
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n < 1 || n > max) {
+    throw new GuardError(`${name} must be an integer between 1 and ${max}: ${JSON.stringify(raw)}`);
+  }
+  return n;
+}
+
 /** Reads and validates configuration. Throws GuardError when the guard rules are not met. */
 export function loadConfig(env: NodeJS.ProcessEnv): ApiConfig {
   if (env.NEXUS_DEV_MODE !== '1') {
@@ -99,5 +114,18 @@ export function loadConfig(env: NodeJS.ProcessEnv): ApiConfig {
     devCompose,
     allowedHosts,
     logLevel: env.NEXUS_LOG_LEVEL?.trim() || 'info',
+    maxSessions: positiveInt(env.NEXUS_MAX_SESSIONS, 'NEXUS_MAX_SESSIONS', 8, 64),
+    idleTimeoutMs: positiveInt(
+      env.NEXUS_SESSION_IDLE_MS,
+      'NEXUS_SESSION_IDLE_MS',
+      15 * 60_000,
+      86_400_000,
+    ),
+    replayBufferBytes: positiveInt(
+      env.NEXUS_REPLAY_BUFFER_BYTES,
+      'NEXUS_REPLAY_BUFFER_BYTES',
+      1024 * 1024,
+      64 * 1024 * 1024,
+    ),
   };
 }
