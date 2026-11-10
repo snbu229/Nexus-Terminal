@@ -3,6 +3,12 @@
 - Issue: EZF-13 (NX3-106), epic E00 / M0 (P00). Also covers NX2-001 (Termix benchmark) and NX2-003 (Happier/HAPI cross-device agent control), which were folded in by kickoff rev 2.
 - Author: A1 Nexus CTO / Research Architect. C1: A5 QA & Security. C2: A0 Nexus CEO.
 - Date: 2026-11-10. Status: **DRAFT for review.** Every decision below is *proposed*. The ADRs are in `docs/adr/ADR-PROPOSED-*.md` (§9).
+- Rev 2 (2026-11-10) addresses C1 review on head `b432e16`:
+  - B1: Herdr finding D-1 and the restated adapter condition (§5), plus the P-3 cases.
+  - B2: SeaweedFS hardening conditions (§7.3), plus the P-5 negative cases.
+  - N1: Hermes tag schemes (§1.1).
+  - N2: evidence JSON covers every §1 HEAD.
+  - N3: acceptance gating (§8).
 - Clean-room: the sources are public READMEs, public docs and GitHub API metadata only. HAPI is AGPL-3.0-only, so only its **documentation** was read, never its source. No code from any project was copied into this repo.
 
 ## 0. Read this first: what was and was not done
@@ -56,7 +62,7 @@ This document makes **architecture** decisions (build, adopt, integrate, referen
 
 | Component | Ledger (PR #4) | Observed here | Action |
 |---|---|---|---|
-| Hermes Agent | `v2026.9.24` | Newest release is `v0.23.1`. The release list shows a `v0.x` scheme | The NX2-005 owner should re-run `fetch_evidence.py` and confirm the tag |
+| Hermes Agent | `v2026.9.24` | The ledger pin is **valid**: `v2026.9.24` is a non-prerelease GitHub release (commit `f97608f178d1`, 2026-09-24). The repo also publishes a second scheme, `v0.x`, and `v0.23.1` (commit `3b4215785882`, 2026-11-10) is newer by publish date **[api]** | Not a wrong pin. The NX2-005 owner should decide **which tag scheme to pin** and record it. Evidence: `hermes_tag_schemes` in the evidence JSON |
 | All rows | pinned commits from an earlier run | HEADs have moved (HAPI moved twice on 2026-11-10) | This is expected (ledger F11). Pin by tag at adoption time |
 
 Licence outcomes agree with the ledger in every row. HAPI and MinIO are `reject`. Garage and Ceph are `external-service-only`.
@@ -113,7 +119,7 @@ Termix is the closest open-source analogue to the Nexus host and terminal plane.
 
 - **H-1 (HAPI):** one bearer token authenticates *every* client type. Anyone who has it can approve any tool call. Nexus must use per-user identity and per-device sessions. **[doc]**
 - **H-2 (HAPI):** namespaces are the shared base token plus `:<name>`. Every namespace user must know the base token, so any of them can reach any namespace by changing the suffix. That is isolation, not authorization. **[inferred]** from namespace.md
-- **H-3 (HAPI):** MCP peer tools (`spawn_peer`, `ping_peer`) let an agent create or wake other agent sessions on the hub. They are on by default and only disabled by `HAPI_DISABLE_PEER_TOOLS=1` **[doc]**. Nexus rule: agents never spawn agents outside their run scope without policy.
+- **H-3 (HAPI):** MCP peer tools (`spawn_peer`, `ping_peer`) let an agent create or wake other agent sessions on the hub. They are on by default and only disabled by `HAPI_DISABLE_PEER_TOOLS=1` **[doc]**. Nexus rule: agents never spawn agents outside their run scope without policy. Herdr has the same class of issue: see D-1 in §5.
 - **P-1 (Happier):** "account pools" switch sessions between several model-provider accounts when one hits a usage limit **[doc]**. This may conflict with provider terms **[inferred]**. Nexus will not implement it.
 - **P-2 (Happier):** E2EE means the relay **cannot** read approvals or tool calls **[doc]**. Nexus policy, audit and plan binding need server-side visibility of the plan and the decision. E2EE of transcripts is compatible. E2EE of approvals is not. **[inferred]**
 - **P-3 (Happier):** a public read-only session link exists **[doc]**. Nexus default: no public links. Sharing goes through RBAC.
@@ -147,8 +153,18 @@ Termix is the closest open-source analogue to the Nexus host and terminal plane.
 
 - **tmux stays the default** PTY backend on Linux and macOS hosts. It is mature, packaged by distros, has a stable surface and satisfies the identity invariants in ARCHITECTURE.
 - **Herdr is a candidate optional `SessionProvider` adapter** (R2) because of its agent-state detection. Nexus could consume "blocked" as a `pending_prompts` signal.
-- Conditions: (a) Nexus must **disable Herdr's remote self-install**. Installs go only through the signed install plan. (b) The Herdr socket can send input to every pane, so it is **user-equivalent privilege**. Never expose it to an agent or to another UID. Socket permissions need a lab test, P-3 **[unverified]**. (c) Pin by tag. It is pre-1.0 and its API may change.
+- Conditions: (a) Nexus must **disable Herdr's remote self-install**. Installs go only through the signed install plan. (b) **Agent isolation from the Herdr socket** (see D-1 below). Nexus-launched agents run under a **separate UID** from the Herdr server, and that UID has no access to the Herdr socket or config directory. Stripping `HERDR_*` from the environment is defence in depth only, because it does not close the gap on its own. If the agent-UID split cannot be met on a host, Nexus agents **never run inside Herdr-managed panes** on that host, and tmux is used for them. Both variants need lab test P-3 **[unverified]**. (c) Pin by tag. It is pre-1.0 and its API may change.
 - Zellij stays deferred (as in OSS_RESEARCH).
+
+**Security finding (for the threat model, NX2-008), added after C1 review:**
+
+- **D-1 (Herdr):** every process in a Herdr pane can control every other pane under the same UID, by default.
+  - Herdr "injects `HERDR_SOCKET_PATH`, `HERDR_ENV=1`, `HERDR_WORKSPACE_ID`, `HERDR_TAB_ID`, and `HERDR_PANE_ID` into managed pane processes" **[doc: socket-api]**.
+  - The README calls Herdr "agent-native: agents drive herdr through the cli and socket api: they can spawn panes, prompt each other" **[doc]**.
+  - So an agent in a pane can call `pane.send_input` on, or spawn, any sibling pane, including a human's shell.
+  - The socket also lives at a fixed default path, `~/.config/herdr/herdr.sock`, which any same-UID process can find without the env variable **[doc: socket-api, "Socket paths"]**. This is why stripping `HERDR_*` is not enough on its own.
+  - The socket-api page documents no per-pane scoping, per-caller authentication or option to turn off injection **[doc, absence; re-check at adoption]**.
+  - This is the same cross-session control class as HAPI H-3 (§4.1). Nexus rule: an agent must not be able to send input to a session outside its run scope.
 
 ## 6. Agent harness and governance components
 
@@ -194,6 +210,21 @@ Termix is the closest open-source analogue to the Nexus host and terminal plane.
 | Maturity signal | Long-lived project. Helm chart and multi-node guide **[doc]** | "Battle-tested and production-ready", by the vendor's own claim **[doc]** | Reached 1.0 recently **[api]**. Production KMS needs Vault or AWS KMS **[doc]** | | |
 
 **Decision (ADR-PROPOSED-object-store-seaweedfs-default):** Nexus code talks **only the generic S3 API**, so operators may bring any S3 endpoint, including AWS S3, Garage or Ceph run as separate services. The **bundled default for the Compose pilot is SeaweedFS** (`weed mini`), because Object Lock lets audit archives be WORM. **Fallback:** Versity S3 Gateway, the simplest option, if P-5 shows SeaweedFS is too heavy for the pilot or Object Lock is not needed. **Defer** RustFS and re-evaluate after six more months of releases. **Reject** MinIO. Garage and Ceph are **external-service-only** and never bundled.
+
+**Hardening conditions for the bundled default (added after C1 review).** The store holds WORM audit archives, so it gets the same treatment as Valkey (internal bind, auth required). The SeaweedFS README at `3f5b07475dc3` documents the exposure points these conditions close:
+
+- "Drop the AWS keys to run without authentication for development" **[doc]**. The S3 endpoint is unauthenticated unless credentials are configured.
+- Without `WEED_ADMIN_PASSWORD` or `https.admin` mTLS, `weed mini` binds the Admin UI/API and the worker gRPC control plane to loopback. "`-admin.allowInsecureBind` restores the legacy unauthenticated network bind" **[doc]**.
+- "The same process also runs the master, a volume server, the filer, WebDAV, the Iceberg REST catalog, and the Admin UI" **[doc]**. Each of these is a listener.
+
+Conditions for the bundled default to ship:
+
+1. **S3 credentials are always required.** Anonymous S3 access is off.
+2. **The Nexus service account is not an admin.** It may write objects and read audit objects. It has no `BypassGovernanceRetention`, no bucket-policy or Object Lock configuration rights, and no Admin UI/API access. The quick-start `admin` identity is not used at runtime.
+3. **Admin auth is required.** Use `WEED_ADMIN_PASSWORD` or, preferably, `https.admin` mTLS. **`-admin.allowInsecureBind` is never used.** Remote workers (multi-node only) use `grpc.admin` mTLS.
+4. **Internal network only.** Every listener (S3, master, volume, filer, WebDAV, Iceberg, Admin) binds to the Compose internal network or loopback. No host-published ports except through the Nexus API. Listeners Nexus does not use (WebDAV, Iceberg) are disabled if `weed mini` supports it; otherwise they are firewalled **[unverified]**.
+5. **The audit bucket uses Object Lock in compliance mode** with a fixed default retention, set at bucket creation.
+6. **WORM must hold below the S3 layer too.** The filer and volume HTTP APIs could delete or overwrite chunks without going through S3 Object Lock **[inferred]**. They must be unreachable from anything except the SeaweedFS process itself. P-5 tests this.
 
 ### 7.4 Workflow durability: Temporal vs DB outbox (resolves plan I-2)
 
@@ -241,6 +272,8 @@ Termix is the closest open-source analogue to the Nexus host and terminal plane.
 | Temporal | **Defer** (explicit triggers) | same | none |
 | Headscale | **Integrate (optional, operator-run)** | headscale-optional-overlay | P-6 |
 
+**Acceptance gating.** If an ADR's decision depends on a blocking prototype, the ADR stays **Proposed** until that prototype's lab results (image digests, commands, raw output) are attached to its issue, even after C1/C2 approve this research. This covers the MCP gateway (only the ToolHive flip condition, P-1), Herdr (P-3), SeaweedFS (P-5) and Headscale (P-6). P-2 and P-4 confirm the Valkey, outbox and inbox decisions. They do not gate them.
+
 ## 9. ADRs written for this issue
 
 All are in `docs/adr/` with status **Proposed**. They follow the existing `ADR-PROPOSED-<slug>.md` convention. NX2-007 owns protocol-level ADRs (deployment, network, session, plugin and agent protocols) and may supersede the session and overlay ADRs here.
@@ -279,9 +312,9 @@ Run in disposable local containers only. Every test records the image digest, th
 |---|---|---|---|
 | P-1 | Can ToolHive delegate authZ to an external PDP and isolate a third-party MCP server with less code than our sandbox? | `thv run` a fixture MCP server; call it through a Nexus gateway stub with a deny-by-default token. Try to reach the host network and filesystem from the server | Container escape attempts fail. External PDP hook exists or does not (record which). LoC estimate for both paths |
 | P-2 | Outbox and Valkey loss | Postgres plus Valkey Compose. Enqueue 10k outbox rows, kill Valkey and a worker mid-run | Zero lost or duplicated side effects (idempotency key check). No committed state lost |
-| P-3 | Herdr socket privilege | Run Herdr as user A. Try the socket API from user B and from a container sharing `/tmp` | B is refused. Record the socket mode and owner |
+| P-3 | Herdr socket privilege (D-1) | Run Herdr as user A. (i) Try the socket API from user B and from a container sharing `/tmp`. (ii) **Same-UID pane:** from a process in pane 1, call `pane.send_input` and spawn against sibling pane 2, first with the injected `HERDR_SOCKET_PATH` and then with `HERDR_*` stripped, using the default `~/.config/herdr/herdr.sock`. (iii) **Adapter layout:** launch a fixture agent in a pane under agent UID C, as the adapter would. Repeat (ii) from C | (i) B is refused. (ii) Record the result. Success here is expected and confirms D-1. (iii) C cannot connect to the socket or read the Herdr config directory, so `send_input` to pane 2 fails. Record socket mode, owner and directory modes. If (iii) fails, the fallback applies: no Nexus agents in Herdr panes |
 | P-4 | Mobile approval UX benchmark | Self-host a Happier relay in a container. Approve a fixture permission from a test phone. Repeat with the Nexus PWA stub and ntfy | Time to approve, payload contents (no secrets), deep-link correctness. iOS PWA push behaviour recorded |
-| P-5 | S3 Object Lock | `weed mini` and versitygw. Create a bucket with Object Lock in compliance mode. Try to delete or overwrite inside retention | Delete is denied in compliance mode. Record versitygw's support or lack of it |
+| P-5 | S3 Object Lock and store hardening | `weed mini` and versitygw, configured per the §7.3 hardening conditions. (i) Create a bucket with Object Lock in compliance mode. Try to delete or overwrite inside retention, as the Nexus service account and as the admin identity, including with `x-amz-bypass-governance-retention`. (ii) **Negative:** call the Admin UI/API with no credentials, from loopback and from another container on the network. (iii) **Negative:** call S3 with no credentials. (iv) **Negative:** from another container, reach the filer, volume, master and WebDAV ports and try to delete a locked object's file through the filer HTTP API | (i) Delete and overwrite are denied for both identities. (ii) Unauthenticated admin requests are refused, or the port is unreachable. (iii) Anonymous S3 is refused. (iv) Internal ports are unreachable from outside the store, and the locked object survives. Record versitygw's Object Lock support or lack of it |
 | P-6 | Headscale overlay and SSH bypass | Headscale plus 2 `tailscaled` containers. Apply an ACL with Tailscale SSH disabled. Try `tailscale ssh`. Also run Termix persistence (comparison 6) | `tailscale ssh` is denied. Plain OpenSSH over the overlay works with Nexus-issued certs only |
 
 The same lab issue can absorb the EZF-20 container runtime, so it needs one approved disposable host.

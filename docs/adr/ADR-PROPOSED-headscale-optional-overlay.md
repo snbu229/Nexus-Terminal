@@ -1,6 +1,6 @@
 # ADR (proposed): Headscale is an optional, operator-run overlay; Tailscale SSH stays disabled
 
-Status: **Proposed.** Needs C1 (A5) and C2 (A0). NX2-007 (network ADR) may supersede this.
+Status: **Proposed.** Needs C1 (A5) and C2 (A0). NX2-007 (network ADR) may supersede this. It stays Proposed until the P-6 lab results (including the `tailscale ssh` deny test) are attached.
 Origin: EZF-13 (NX3-106). Evidence: `docs/research/component-comparison.md` §7.5.
 Author: A1 Nexus CTO / Research Architect.
 

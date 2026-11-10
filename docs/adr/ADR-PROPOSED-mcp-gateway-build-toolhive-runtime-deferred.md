@@ -1,6 +1,6 @@
 # ADR (proposed): build a thin Nexus MCP gateway; ToolHive deferred as an optional isolation runtime
 
-Status: **Proposed.** Needs C1 (A5) and C2 (A0). The flip condition is decided by NX2-072 prototype P-1.
+Status: **Proposed.** Needs C1 (A5) and C2 (A0). NX2-072 prototype P-1 decides the flip condition. The build decision does not wait for P-1. The ToolHive runtime decision stays Proposed until P-1 results are attached.
 Origin: EZF-13 (NX3-106). Evidence: `docs/research/component-comparison.md` §7.1.
 Author: A1 Nexus CTO / Research Architect.
 

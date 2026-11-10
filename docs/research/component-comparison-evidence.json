@@ -304,7 +304,40 @@
   ],
   "notes": [
     "newest_release is ordered by publish date, not version. Valkey shows 9.0.7 (a 9.0-line maintenance release) although the highest stable is 9.1.3, which the research doc pins. ACP shows schema-v1.30.0, published together with v1.16.0.",
-    "HEAD SHAs here were re-fetched at generated_at. The research doc's \u00a71 HEADs were captured earlier on the same day; hermes-agent and toolhive moved in between (expected drift, ledger F11).",
+    "HEAD SHAs in 'components' were re-fetched at generated_at. The research doc's \u00a71 HEADs were captured earlier on the same day; hermes-agent and toolhive moved in between (expected drift, ledger F11). The \u00a71 HEADs for those two are recorded with full SHAs in 'doc_section1_pins'.",
     "GitHub's releases/latest endpoint returned v1.19.5 for anomalyco/opencode; the release list shows v2.2.7 as newest. The release list is authoritative here."
-  ]
+  ],
+  "doc_section1_pins": [
+    {
+      "repo": "NousResearch/hermes-agent",
+      "head_sha": "3dbee74d0e24e5df6137d03551483fb4ccebe21b",
+      "head_date": "2026-11-10T11:00:05Z",
+      "source": "gh api repos/NousResearch/hermes-agent/commits/3dbee74d0e24, re-resolved 2026-11-10 for C1 N2"
+    },
+    {
+      "repo": "stacklok/toolhive",
+      "head_sha": "b36d370ce446fce1a79242cf4b4cb0ca06971c61",
+      "head_date": "2026-11-10T10:33:09Z",
+      "source": "gh api repos/stacklok/toolhive/commits/b36d370ce446, re-resolved 2026-11-10 for C1 N2"
+    }
+  ],
+  "hermes_tag_schemes": {
+    "note": "Both tags below are non-prerelease, non-draft GitHub releases. The repo publishes two tag schemes; v0.23.1 is newer by publish date.",
+    "releases": [
+      {
+        "tag": "v2026.9.24",
+        "tag_object": "e3dd27ee2d8b011737a4eea8e3eb3d711ab78690",
+        "commit": "f97608f178d1ffeca59860195ab7da295f7c8e5f",
+        "published_at": "2026-09-24T10:09:38Z",
+        "prerelease": false
+      },
+      {
+        "tag": "v0.23.1",
+        "tag_object": "b65acf3fdc1d43bd889211ea8e37032974b395a5",
+        "commit": "3b421578588243f920886e6fe79a6faa87ea026e",
+        "published_at": "2026-11-10T01:42:15Z",
+        "prerelease": false
+      }
+    ]
+  }
 }
