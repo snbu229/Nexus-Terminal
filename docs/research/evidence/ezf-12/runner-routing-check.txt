@@ -1,5 +1,8 @@
-run_at=2026-11-10T10:44:25Z
+run_at=2026-11-10T11:59:36Z
 node=v24.22.2 host=Linux 5.15.0-143-generic x86_64 os=Debian GNU/Linux 13 (trixie) getconf="glibc 2.41"
+script_sha256=ac0be17bbc66365a77a9e13c543889c818556c5e74ca90449c5ab3d1e151bc85
+command: node tools/research/paperclip-runner-routing-check.mjs
+
 module: /app/packages/shared/src/agent-runner.ts
 sha256: 80d720592871d8a7abde88f543c9ededffc8cf562c7c07ceba45bebbbb820202
 PAPERCLIP_RUNNER_MINIMUM_GLIBC_VERSION=2.39
@@ -104,6 +107,7 @@ PASS  claude_local    Alpine (musl) linux/x64                                   
 PASS  claude_local    Alpine (musl) linux/arm64                                  expected=LEGACY actual=LEGACY
 PASS  claude_local    Linux libc unknown (getconf missing)                       expected=LEGACY actual=LEGACY
 PASS  claude_local    Linux glibc malformed version string                       expected=LEGACY actual=LEGACY
+PASS  claude_local    Linux glibc, version missing                               expected=RUNNER actual=RUNNER
 PASS  claude_local    Linux 32-bit ARM (armv7l)                                  expected=LEGACY actual=LEGACY
 PASS  claude_local    macOS Apple Silicon (darwin/arm64)                         expected=RUNNER actual=RUNNER
 PASS  claude_local    macOS Intel (darwin/x64)                                   expected=RUNNER actual=RUNNER
@@ -112,17 +116,19 @@ PASS  codex_local     Alpine (musl) linux/x64                                   
 PASS  codex_local     Alpine (musl) linux/arm64                                  expected=LEGACY actual=LEGACY
 PASS  codex_local     Linux libc unknown (getconf missing)                       expected=LEGACY actual=LEGACY
 PASS  codex_local     Linux glibc malformed version string                       expected=LEGACY actual=LEGACY
+PASS  codex_local     Linux glibc, version missing                               expected=RUNNER actual=RUNNER
 PASS  codex_local     Linux 32-bit ARM (armv7l)                                  expected=LEGACY actual=LEGACY
 PASS  codex_local     macOS Apple Silicon (darwin/arm64)                         expected=RUNNER actual=RUNNER
 PASS  codex_local     macOS Intel (darwin/x64)                                   expected=RUNNER actual=RUNNER
 PASS  codex_local     Windows x64 (out of Nexus scope)                           expected=LEGACY actual=LEGACY
 
 selection source sha256: ffd0780061168c5df134ccc003907c5bb939d6186ecaaef00ab8f5000180f1ee
+local probe command: /bin/sh -c "uname -s; uname -m; if paperclip_glibc_version=$(getconf GNU_LIBC_VERSION 2>/dev/null) && [ -n \"$paperclip_glibc_version\" ]; then printf 'glibc\\n%s\\n' \"$paperclip_glibc_version\"; else case \"$(ldd --version 2>&1)\" in *musl*) printf 'musl\\n' ;; *) printf 'unknown\\n' ;; esac; fi"
 local probe output (this host):
 Linux
 x86_64
 glibc
 glibc 2.41
 
-112/112 cases match expected routing
+114/114 cases match expected routing
 exit=0

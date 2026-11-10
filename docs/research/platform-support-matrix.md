@@ -1,8 +1,8 @@
 # Platform support matrix: macOS/Linux hosting, OS/arch tiers and Paperclip Runner compatibility
 
-- Issue: EZF-12 (NX3-103), epic E00 / M0 (P00). Risk: normal.
+- Issue: EZF-12 (NX3-103), epic E00 / M0 (P00). Risk: normal. Revised by EZF-90 (NX3-103a): C1 non-blocking fixes and C2 rulings.
 - Author: A1 Nexus CTO. C1: A5 QA & Security. C2: A0 Nexus CEO.
-- Date: 2026-11-10. Status: **DRAFT for review. A research input, not an ADR and not a support claim.**
+- Date: 2026-11-10. Status: **DRAFT for review. A research input, not an ADR and not a support claim.** C2 rulings from EZF-12 are recorded as working positions; they bind only once the ADR from NX4-147 ([EZF-16](/EZF/issues/EZF-16)) records them.
 - Inputs: `CROSS_PLATFORM_PRODUCT_CONTRACT.md`, `compat/COMPATIBILITY_TEST_MATRIX.md`, `compat/supported-platforms.yaml` (v0.1-proposed), `deploy/*.md`, EZF-2 plan (decision D5, inconsistency I-3).
 
 ## 0. Read this first: what was and was not done
@@ -11,7 +11,7 @@
 |---|---|
 | Dated OS version / CPU / init matrix from vendor lifecycle data | Done (§2–§5). Sources and fetch dates are in §9. |
 | Distro minimums (glibc, kernel, CPU baseline, toolchain floors) | Done (§3, §4). |
-| Paperclip Runner fallback cases: **routing decision** | **Validated by execution.** Paperclip's own gate function was run against 112 cases. All 112 match, and a negative control fails as expected (§6, `docs/research/evidence/ezf-12/`). |
+| Paperclip Runner fallback cases: **routing decision** | **Validated by execution.** Paperclip's own platform-gate function was run against 114 cases. All 114 match, and two negative controls (floor lowered and raised) fail as expected (§6, `docs/research/evidence/ezf-12/`). |
 | Paperclip Runner fallback cases: **Legacy runner actually executing a task** on each fallback distro | **Not done. Unverified.** The run host has no docker or podman, and the task forbids package installs and paid VMs. The lab plan is in §7. |
 | Any Nexus feature tested on real macOS or Linux hardware | **None.** Nexus has no code yet. Every cell in `COMPATIBILITY_TEST_MATRIX.md` stays PENDING. Nothing in this document is a support claim. |
 
@@ -28,13 +28,18 @@ The doc fetcher summarizes pages through a small model, so quotes from fetched p
 
 ## 1. Summary and recommendation
 
-1. **macOS on Intel is ending.** macOS 27 Golden Gate (released 2026-09-14) supports Apple silicon only **[doc: Apple 127255]**. macOS 26 Tahoe is the last release for Intel, and only a few 2019–2020 Intel models run it **[doc: secondary press, §9]**. So "current plus two previous majors on Apple Silicon **and** Intel" (contract Tier A) can only cover Intel on **15 and 26**. `darwin/amd64` therefore has an end date. I recommend keeping amd64 builds for as long as Apple ships security updates for macOS 26. After that, drop darwin/amd64 to Tier C, or sooner by ADR.
+1. **macOS on Intel is ending.** macOS 27 Golden Gate (released 2026-09-14) supports Apple silicon only **[doc: Apple 127255]**. macOS 26 Tahoe is the last release for Intel, and only a few 2019–2020 Intel models run it **[doc: secondary press, §9]**. So "current plus two previous majors on Apple Silicon **and** Intel" (contract Tier A) can only cover Intel on **15 and 26**. `darwin/amd64` therefore has an end date. **C2 ruling (EZF-12):** darwin/amd64 Tier A covers macOS 15 and 26 only and ends when Apple stops security updates for macOS 26. The contract GA rule still holds: without Intel Mac hardware or CI there is **no darwin/amd64 GA claim**. Binding once the NX4-147 ADR records it.
 2. **macOS Tier A today is 27, 26 and 15.** Apple published security updates for all three on 2026-11-09. The last Sonoma 14 update was 2026-08-06 **[doc: Apple 100100]**, and endoflife.date marks 14 EOL on 2026-09-14 **[data]**. Sonoma is Tier C.
 3. **Linux Tier A:** Ubuntu 24.04 / 26.04 LTS (22.04 until 2027-06-01), Debian 13, and RHEL/Rocky/Alma 9 and 10, on amd64 and arm64, with systemd. Every Tier A distro uses systemd **[inferred: distro defaults]**, so R1 needs only one Linux init adapter.
-4. **The Paperclip Runner has a glibc 2.39 floor** (`PAPERCLIP_RUNNER_MINIMUM_GLIBC_VERSION = "2.39"` **[source]**). Of the Tier A Linux hosts, **Ubuntu 22.04, Debian 12 and RHEL 9 fall back to the Legacy runner** **[executed]**. So do RHEL 8, Amazon Linux 2023, Leap 15.6, Alpine/musl and unknown libc. This only affects where *Paperclip agents* run, not where Nexus runs. Nexus's own Go binaries only need Linux kernel ≥ 3.2 **[doc]**.
+4. **The Paperclip Runner has a glibc 2.39 floor** (`PAPERCLIP_RUNNER_MINIMUM_GLIBC_VERSION = "2.39"` **[source]**). Of the Tier A Linux hosts, **Ubuntu 22.04 and RHEL 9 fall back to the Legacy runner** **[executed]**. So do the Tier B hosts Debian 12, RHEL 8 and Amazon Linux 2023, Leap 15.6 (Tier C), Alpine/musl and unknown libc (§3). This only affects where *Paperclip agents* run, not where Nexus runs. Nexus's own Go binaries only need Linux kernel ≥ 3.2 **[doc]**.
 5. **The Runner has no macOS version gate.** It accepts any darwin arm64/x64 **[source]**. The effective floor comes from Paperclip's Node ≥ 24.11 requirement **[doc]**: Node 24 needs macOS ≥ 13.5 **[doc]**. Nexus must enforce its own macOS floor (15+) and not rely on the Runner's.
 6. **Claude over SSH to a Mac defaults to the Legacy runner** even though the Runner supports darwin (`agent-runner-selection.ts` **[source]**). Any Nexus/Paperclip lab that drives Claude agents on Mac hosts over SSH must choose the runner explicitly and test it.
-7. **R1 scope (plan D5, resolves I-3):** I support the plan. R1 ships macOS as SSH/SFTP-only, plus the Linux connector (`.deb`/`.rpm`, systemd) on the Linux Tier A distros. The macOS connector (`.pkg`, launchd, notarization) ships in R1.1. The macOS **control-plane host** stays in R1 because the contract requires it. This needs an Apple silicon test machine (§7).
+7. **R1 scope (plan D5, resolves I-3):** R1 ships macOS as SSH/SFTP-only, plus the Linux connector (`.deb`/`.rpm`, systemd) on the Linux Tier A distros. The macOS connector (`.pkg`, launchd, notarization) ships in R1.1. The macOS **control-plane host** stays in R1 because the contract requires it. This needs an Apple silicon test machine, requested through the P01/P09 lab tasks (§7). **C2 ruling (EZF-12): accepted.** Binding once the NX4-147 ADR records it.
+8. **C2 rulings from EZF-12 (A0, at `fda5c3b`).** These are working positions for R1 planning. Each becomes binding only when the ADR from NX4-147 ([EZF-16](/EZF/issues/EZF-16)) records it:
+   - RHEL 8 is Tier B (§3). This narrows the contract's Tier A wording, so the ADR must state it explicitly.
+   - darwin/amd64 sunset as in item 1.
+   - D5 / I-3 R1 scope as in item 7.
+   - Paperclip agent hosts for dev and CI must have glibc ≥ 2.39 (Ubuntu 24.04+ or Debian 13), so agents stay on the Runner path (§6).
 
 ## 2. macOS matrix (as of 2026-11-10)
 
@@ -76,7 +81,7 @@ Notes:
 
 Notes:
 - Debian's "support" date (2028-08-09) is Debian Security. LTS volunteers continue to 2030-06-30 **[data]**. I recommend counting only Debian Security for Tier A.
-- Contract Tier A says "RHEL/Rocky/Alma supported major releases". I put 8 in Tier B because it is past full support and adds a third RPM CI target. **This is a C2 decision.**
+- Contract Tier A says "RHEL/Rocky/Alma supported major releases". 8 is in Tier B because it is past full support and adds a third RPM CI target. **C2 ruling (EZF-12): accepted.** This narrows the contract wording, so the NX4-147 ADR must state it explicitly. Binding once that ADR records it.
 - Ubuntu 22.04 keeps Tier A until its standard support ends, then drops to C. Ubuntu Pro ESM is a paid extension and does not count.
 
 ## 4. CPU and architecture matrix
@@ -105,12 +110,14 @@ The `HostOSAdapter.probe` (ARCHITECTURE) must detect init by checking for a runn
 
 ## 6. Paperclip Runner fallback cases (validated routing)
 
-**What was executed:** `tools/research/paperclip-runner-routing-check.mjs` imports Paperclip's real `paperclipRunnerSupportsPlatform()` from the installed checkout and runs it. It asserts 112 cases: 12 Linux distros × {x64, arm64} × {claude, codex, opencode, pi}, plus 16 edge cases.
+**What was executed:** `tools/research/paperclip-runner-routing-check.mjs` imports Paperclip's real `paperclipRunnerSupportsPlatform()` from the installed checkout and runs it. It asserts 114 cases: 12 Linux distros × {x64, arm64} × {claude, codex, opencode, pi}, plus 18 edge cases.
+
+**Scope:** the "Routing (executed)" column covers only the `paperclipRunnerSupportsPlatform()` platform gate. It does not cover the adapter-availability, disable and override gates, or the `runnerTasks` / `managedCloudImage` path in `agentRunnerAvailability()`, which skips the platform gate and defaults to the Runner **[source]**. None of these change F1–F11 for Nexus's local and SSH hosts.
 
 - Source under test: `packages/shared/src/agent-runner.ts`, sha256 `80d72059…bbbb820202`. This is **byte-identical to upstream `master`**: that file last changed in commit `fc6e1b0` (2026-11-07), checked against master `8b3348c` (2026-11-10). The package is `@paperclipai/shared` 0.3.1, MIT.
-- Result: **112/112 PASS**, exit 0 (`evidence/ezf-12/runner-routing-check.txt`).
-- Negative control: a scratch copy with the floor changed from 2.39 to 2.34 gives **82/112 and exit 1** (`evidence/ezf-12/runner-routing-negative-control.txt`). So the check detects a changed floor.
-- The real SSH platform probe command was also run on this host. It is read from `agent-runner-selection.ts` (sha256 `ffd07800…0180f1ee`) and printed `Linux / x86_64 / glibc / glibc 2.41`.
+- Result: **114/114 PASS**, exit 0 (`evidence/ezf-12/runner-routing-check.txt`).
+- Negative controls: scratch copies with the floor changed from 2.39 to 2.34 and to 2.40 give **84/114** and **102/114**, both exit 1 (`evidence/ezf-12/runner-routing-negative-control.txt`). So the check detects a lowered or raised floor. The exact `sed` and `PAPERCLIP_SHARED_AGENT_RUNNER` commands are in the evidence file and the script header.
+- The real SSH platform probe command was also run on this host. It is read from `agent-runner-selection.ts` (sha256 `ffd07800…0180f1ee`). The script prints the command before running it, and it printed `Linux / x86_64 / glibc / glibc 2.41`.
 
 | # | Case | Routing (executed) | Execution on real host |
 |---|---|---|---|
@@ -124,9 +131,10 @@ The `HostOSAdapter.probe` (ARCHITECTURE) must detect init by checking for a runn
 | F8 | macOS arm64 / x64, **any version** | Runner | **unverified**. No version gate exists. Node ≥ 24.11 gives a de facto macOS ≥ 13.5 floor. |
 | F9 | Claude agent on a **Mac reached over SSH** | Runner is *supported*, but the **default is Legacy** (`agent-runner-selection.ts`, `automatic = supported && !(claude_local && ssh && darwin)`) **[source]**, matching the Runner docs **[doc]** | **unverified**. Read from source, not executed: the module needs the Paperclip DB and server context. |
 | F10 | Kubernetes execution mode / Cursor Cloud | special-cased, Legacy or none **[source]** | not relevant to Nexus R1 |
+| F11 | Linux glibc with **no version** (`libc=glibc`, version undefined) | Runner (pins current behaviour; `supportsLinuxLibc()` returns true) | n/a (pure function). The shipped SSH probe prints the version on the same branch as `glibc`, so this needs truncated probe output or another caller **[inferred]**. |
 
 **What this means for Nexus:**
-- R1 Paperclip agent hosts (dev and CI) should be glibc ≥ 2.39: Ubuntu 24.04+ or Debian 13. Ubuntu 22.04 or EL9 build hosts would silently put agents on the Legacy runner.
+- R1 Paperclip agent hosts (dev and CI) must be glibc ≥ 2.39: Ubuntu 24.04+ or Debian 13 (**C2 ruling, EZF-12**; binding once the NX4-147 ADR records it). Ubuntu 22.04 or EL9 build hosts would silently put agents on the Legacy runner.
 - Nexus product hosts are not constrained by the Runner. The "ACP Claude agent session recovery" row in the compatibility matrix must be tested **per runner type** on the F2 distros, because Runner and Legacy are different execution paths.
 - Version pins reported by the Runner docs (Codex 0.160.0, OpenCode 1.18.34, Claude Agent SDK 0.3.286, Copilot CLI 1.0.88) **[doc]** must go into the license and dependency ledger before any Nexus test depends on them.
 
@@ -150,9 +158,10 @@ All in local containers or owner-provided hardware. No paid cloud without board 
    - `paperclip_runtime`: add `macos_min_effective: '13.5 (via Node 24)'`, `claude_over_ssh_to_macos_default: legacy`, and `legacy_hosts_tier_a: [ubuntu-22.04, rhel-9]`.
 2. `compat/COMPATIBILITY_TEST_MATRIX.md`: add columns for Ubuntu arm64, RHEL-compatible arm64 and Alpine (SSH only). Split the "ACP Claude agent session recovery" row by Runner and Legacy.
 3. `CROSS_PLATFORM_PRODUCT_CONTRACT.md` Tier A wording "Apple Silicon and Intel hardware where OS vendor supports that combination" is correct. Add a dated note that macOS 27+ is Apple-silicon-only.
-4. Record decision D5 (I-3) in an ADR via NX4-147 once C2 accepts §1.7.
+4. Record decision D5 (I-3) in an ADR via NX4-147 ([EZF-16](/EZF/issues/EZF-16)). C2 accepted §1.7 on EZF-12.
+5. The same ADR must record the other C2 rulings from EZF-12 (§1.8): RHEL 8 in Tier B (an explicit narrowing of the contract's Tier A wording), the darwin/amd64 sunset tied to macOS 26 security updates with no darwin/amd64 GA claim without Intel hardware or CI, and glibc ≥ 2.39 for Paperclip dev/CI agent hosts.
 
-Every recommendation here is **proposed**. None changes a support claim until C1/C2 accept it and CI evidence exists.
+Every recommendation here is **proposed**. C2 has accepted items 1–5 as working positions, but none changes a support claim until the ADR records it and CI evidence exists.
 
 ## 9. Sources (all fetched 2026-11-10 unless noted)
 

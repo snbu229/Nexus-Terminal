@@ -10,6 +10,16 @@
 //     node tools/research/paperclip-runner-routing-check.mjs
 //
 // Exit code 0 only when every case matches the expected routing decision.
+//
+// Scope: this covers only the platform gate, paperclipRunnerSupportsPlatform().
+// It does not exercise the adapter-availability, override or
+// runnerTasks/managedCloudImage paths in agentRunnerAvailability().
+//
+// Negative controls (EZF-90). Mutate the floor in a scratch copy; both must exit 1:
+//   sed 's/= "2.39"/= "2.34"/' /app/packages/shared/src/agent-runner.ts > "$TMPDIR/agent-runner-2.34.ts"
+//   PAPERCLIP_SHARED_AGENT_RUNNER="$TMPDIR/agent-runner-2.34.ts" node tools/research/paperclip-runner-routing-check.mjs
+//   sed 's/= "2.39"/= "2.40"/' /app/packages/shared/src/agent-runner.ts > "$TMPDIR/agent-runner-2.40.ts"
+//   PAPERCLIP_SHARED_AGENT_RUNNER="$TMPDIR/agent-runner-2.40.ts" node tools/research/paperclip-runner-routing-check.mjs
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
@@ -21,7 +31,7 @@ const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest(
 const { paperclipRunnerSupportsPlatform, PAPERCLIP_RUNNER_MINIMUM_GLIBC_VERSION } = await import(modulePath);
 
 // glibc versions: Repology / packages.ubuntu.com / sources.debian.org, fetched 2026-11-10
-// (see docs/research/platform-support-matrix.md §8). RUNNER = Paperclip Runner, LEGACY = Legacy runner.
+// (see docs/research/platform-support-matrix.md §9). RUNNER = Paperclip Runner, LEGACY = Legacy runner.
 const linuxDistros = [
   ["Ubuntu 22.04 LTS", "2.35", "LEGACY"],
   ["Ubuntu 24.04 LTS", "2.39", "RUNNER"],
@@ -53,6 +63,8 @@ for (const harness of ["claude_local", "codex_local"]) {
     { name: "Alpine (musl) linux/arm64", harness, args: ["linux", "arm64", "musl", undefined], expected: "LEGACY" },
     { name: "Linux libc unknown (getconf missing)", harness, args: ["linux", "x64", "unknown", undefined], expected: "LEGACY" },
     { name: "Linux glibc malformed version string", harness, args: ["linux", "x64", "glibc", "2.39-custom"], expected: "LEGACY" },
+    // Pins current behaviour: glibc with no version passes the gate (supportsLinuxLibc).
+    { name: "Linux glibc, version missing", harness, args: ["linux", "x64", "glibc", undefined], expected: "RUNNER" },
     { name: "Linux 32-bit ARM (armv7l)", harness, args: ["linux", "armv7l", "glibc", "2.41"], expected: "LEGACY" },
     { name: "macOS Apple Silicon (darwin/arm64)", harness, args: ["darwin", "arm64"], expected: "RUNNER" },
     { name: "macOS Intel (darwin/x64)", harness, args: ["darwin", "x64"], expected: "RUNNER" },
@@ -79,6 +91,7 @@ try {
   if (!m) throw new Error("probe command not found");
   const probe = JSON.parse(m[1]);
   console.log(`\nselection source sha256: ${sha256(selectionPath)}`);
+  console.log(`local probe command: /bin/sh -c ${JSON.stringify(probe)}`);
   console.log(`local probe output (this host):\n${execFileSync("/bin/sh", ["-c", probe], { encoding: "utf8" }).trim()}`);
 } catch (err) {
   console.log(`\nlocal probe skipped: ${err.message}`);

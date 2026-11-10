@@ -1,4 +1,13 @@
-negative control: scratch copy with floor mutated 2.39 -> 2.34 (not committed)
+negative controls: scratch copies of agent-runner.ts with the floor mutated; mutants are not committed.
+Both must exit 1. Lines below: header, exact commands, then only FAIL lines, summary and exit code.
+run_at=2026-11-10T11:59:37Z
+node=v24.22.2 host=Linux 5.15.0-143-generic x86_64 os=Debian GNU/Linux 13 (trixie) getconf="glibc 2.41"
+script_sha256=ac0be17bbc66365a77a9e13c543889c818556c5e74ca90449c5ab3d1e151bc85
+
+### floor 2.39 -> 2.34
+command: sed 's/= "2.39"/= "2.34"/' /app/packages/shared/src/agent-runner.ts > "$TMPDIR/agent-runner-2.34.ts"
+command: PAPERCLIP_SHARED_AGENT_RUNNER="$TMPDIR/agent-runner-2.34.ts" node tools/research/paperclip-runner-routing-check.mjs
+sha256: 0187ca04631ee52ae53cf23da37324b07b9d2a588391df4ca0abf09226331ead
 PAPERCLIP_RUNNER_MINIMUM_GLIBC_VERSION=2.34
 FAIL  claude_local    Ubuntu 22.04 LTS linux/x64 glibc 2.35                      expected=LEGACY actual=RUNNER
 FAIL  codex_local     Ubuntu 22.04 LTS linux/x64 glibc 2.35                      expected=LEGACY actual=RUNNER
@@ -30,5 +39,25 @@ FAIL  opencode_local  openSUSE Leap 15.6 linux/x64 glibc 2.38                   
 FAIL  pi_local        openSUSE Leap 15.6 linux/x64 glibc 2.38                    expected=LEGACY actual=RUNNER
 FAIL  claude_local    openSUSE Leap 15.6 linux/arm64 glibc 2.38                  expected=LEGACY actual=RUNNER
 FAIL  codex_local     openSUSE Leap 15.6 linux/arm64 glibc 2.38                  expected=LEGACY actual=RUNNER
-82/112 cases match expected routing
+84/114 cases match expected routing
+exit=1
+
+### floor 2.39 -> 2.40
+command: sed 's/= "2.39"/= "2.40"/' /app/packages/shared/src/agent-runner.ts > "$TMPDIR/agent-runner-2.40.ts"
+command: PAPERCLIP_SHARED_AGENT_RUNNER="$TMPDIR/agent-runner-2.40.ts" node tools/research/paperclip-runner-routing-check.mjs
+sha256: 59f985e0433841639ddcb64ec637e5749ba4fdd69d719fb0db1cfc02c08b3c39
+PAPERCLIP_RUNNER_MINIMUM_GLIBC_VERSION=2.40
+FAIL  claude_local    Ubuntu 24.04 LTS linux/x64 glibc 2.39                      expected=RUNNER actual=LEGACY
+FAIL  codex_local     Ubuntu 24.04 LTS linux/x64 glibc 2.39                      expected=RUNNER actual=LEGACY
+FAIL  opencode_local  Ubuntu 24.04 LTS linux/x64 glibc 2.39                      expected=RUNNER actual=LEGACY
+FAIL  pi_local        Ubuntu 24.04 LTS linux/x64 glibc 2.39                      expected=RUNNER actual=LEGACY
+FAIL  claude_local    Ubuntu 24.04 LTS linux/arm64 glibc 2.39                    expected=RUNNER actual=LEGACY
+FAIL  codex_local     Ubuntu 24.04 LTS linux/arm64 glibc 2.39                    expected=RUNNER actual=LEGACY
+FAIL  claude_local    RHEL/Rocky/Alma 10 (CentOS Stream 10) linux/x64 glibc 2.39 expected=RUNNER actual=LEGACY
+FAIL  codex_local     RHEL/Rocky/Alma 10 (CentOS Stream 10) linux/x64 glibc 2.39 expected=RUNNER actual=LEGACY
+FAIL  opencode_local  RHEL/Rocky/Alma 10 (CentOS Stream 10) linux/x64 glibc 2.39 expected=RUNNER actual=LEGACY
+FAIL  pi_local        RHEL/Rocky/Alma 10 (CentOS Stream 10) linux/x64 glibc 2.39 expected=RUNNER actual=LEGACY
+FAIL  claude_local    RHEL/Rocky/Alma 10 (CentOS Stream 10) linux/arm64 glibc 2.39 expected=RUNNER actual=LEGACY
+FAIL  codex_local     RHEL/Rocky/Alma 10 (CentOS Stream 10) linux/arm64 glibc 2.39 expected=RUNNER actual=LEGACY
+102/114 cases match expected routing
 exit=1
