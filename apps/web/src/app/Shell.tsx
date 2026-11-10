@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router';
+import { useApi } from '../api/context';
 
 const NAV = [
   { to: '/servers', label: 'Servers' },
@@ -8,13 +9,14 @@ const NAV = [
 ];
 
 export function Shell() {
+  const { mode } = useApi().config;
   return (
     <div className="shell">
       <a className="skip" href="#main">
         Skip to content
       </a>
       <div className="dev-banner" role="region" aria-label="Development build">
-        Development build, no authentication, mock data
+        Development build, no authentication, {mode === 'real' ? 'local API' : 'mock data'}
       </div>
       <header className="brand">
         <strong>Nexus</strong>

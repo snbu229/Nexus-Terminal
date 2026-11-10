@@ -65,7 +65,10 @@ describe('agent event sources', () => {
     }));
     const got: number[] = [];
     await new Promise<void>((resolve) => {
-      createMockEventSource(events, async () => 3).subscribe(
+      createMockEventSource(
+        async () => events,
+        async () => 3,
+      ).subscribe(
         's',
         { onEvent: (e) => got.push(e.seq), onState: (s) => s === 'live' && resolve() },
         1,

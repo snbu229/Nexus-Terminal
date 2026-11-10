@@ -1,5 +1,4 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { agentEventFixtures } from '@nexus/contracts/fixtures';
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { createMockEventSource, createWsEventSource, type AgentEventSource } from './agentEvents';
 import { createClient, type NexusClient } from './client';
@@ -13,12 +12,18 @@ interface Api {
 
 const ApiContext = createContext<Api | null>(null);
 
+// Literal env comparison so Vite drops the dynamic import (and the fixtures) from real builds.
+const loadMockEvents = async () => {
+  if (import.meta.env.VITE_NEXUS_API === 'real') return [];
+  return (await import('@nexus/contracts/fixtures')).agentEventFixtures;
+};
+
 export function makeApi(config: ApiConfig = readApiConfig()): Api {
   const client = createClient(config.baseUrl);
   const events =
     config.mode === 'real'
       ? createWsEventSource(config.baseUrl)
-      : createMockEventSource(agentEventFixtures, async (id) => {
+      : createMockEventSource(loadMockEvents, async (id) => {
           const s = await client.getAgentSession(id);
           return s.lastEventSeq;
         });

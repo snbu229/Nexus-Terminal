@@ -6,9 +6,9 @@ import { expect } from 'vitest';
 import { ApiProvider, makeApi } from '../src/api/context';
 import { App } from '../src/app/App';
 
-export function renderApp(path: string) {
+export function renderApp(path: string, mode: 'mock' | 'real' = 'mock') {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  const api = makeApi({ mode: 'mock', baseUrl: 'http://localhost' });
+  const api = makeApi({ mode, baseUrl: 'http://localhost' });
   return render(
     <ApiProvider api={api} queryClient={queryClient}>
       <MemoryRouter initialEntries={[path]}>

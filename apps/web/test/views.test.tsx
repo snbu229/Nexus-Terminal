@@ -24,6 +24,16 @@ const fail = (path: string) =>
 const hang = (path: string) => server.use(http.get(url(path), () => delay('infinite')));
 
 describe('app shell', () => {
+  it('labels the banner with the running API mode', () => {
+    renderApp('/', 'real');
+    expect(screen.getByRole('region', { name: 'Development build' })).toHaveTextContent(
+      'Development build, no authentication, local API',
+    );
+    expect(screen.getByRole('region', { name: 'Development build' })).not.toHaveTextContent(
+      'mock data',
+    );
+  });
+
   it('shows the dev banner, landmarks and nav in a stable order', async () => {
     const { container } = renderApp('/');
     expect(screen.getByRole('region', { name: 'Development build' })).toHaveTextContent(

@@ -7,7 +7,7 @@ import { App } from './app/App';
 import './styles.css';
 
 async function boot() {
-  if (readApiConfig().mode === 'mock') {
+  if (import.meta.env.VITE_NEXUS_API !== 'real' && readApiConfig().mode === 'mock') {
     const { worker } = await import('./mocks/browser');
     await worker.start({ onUnhandledFrame: 'bypass' });
   }
