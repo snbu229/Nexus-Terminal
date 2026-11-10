@@ -16,7 +16,7 @@ Someone proposes importing, forking, assigning or installing a skill, Claude Cod
 3. **Pin:** commit SHA, or package version plus content hash.
 4. **Hashes:** recompute the SHA-256 of every file you fetched and compare with the declared value.
 5. **Inventory:** list every file, and every non-markdown file by name and size.
-6. **Executable content:** scripts, install steps, `npx`, `curl | sh`, hooks or MCP servers make the item **executable**, which needs board authorization before install.
+6. **Executable content:** scripts, install steps, piping a downloaded script into a shell, running an unpinned package through a package runner, hooks or MCP servers make the item **executable**, which needs board authorization before install.
 7. **Secrets:** none embedded, none requested in prose.
 8. **Permission widening:** broad scopes, production access, root, new hosts.
 9. **Gate weakening:** anything that lets the author self-approve, waive a failing check, force-push after review or bypass hooks.
