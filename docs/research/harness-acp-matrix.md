@@ -1,7 +1,7 @@
 # Harness ACP support matrix: Codex, Claude Code, OpenCode, Hermes Agent
 
 - Issue: EZF-11 (NX2-004), epic E00 / M0 (P00). Risk: normal. C1: A5. C2: A0.
-- Author: A0 Nexus CTO. Date: 2026-11-10. Status: **DRAFT for review. Not an ADR.**
+- Author: A0 Nexus CTO. Date: 2026-11-10. Status: **DRAFT for review. Not an ADR.** Rev 2 (2026-11-10): addresses C1 R-1, N-1, N-2 (permission option kinds, fail-closed behaviour, Codex `bwrap`).
 - Feeds: P04 agent manager (ACP harness broker), G4 "ACP agent resume and session registry tests", `SESSION_PERSISTENCE.md` §AI agent, `PLUGIN_AND_AGENT_CATALOG.md` harness adapter contract, NX4-157 (Codex required).
 - Clean-room: public docs, public source at pinned tags, and black-box runs of CLIs that were already installed on the runner. No code was copied into Nexus. Nothing was installed.
 
@@ -85,7 +85,7 @@ Columns are the four required harnesses at the §1 versions. "Codex" means Codex
 | `session/delete` | yes [src] | yes [src] | 2.2.6 yes [src]; 1.19.5 no [probe] | no [src] |
 | `session/fork` (unstable) | yes [src] | yes [src] | yes [probe][src] | yes [src] |
 | Model / mode selection | config options [src] | modes: default, acceptEdits, plan, auto, bypassPermissions [src] | `configOptions` ids `model`, `mode` [probe] | set_session_model, set_session_mode, set_config_option [src] |
-| Permission prompts → `session/request_permission` | yes. Codex `item/commandExecution`, `item/fileChange`, `item/permissions` approvals → allow_once / allow_always / reject_once [src] | yes. SDK `canUseTool` → `requestPermission` [src] | yes. once / always / reject. **Auto-rejects when no client answers** [src] | yes. Option ids allow_once / allow_session / allow_always / deny [src]. `allow_session` is a Hermes-specific id; map by `kind`, not by id. |
+| Permission prompts → `session/request_permission` | yes [src: `src/permissions/options.ts`, `option-ids.ts`, `mcp.ts`]. Option id → kind. **Command:** `allow_once`→allow_once; `allow_for_session`→**allow_always**; `decline`, `cancel`→reject_once; `accept_execpolicy_amendment`→**allow_always** (**changes Codex exec policy**: "don't ask again for commands that start with …"); `apply_network_policy_amendment:<n>`→**allow_always** or **reject_always**, depending on the amendment action (**changes Codex network policy**: allow or block a host "in the future"). **File change:** `allow_once`, `allow_for_session`→**allow_always**, `cancel`. **Permission profile:** `allow_permissions_turn`, `allow_permissions_turn_strict_auto_review`→allow_once; `allow_permissions_session`→**allow_always**; `reject_permissions`→reject_once. **MCP tool / elicitation:** `allow_once` (or `accept`)→allow_once; `allow_session`→**allow_always** (persist session); `allow_always`→allow_always (persist always); `decline`, `cancel`→reject_once. Kind does not tell session scope from a policy change. | yes. SDK `canUseTool` → `requestPermission` [src] | yes. Ids `once`→allow_once, `always`→allow_always, `reject`→reject_once. The reply is mapped **by option id**. Rejects when the client has no `requestPermission`, when the request throws (e.g. the connection drops), or when the outcome is not `selected` with id `once`/`always`. **No timeout found** [src: `src/acp/permission.ts`] | yes. `allow_once`→allow_once; `allow_session`→**allow_always** (the code says "ACP has no session-scoped kind"); `allow_always`→allow_always (only when the gate allows permanent grants); `deny`→reject_once; `deny_always`→reject_always. **Auto-denies after `approvals.timeout`** [src: `acp_adapter/permissions.py`] |
 | Usage over ACP (`usage_update`) | tokens/context only, **no cost** [src]. Rate-limit and quota in `_meta` [src]. | yes, **with USD cost** (`total_cost_usd`) [src] | yes, **with USD cost** [src] | tokens/context only, **no cost** [src]. Native DB has estimated and actual USD [src]. |
 | Turn token breakdown (`PromptResponse.usage`, unstable) | [unverified] | yes [src] | 1.x yes [src] | gateway server only [src] |
 | MCP transports passed by the client | http [src] | http, sse [src] | 1.19.5: http, sse [probe]. 2.2.6: http [src]. | [unverified] |
@@ -160,7 +160,13 @@ Unlike OpenCode, an unknown id and a not-yet-persisted id give the same error, s
    - Otherwise, offer a new session with the saved transcript as context, with user consent, and never with the same id.
    - Do not interpret error codes across harnesses (§5.1, §5.2).
 4. **Close semantics:** `session/close` is a resource release, not revocation (OpenCode resumes after close). Revoking a user or job must kill the harness process and its OS account/container. Do not rely on `close`. Hermes has no `close` at all.
-5. **Permissions:** map by `PermissionOption.kind` (`allow_once | allow_always | reject_once | reject_always`), never by option id. Hermes ids include a non-standard `allow_session`. Nexus policy must be able to **force `allow_always` off**, so that a phone approval never silently becomes a standing grant. OpenCode auto-rejects when no client answers. Nexus must keep the ACP connection alive while an approval waits on a phone, or the agent fails closed. Fail-closed is correct, but it is a UX issue.
+5. **Permissions.** `PermissionOption.kind` (`allow_once | allow_always | reject_once | reject_always`) does **not** say how long a grant lasts or what it changes. At the pinned versions, `allow_always` is used for at least three different things: a session-scoped grant (codex-acp `allow_for_session`, `allow_permissions_session`, MCP `allow_session`; Hermes `allow_session`), a permanent grant (OpenCode `always`, Hermes and codex-acp MCP `allow_always`), and a **change to the harness's standing policy** (codex-acp `accept_execpolicy_amendment`, `apply_network_policy_amendment:<n>`). See the §3 permission row. Rules:
+   - (a) **Default policy:** offer only `allow_once`-kind and `reject_once`-kind options. Treat every `allow_always`-kind and `reject_always`-kind option as a standing grant and filter it out, so that a phone approval never silently becomes a standing grant or block.
+   - (b) **Never offer policy-changing options** in a remote or phone approval, whatever their kind. This covers codex-acp `accept_execpolicy_amendment` and `apply_network_policy_amendment:*` today. Policy changes to a harness go through Nexus admin configuration, with audit, not through an approval prompt.
+   - (c) **Narrower scopes need an allowlist.** To show a scope such as "for this session", Nexus needs a per-harness option-id allowlist pinned to the adapter version (for example, codex-acp 2.6.0: `allow_for_session`; Hermes 0.23.1: `allow_session`). Nexus must not infer scope from `kind`, and an adapter upgrade must fail closed (fall back to rule (a)) until the allowlist has been re-checked for that version.
+   - (d) **Unknown options are dropped.** An option whose kind is not in the ACP v1 enum, or whose id matches a policy-amendment pattern, is never shown.
+   - (e) **Waiting on a phone approval.** Each harness fails closed differently. OpenCode rejects when the client has no `requestPermission`, when the request throws (for example, the ACP connection drops), or when the outcome is anything but `once`/`always`. It has no timeout, so the request waits as long as the connection lives. Hermes auto-denies after its `approvals.timeout`. Nexus must keep the ACP connection alive while an approval waits on a phone, and must surface the harness's own timeout (where there is one) in the approval UI. Fail-closed is correct, but it is a UX issue.
+   - **G4 fixture (required):** a fake ACP agent that sends `session/request_permission` with (1) an `allow_always`-kind option whose id looks session-scoped (e.g. `allow_session`), (2) a policy-amendment option (`accept_execpolicy_amendment` and `apply_network_policy_amendment:0`, each with `allow_always` kind), (3) an `allow_once` and a `reject_once` option. Under default policy, Nexus must show only (3) and drop (1) and (2). With a codex-acp 2.6.0 allowlist that enables `allow_for_session`, Nexus must still drop (2). A test also checks that the selected option id sent back is exactly one of the ids the agent offered.
 6. **Cost:** only Claude (via the SDK) and OpenCode send USD in `usage_update.cost`. Codex and Hermes send tokens only. Nexus needs its own per-model price table, labelled "estimate", for budget enforcement. Never trust agent-reported cost as a hard budget stop. Even Claude's figure is documented as a client-side estimate.
 7. **Worktrees:** no harness exposes worktree creation over ACP. Nexus creates the per-job git worktree and OS account itself and passes it as `cwd`. Native `-w` flags are only for the CLI-PTY fallback.
 8. **Safety:** the adapter's allowlist must block these modes and flags:
@@ -186,13 +192,15 @@ Unlike OpenCode, an unknown id and a not-yet-persisted id give the same error, s
 | Codex 0.167.0 app-server lifecycle | **tested** (this run) | not tested | not tested |
 | codex-acp, claude-agent-acp, Hermes ACP | not tested | not tested | not tested |
 
+**Codex Linux sandbox prerequisite.** The Codex probe's stderr (both before and after the restart) says: "Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager … Codex will use the bundled bubblewrap in the meantime" [probe; see https://developers.openai.com/codex/concepts/sandboxing#prerequisites]. The runner has no system `bwrap`. So on Linux, Codex expects a system `bwrap` for its sandbox. Whether Nexus makes `bubblewrap` a host prerequisite (a `Depends:`/`Requires:` in the `.deb`/`.rpm`, checked by the systemd unit's preflight) or deliberately accepts the bundled copy is a packaging decision for the systemd/`.deb`/`.rpm` work, and needs an ADR. Either way, the Codex sandbox is defence in depth only; containment stays at the OS-account/container level (§6 rule 8). Not checked: whether user-namespace or AppArmor restrictions on a given distro stop `bwrap` from working. macOS uses Seatbelt instead and was not tested.
+
 No claim is made for any untested cell. SSH-only fallback: all four harnesses have a CLI that runs inside a remote `tmux` pane (§4). That is the degraded mode when ACP is unavailable on a host.
 
 ## 8. Open items and follow-ups
 
 | # | Item | Needs |
 |---|---|---|
-| F-1 | Run `acp_probe.py` against `codex-acp@2.6.0`, `claude-agent-acp@0.103.0`, `hermes acp@v0.23.1`, and OpenCode 2.2.6 in a **local disposable container**. | A container runtime. The runner has no docker or podman, the same blocker EZF-7 hit. Proposed as a P04/G4 task, not done here. |
+| F-1 | Run `acp_probe.py` against `codex-acp@2.6.0`, `claude-agent-acp@0.103.0`, `hermes acp@v0.23.1`, and OpenCode 2.2.6 in a **local disposable container**. | A container runtime. The runner has no docker or podman, the same blocker EZF-7 hit. Proposed as a P04/G4 task, not done here. The container image must decide about system `bwrap` for Codex (§7) and record which choice was tested. |
 | F-2 | Resume **after a real turn**, including permission prompts and `usage_update` cost, for each harness. | Test-only provider credentials with a spend cap, approved by the board. OpenCode's free zen models may allow an OpenCode run at USD 0; that needs confirmation and a policy check before use. |
 | F-3 | macOS (launchd-supervised) run of F-1. | macOS test host. |
 | F-4 | Re-check this matrix when ACP v2 leaves alpha. v2 drops `session/load` and `set_mode`, which changes rule 3. | Watch `schema-v2.*` releases. |
@@ -219,7 +227,7 @@ ACP:
 
 Codex:
 - https://github.com/openai/codex at `rust-v0.167.0` @ `086ccc83`: `codex-rs/cli/src/main.rs` (no `acp` subcommand), `codex-rs/app-server/README.md`, `codex-rs/app-server-protocol/src/protocol/common.rs`
-- https://github.com/agentclientprotocol/codex-acp at `v2.6.0` @ `f3208913`: `src/CodexAcpServer.ts`, `src/permissions/CodexApprovalHandler.ts`, `src/CodexEventHandler.ts`, `src/CodexAuthMethod.ts`
+- https://github.com/agentclientprotocol/codex-acp at `v2.6.0` @ `f3208913`: `src/CodexAcpServer.ts`, `src/permissions/CodexApprovalHandler.ts`, `src/permissions/options.ts`, `src/permissions/option-ids.ts`, `src/permissions/mcp.ts`, `src/CodexEventHandler.ts`, `src/CodexAuthMethod.ts`
 - https://github.com/zed-industries/codex-acp (archived) at `v0.16.0` @ `bb590500`
 - https://registry.npmjs.org/@openai/codex, https://registry.npmjs.org/@agentclientprotocol/codex-acp, https://registry.npmjs.org/@zed-industries/codex-acp
 
@@ -230,12 +238,12 @@ Claude Code:
 - https://registry.npmjs.org/@anthropic-ai/claude-code, https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk, https://registry.npmjs.org/@agentclientprotocol/claude-agent-acp, https://registry.npmjs.org/@zed-industries/claude-code-acp
 
 OpenCode:
-- https://github.com/anomalyco/opencode (redirect from sst/opencode) at `v1.19.5` @ `810c0eba` (`packages/opencode/src/acp/service.ts`, `agent.ts`, `src/worktree/index.ts`) and `v2.2.6` @ `dc2ffcf8` (`packages/cli/src/acp/service.ts`, release notes)
+- https://github.com/anomalyco/opencode (redirect from sst/opencode) at `v1.19.5` @ `810c0eba` (`packages/opencode/src/acp/service.ts`, `agent.ts`, `src/acp/permission.ts`, `src/worktree/index.ts`) and `v2.2.6` @ `dc2ffcf8` (`packages/cli/src/acp/service.ts`, release notes)
 - https://opencode.ai/docs/acp/
 - https://registry.npmjs.org/opencode-ai, https://registry.npmjs.org/@opencode/cli
 
 Hermes Agent:
-- https://github.com/NousResearch/hermes-agent at `v0.23.1` @ `3b421578`: `acp_adapter/server.py`, `acp_adapter/gateway_server.py`, `acp_adapter/entry.py`, `hermes_cli/_parser.py`, `pyproject.toml`, `website/docs/user-guide/features/acp.md`, `README.md`
+- https://github.com/NousResearch/hermes-agent at `v0.23.1` @ `3b421578`: `acp_adapter/server.py`, `acp_adapter/permissions.py`, `acp_adapter/gateway_server.py`, `acp_adapter/entry.py`, `hermes_cli/_parser.py`, `pyproject.toml`, `website/docs/user-guide/features/acp.md`, `README.md`
 - https://pypi.org/pypi/hermes-agent/json
 
 Local black-box (this run): `opencode` 1.19.5, `codex-cli` 0.167.0, `claude` 2.1.322 on the Paperclip runner (Linux 5.15, x86_64). Transcripts in `harness-probes/results/2026-11-10/`.
