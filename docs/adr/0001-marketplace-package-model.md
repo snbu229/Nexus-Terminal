@@ -87,6 +87,7 @@ digest only, which proves consistency, not authorship.
 | ------------------------------------------------ | --------------------------------------------------------------- |
 | Tampered file or manifest                        | per-file sha256, manifest digest, index digest                  |
 | Path traversal, absolute path, symlink escape    | lexical checks plus `lstat` tree walk; sandbox install via realpath root, `lstat` refusal of symlinked package dirs, staging dir plus `rename`     |
+| Tampered install state file (forged `sandboxPath`) | remove rebuilds the path from the real sandbox root, refuses mismatch or symlink (`unsafe_path`); record ids and versions validated on load |
 | Code execution at install                        | declarative allow-list, no hooks, no exec bits; nothing is run  |
 | Hidden extra payload                             | undeclared files rejected                                       |
 | Permission creep or invented permission          | closed enum, kind-implied permissions, default-deny policy      |
@@ -110,3 +111,5 @@ Positive: a small, fully testable trust core that later registries and the API r
 Negative: no authorship guarantee, and approvals cannot complete in dev until the human approval
 flow exists. Open: SPDX validation is syntactic only; semver support is a minimal subset
 (no external dependency) and should be swapped for a vetted library if ranges get richer.
+
+Residual risk: a TOCTOU window exists between the `lstat` checks and the `rename` in install; only a same-user process with write access to the sandbox root could exploit it. Accepted for the dev marketplace.

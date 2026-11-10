@@ -5,6 +5,7 @@ import { lstat, mkdir, mkdtemp, readFile, realpath, rename, rm, writeFile } from
 import path from 'node:path';
 import { z } from 'zod';
 import { MarketplaceError } from './errors.ts';
+import { isSemver } from './semver.ts';
 import { evaluatePolicy, OrgPolicySchema, type OrgPolicy, type PolicyDecision } from './policy.ts';
 import { evaluateCompatibility, type Environment, type LocalRegistry } from './registry.ts';
 
@@ -30,8 +31,8 @@ export const TRANSITIONS: Record<InstallState, readonly InstallState[]> = {
 
 const InstallRecordSchema = z
   .object({
-    packageId: z.string(),
-    version: z.string(),
+    packageId: z.string().regex(/^[a-z0-9][a-z0-9._-]{0,63}$/),
+    version: z.string().refine(isSemver, 'must be semver'),
     digest: z.string(),
     registry: z.string(),
     requester: z.string().min(1),
@@ -221,8 +222,15 @@ export class InstallManager {
     // Copy first, into a fresh staging dir, then record. A failed copy removes only the staging
     // dir and leaves no record, so a retry is always possible.
     rec.sandboxPath = await this.stageAndPlace(manifest.id, manifest.version, files);
-    await this.transition(rec, 'install_requested');
-    await this.transition(rec, 'installed');
+    try {
+      await this.transition(rec, 'install_requested');
+      await this.transition(rec, 'installed');
+    } catch (err) {
+      // Store failed after the rename: remove only the dir this call just created.
+      await rm(rec.sandboxPath, { recursive: true, force: true }).catch(() => undefined);
+      if (err instanceof MarketplaceError) throw err;
+      throw new MarketplaceError('install_failed', `recording failed: ${(err as Error).message}`);
+    }
     return rec;
   }
 
@@ -258,7 +266,7 @@ export class InstallManager {
         await mkdir(path.dirname(dest), { recursive: true, mode: 0o700 });
         await writeFile(dest, data, { flag: 'wx', mode: 0o600 });
       }
-      await rename(staging, target); // fails on a non-empty existing dir; never overwrites
+      await rename(staging, target); // may replace an empty dir if raced after the lstat check (residual TOCTOU, see ADR)
       staging = undefined;
       return target;
     } catch (err) {
@@ -274,8 +282,22 @@ export class InstallManager {
     if (!rec || rec.state !== 'installed') {
       throw new MarketplaceError('not_installed', `${req.packageId} is not installed`);
     }
+    // The state file is untrusted: never delete a stored path. Rebuild it from the real root.
+    let target: string | undefined;
+    if (rec.sandboxPath !== null) {
+      const root = await realpath(this.sandboxRoot).catch(() => undefined);
+      target = root && path.join(root, rec.packageId, rec.version);
+      if (!target || rec.sandboxPath !== target) {
+        throw new MarketplaceError('unsafe_path', 'recorded sandbox path is not the expected path');
+      }
+      const st = await lstat(path.dirname(target)).catch(() => undefined);
+      const st2 = await lstat(target).catch(() => undefined);
+      if (st?.isSymbolicLink() || st2?.isSymbolicLink()) {
+        throw new MarketplaceError('unsafe_path', 'symlink in sandbox package path');
+      }
+    }
     await this.transition(rec, 'remove_requested');
-    if (rec.sandboxPath) await rm(rec.sandboxPath, { recursive: true, force: true });
+    if (target) await rm(target, { recursive: true, force: true });
     rec.sandboxPath = null;
     await this.transition(rec, 'removed');
     return rec;

@@ -7,6 +7,7 @@ import {
   InstallManager,
   JsonFileInstallStore,
   LocalRegistry,
+  MemoryInstallStore,
   MarketplaceError,
   evaluateCompatibility,
   evaluatePolicy,
@@ -316,6 +317,51 @@ describe('install state machine', () => {
     );
     expect(await readdir(outside)).toEqual([]);
     expect(await m.list()).toEqual([]);
+  });
+
+  it('R1: remove refuses a tampered state file pointing outside the sandbox', async () => {
+    const { registry } = await makeRegistry();
+    const outside = await tmp();
+    await writeFile(path.join(outside, 'victim.txt'), 'x');
+    const file = path.join(await tmp(), 'state.json');
+    const m0 = await manager({ registry, sandboxRoot: await tmp() });
+    const rec = await m0.requestInstall({ packageId: 'test-skill', requester: 'a' });
+    await writeFile(file, JSON.stringify([{ ...rec, sandboxPath: outside }]));
+    const m = await manager({
+      registry,
+      sandboxRoot: await tmp(),
+      store: new JsonFileInstallStore(file),
+    });
+    expect(await code(m.requestRemove({ packageId: 'test-skill', requester: 'a' }))).toBe(
+      'unsafe_path',
+    );
+    expect(await readdir(outside)).toEqual(['victim.txt']);
+    await writeFile(file, JSON.stringify([{ ...rec, packageId: '../x', sandboxPath: outside }]));
+    expect(await code(new JsonFileInstallStore(file).all())).toBe('invalid_state_file');
+  });
+
+  it('R2: a store failure after the rename leaves no files and a retry works', async () => {
+    const { registry } = await makeRegistry();
+    const inner = new MemoryInstallStore();
+    let fail = true;
+    const store = {
+      get: (id: string) => inner.get(id),
+      all: () => inner.all(),
+      put: async (r: Parameters<typeof inner.put>[0]) => {
+        if (fail) throw new Error('ENOSPC');
+        return inner.put(r);
+      },
+    };
+    const root = await tmp();
+    const m = await manager({ registry, sandboxRoot: root, store });
+    expect(await code(m.requestInstall({ packageId: 'test-skill', requester: 'a' }))).toBe(
+      'install_failed',
+    );
+    expect(await readdir(path.join(root, 'test-skill'))).toEqual([]);
+    fail = false;
+    expect((await m.requestInstall({ packageId: 'test-skill', requester: 'a' })).state).toBe(
+      'installed',
+    );
   });
 
   it('S2: invalid JSON in the state file raises invalid_state_file', async () => {
