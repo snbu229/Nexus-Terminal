@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="360" height="640" viewBox="0 0 360 640" role="img" aria-labelledby="t d">
   <title id="t">Mobile approval detail, 360dp</title>
-  <desc id="d">Header with back and status Pending, requester and host, exact command in monospace box, risk and rollback, Reject and Approve buttons.</desc>
+  <desc id="d">Header with back and status Pending, requester and host, exact command in monospace box, risk and rollback, request digest, Reject and Approve buttons. Variants for dual approval, own request and invalidated target are noted in text.</desc>
   <rect width="360" height="640" fill="#fff" stroke="#14181F"/>
   <rect width="360" height="56" fill="#EEF2F8"/>
   <text x="16" y="34" font-family="sans-serif" font-size="16" fill="#14181F">&lt; Approval #88</text>
@@ -20,6 +20,9 @@
   <text x="24" y="360" font-family="sans-serif" font-size="12" fill="#4A5565">scrolls inside this region</text>
   <text x="16" y="408" font-family="sans-serif" font-size="14" fill="#B3261E">⚠ Risk: High</text>
   <text x="16" y="430" font-family="sans-serif" font-size="14" fill="#14181F">Rollback: apt-get remove nginx</text>
+  <text x="16" y="474" font-family="monospace" font-size="12" fill="#14181F">Digest: sha256:9c1e…a47</text>
+  <text x="16" y="496" font-family="sans-serif" font-size="11" fill="#4A5565">Variants (see wireframes.md W4): Awaiting second approver (1 of 2);</text>
+  <text x="16" y="510" font-family="sans-serif" font-size="11" fill="#4A5565">own request read-only; Invalidated - target changed.</text>
   <text x="16" y="452" font-family="sans-serif" font-size="14" fill="#14181F">Evidence: dry-run passed  &lt;view&gt;</text>
   <rect x="16" y="560" width="152" height="48" rx="6" fill="#fff" stroke="#B3261E" stroke-width="2"/>
   <text x="62" y="590" font-family="sans-serif" font-size="16" fill="#B3261E">Reject</text>

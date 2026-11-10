@@ -12,9 +12,10 @@ Name: **Nexus UI**. All values are original placeholders; contrast ratios are co
 | Token | Light | Dark | Use |
 |---|---|---|---|
 | surface | #FFFFFF | #12151A | page |
-| text | #14181F (16.9:1) | #E8ECF2 (14.5:1) | body |
-| text-muted | #4A5565 (7.4:1) | #A9B3C2 (8.6:1) | secondary |
+| text | #14181F (17.79:1) | #E8ECF2 (15.43:1) | body |
+| text-muted | #4A5565 (7.56:1) | #A9B3C2 (8.64:1) | secondary |
 | primary | #0B5FD0 | #6FA8FF | actions, focus ring |
+| on-primary | #FFFFFF (white on #0B5FD0) | #12151A (7.6:1 on #6FA8FF; white would be 2.41:1, fails) | text/icons on primary fill |
 | danger | #B3261E | #FF8A80 | destructive, deny |
 | warn | #8A5A00 | #FFC857 | pending, stale |
 | ok | #1B6E3C | #7FD99A | success |
@@ -24,7 +25,8 @@ Focus ring: 2px solid primary + 2px offset, min 3:1 vs adjacent colors. Spacing 
 AppShell (bottom nav on <600dp, rail 600-1023, sidebar >=1024), StatusPill (icon+text), HostCard, SessionTab, CommandBlock, DraftEditor, LeaseBanner, ApprovalCard, DiffViewer, StepUpDialog, AuditRow, Toast/LiveRegion, ConnectionBanner.
 
 ## Status vocabulary (single source)
+Install: `No Install (SSH-only)`, `Awaiting approval`, `Installing`, `Healthy`, `Install failed`, `Enrollment failed`, `Revoked`.
 Host: `Reachable`, `Unreachable (retrying)`, `Key changed - blocked`, `Unverified`.
-Session: `Live`, `Detached (tmux running)`, `Reconnecting (attempt n)`, `Gone (tmux not found)`.
-Approval: `Pending`, `Approved - executing`, `Executed once`, `Rejected`, `Expired`, `Revoked`, `Delivery pending` (offline queued).
+Session: `Live`, `Detached (tmux running)`, `Reconnecting (attempt n)`, `Gone (tmux not found)`, `Access revoked - detached`.
+Approval: `Pending`, `Approved - executing`, `Executed once`, `Rejected`, `Expired`, `Revoked`, `Awaiting second approver (1 of 2)`, `Invalidated - target changed`, `Own request - read-only`, `Delivery pending` (offline queued).
 Offline: UI shows `Queued - not sent` for actions made offline; approvals are never queued client-side (approve requires live server + step-up).
