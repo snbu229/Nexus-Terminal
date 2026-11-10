@@ -39,7 +39,9 @@ expect() {
   if [[ "$rc" -eq "$want_rc" && "$out" == *"$want_out"* && ( -z "$not_out" || "$out" != *"$not_out"* ) ]]; then
     echo "PASS $name (exit $rc)"
   else
-    echo "FAIL $name: want exit $want_rc and '$want_out'${not_out:+ without '$not_out'}, got exit $rc:"
+    local without=""
+    if [[ -n "$not_out" ]]; then without=" without '$not_out'"; fi
+    echo "FAIL $name: want exit $want_rc and '$want_out'$without, got exit $rc:"
     while IFS= read -r line; do echo "    $line"; done <<<"$out"
     fails=$((fails + 1))
   fi
