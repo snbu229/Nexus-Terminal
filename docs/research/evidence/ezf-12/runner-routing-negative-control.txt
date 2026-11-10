@@ -1,0 +1,34 @@
+negative control: scratch copy with floor mutated 2.39 -> 2.34 (not committed)
+PAPERCLIP_RUNNER_MINIMUM_GLIBC_VERSION=2.34
+FAIL  claude_local    Ubuntu 22.04 LTS linux/x64 glibc 2.35                      expected=LEGACY actual=RUNNER
+FAIL  codex_local     Ubuntu 22.04 LTS linux/x64 glibc 2.35                      expected=LEGACY actual=RUNNER
+FAIL  opencode_local  Ubuntu 22.04 LTS linux/x64 glibc 2.35                      expected=LEGACY actual=RUNNER
+FAIL  pi_local        Ubuntu 22.04 LTS linux/x64 glibc 2.35                      expected=LEGACY actual=RUNNER
+FAIL  claude_local    Ubuntu 22.04 LTS linux/arm64 glibc 2.35                    expected=LEGACY actual=RUNNER
+FAIL  codex_local     Ubuntu 22.04 LTS linux/arm64 glibc 2.35                    expected=LEGACY actual=RUNNER
+FAIL  claude_local    Debian 12 bookworm linux/x64 glibc 2.36                    expected=LEGACY actual=RUNNER
+FAIL  codex_local     Debian 12 bookworm linux/x64 glibc 2.36                    expected=LEGACY actual=RUNNER
+FAIL  opencode_local  Debian 12 bookworm linux/x64 glibc 2.36                    expected=LEGACY actual=RUNNER
+FAIL  pi_local        Debian 12 bookworm linux/x64 glibc 2.36                    expected=LEGACY actual=RUNNER
+FAIL  claude_local    Debian 12 bookworm linux/arm64 glibc 2.36                  expected=LEGACY actual=RUNNER
+FAIL  codex_local     Debian 12 bookworm linux/arm64 glibc 2.36                  expected=LEGACY actual=RUNNER
+FAIL  claude_local    RHEL/Rocky/Alma 9 linux/x64 glibc 2.34                     expected=LEGACY actual=RUNNER
+FAIL  codex_local     RHEL/Rocky/Alma 9 linux/x64 glibc 2.34                     expected=LEGACY actual=RUNNER
+FAIL  opencode_local  RHEL/Rocky/Alma 9 linux/x64 glibc 2.34                     expected=LEGACY actual=RUNNER
+FAIL  pi_local        RHEL/Rocky/Alma 9 linux/x64 glibc 2.34                     expected=LEGACY actual=RUNNER
+FAIL  claude_local    RHEL/Rocky/Alma 9 linux/arm64 glibc 2.34                   expected=LEGACY actual=RUNNER
+FAIL  codex_local     RHEL/Rocky/Alma 9 linux/arm64 glibc 2.34                   expected=LEGACY actual=RUNNER
+FAIL  claude_local    Amazon Linux 2023 linux/x64 glibc 2.34                     expected=LEGACY actual=RUNNER
+FAIL  codex_local     Amazon Linux 2023 linux/x64 glibc 2.34                     expected=LEGACY actual=RUNNER
+FAIL  opencode_local  Amazon Linux 2023 linux/x64 glibc 2.34                     expected=LEGACY actual=RUNNER
+FAIL  pi_local        Amazon Linux 2023 linux/x64 glibc 2.34                     expected=LEGACY actual=RUNNER
+FAIL  claude_local    Amazon Linux 2023 linux/arm64 glibc 2.34                   expected=LEGACY actual=RUNNER
+FAIL  codex_local     Amazon Linux 2023 linux/arm64 glibc 2.34                   expected=LEGACY actual=RUNNER
+FAIL  claude_local    openSUSE Leap 15.6 linux/x64 glibc 2.38                    expected=LEGACY actual=RUNNER
+FAIL  codex_local     openSUSE Leap 15.6 linux/x64 glibc 2.38                    expected=LEGACY actual=RUNNER
+FAIL  opencode_local  openSUSE Leap 15.6 linux/x64 glibc 2.38                    expected=LEGACY actual=RUNNER
+FAIL  pi_local        openSUSE Leap 15.6 linux/x64 glibc 2.38                    expected=LEGACY actual=RUNNER
+FAIL  claude_local    openSUSE Leap 15.6 linux/arm64 glibc 2.38                  expected=LEGACY actual=RUNNER
+FAIL  codex_local     openSUSE Leap 15.6 linux/arm64 glibc 2.38                  expected=LEGACY actual=RUNNER
+82/112 cases match expected routing
+exit=1
