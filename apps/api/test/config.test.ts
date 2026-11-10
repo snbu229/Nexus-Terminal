@@ -110,3 +110,25 @@ describe('process entrypoint', () => {
     expect(r.stderr).toContain('non-loopback');
   });
 });
+
+describe('terminal session limits', () => {
+  const dev = { NEXUS_DEV_MODE: '1' };
+  it('has bounded defaults', () => {
+    expect(loadConfig(dev)).toMatchObject({
+      maxSessions: 8,
+      idleTimeoutMs: 15 * 60_000,
+      replayBufferBytes: 1024 * 1024,
+    });
+  });
+  it('reads overrides and rejects nonsense', () => {
+    expect(
+      loadConfig({ ...dev, NEXUS_MAX_SESSIONS: '3', NEXUS_SESSION_IDLE_MS: '500' }),
+    ).toMatchObject({
+      maxSessions: 3,
+      idleTimeoutMs: 500,
+    });
+    for (const bad of ['0', '-1', 'x', '1.5', '999999']) {
+      expect(() => loadConfig({ ...dev, NEXUS_MAX_SESSIONS: bad })).toThrow(GuardError);
+    }
+  });
+});

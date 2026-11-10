@@ -11,6 +11,7 @@ import {
   type ErrorResponse,
 } from '@nexus/contracts';
 import type { ApiConfig } from './config.js';
+import { registerTerminalRoutes } from './terminal-routes.js';
 
 /** Largest accepted request body. Terminal input is capped at 64 KiB by the contract; the rest is JSON overhead. */
 export const BODY_LIMIT_BYTES = 128 * 1024;
@@ -106,6 +107,8 @@ export function buildApp(config: ApiConfig, options: BuildOptions = {}): Fastify
     if (!host) return reply.code(404).send(errorBody('not_found', 'Host not found.'));
     return HostResponseSchema.parse({ dev: true, host });
   });
+
+  registerTerminalRoutes(app, config);
 
   return app;
 }

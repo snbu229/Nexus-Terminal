@@ -4,3 +4,6 @@ packages:
 
 allowBuilds:
   esbuild: false
+  # ssh2 and its optional cpu-features are native accelerators; the pure-JS fallback is used (no compiler in dev).
+  ssh2: false
+  cpu-features: false

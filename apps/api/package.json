@@ -14,9 +14,12 @@
   "dependencies": {
     "@fastify/cors": "11.4.1",
     "@nexus/contracts": "workspace:*",
-    "fastify": "5.12.8"
+    "@nexus/terminal-sandbox": "workspace:*",
+    "fastify": "5.12.8",
+    "ws": "8.22.2"
   },
   "devDependencies": {
+    "@types/ws": "8.18.2",
     "tsx": "4.23.15"
   }
 }
