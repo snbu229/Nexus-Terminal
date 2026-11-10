@@ -21,10 +21,15 @@ has_ci_target() {
     exit 1
   fi
   local out
-  if out="$(make -n ci 2>&1)"; then
+  # LC_ALL=C: the message below is matched in GNU make's untranslated form.
+  if out="$(LC_ALL=C make -n ci 2>&1)"; then
     return 0
   fi
-  if [[ "$out" == *"No rule to make target"*"ci"* ]]; then
+  # Only "No rule to make target 'ci'.  Stop." means the target is absent
+  # (older make quotes it `ci'). A missing prerequisite reports
+  # "No rule to make target 'lint', needed by 'ci'" and must fail below.
+  local missing_ci_re="No rule to make target [\`']ci'\.[[:space:]]+Stop\."
+  if [[ "$out" =~ $missing_ci_re ]]; then
     return 1
   fi
   echo "::error title=code gate::'make -n ci' failed for a reason other than a missing target:"

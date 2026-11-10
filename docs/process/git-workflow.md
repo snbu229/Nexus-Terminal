@@ -21,7 +21,17 @@
 | `routine` | Everything not in the human-approval class | Green `ci-required` + C1 + C2 at the head SHA (+ board approval while automatic merging is off) |
 | `human-approval-required` | Changes touching **authentication, authorization, SSH credentials or keys, production infrastructure, security policy (including CI workflows, branch rules and this document), or deployment** | All of the above + a separately recorded **human board approval**, even after automatic merging is enabled |
 
-If in doubt, use `human-approval-required`. Changes to `.github/`, `scripts/ci/`, `.markdownlint-cli2.jsonc` or this file are always `human-approval-required`.
+If in doubt, use `human-approval-required`.
+
+**Always `human-approval-required`: files that define or configure the merge gate.** A pull request's CI runs with the PR's own copy of these files, so a PR that edits them can weaken the gate it is checked by and still get a green `ci-required`. Review is the only control. This covers any change (add, edit, rename, delete) to:
+
+- anything under `.github/`, including **any new file under `.github/workflows/`** (a second workflow could also publish a job named `ci-required`)
+- anything under `scripts/ci/`, and this file
+- secret-scan suppressions: `.gitleaks.toml` and `.gitleaksignore` at any depth, and **any added inline `gitleaks:allow` comment**
+- scanner and linter configs: `lychee.toml` and `.lycheeignore`, `osv-scanner.toml`, and `.markdownlint*` and `.markdownlintignore` at any depth
+- the `Makefile` `ci` target and everything it depends on: any Makefile or `*.mk` file, plus the scripts and configs its prerequisites run
+
+The `security` CI job flags gitleaks suppressions and these files with a `::warning` annotation and a step-summary entry (`scripts/ci/gate-config-guard.sh`). The warning does not fail the build. It is there so that C1 and C2 reviewers cannot miss the change.
 
 ## 3. The CI merge gate (`.github/workflows/ci.yml`)
 
@@ -31,7 +41,7 @@ Runs on every pull request to `main` and every push to `main`. It uses GitHub-ho
 | --- | --- |
 | `workflow-lint` | `actionlint` (with shellcheck) on all workflows; `shellcheck` on `scripts/ci/*.sh` |
 | `docs` | `markdownlint-cli2` (config in `.markdownlint-cli2.jsonc`; the read-only spec kit `docs/reference/` is excluded) and an **offline** relative-link and anchor check with `lychee` over every tracked `*.md`, including `docs/reference/`. No external URLs are fetched. |
-| `security` | `gitleaks` over the PR's commit range (on push: the pushed range), failing on any finding; `osv-scanner` dependency vulnerability scan with licence summary, which passes while there are no manifests |
+| `security` | Gate-config guard (self-tested): a warning for every gitleaks suppression or merge-gate file changed in the range (section 2). Then `gitleaks` over the PR's commit range (on push: the pushed range), failing on any finding; `osv-scanner` dependency vulnerability scan with licence summary, which passes while there are no manifests |
 | `code` | Self-tests the gate, then runs `make ci` if the target exists. **Fails** if source files exist under `apps/`, `packages/` or `services/` without a `ci` target. Skips with a notice only while those directories hold no source. |
 | `ci-required` | Aggregator. Fails unless **every** job above succeeded (failure, cancelled or skipped all fail). This is the only check branch protection references. **Do not rename it.** |
 
@@ -45,6 +55,7 @@ scripts/ci/install-tools.sh actionlint gitleaks osv-scanner lychee
 actionlint
 npx --yes markdownlint-cli2@0.24.0 '**/*.md' '.github/**/*.md'
 git ls-files -z -- '*.md' | xargs -0 lychee --offline --include-fragments --no-progress --
+scripts/ci/test-gate-config-guard.sh && scripts/ci/gate-config-guard.sh origin/main HEAD
 gitleaks git --redact --exit-code 1 --log-opts="origin/main..HEAD" .
 osv-scanner scan source --recursive --allow-no-lockfiles --licenses .
 scripts/ci/test-code-gate.sh && scripts/ci/code-gate.sh

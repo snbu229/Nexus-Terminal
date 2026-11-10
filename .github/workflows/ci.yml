@@ -83,6 +83,24 @@ jobs:
           persist-credentials: false
       - name: Install gitleaks and osv-scanner (pinned, sha256-verified)
         run: scripts/ci/install-tools.sh gitleaks osv-scanner
+      - name: Gate-config guard self-test
+        run: scripts/ci/test-gate-config-guard.sh
+      - name: Flag gitleaks suppressions and merge-gate file changes
+        # The PR's own files configure gitleaks, so a PR can switch findings
+        # off and stay green. This step cannot stop that; it raises a
+        # ::warning per file/line so reviewers see it (human-approval class).
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.event.after }}
+        run: |
+          if [[ "$EVENT" == "pull_request" ]]; then
+            scripts/ci/gate-config-guard.sh "$PR_BASE" "$PR_HEAD"
+          else
+            scripts/ci/gate-config-guard.sh "$PUSH_BEFORE" "$PUSH_AFTER"
+          fi
       - name: gitleaks secret scan of the change range
         env:
           EVENT: ${{ github.event_name }}

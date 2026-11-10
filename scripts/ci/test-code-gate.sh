@@ -68,7 +68,7 @@ expect "untracked-source-fails" "$r" 1 "apps/cli/main.rs"
 # opt-out may skip them, so CI can never pass these silently.
 if ! command -v make >/dev/null 2>&1; then
   if [[ "${ALLOW_NO_MAKE:-}" == "1" ]]; then
-    echo "SKIP make-dependent cases 4 and 6-9: make not installed (ALLOW_NO_MAKE=1)"
+    echo "SKIP make-dependent cases 4 and 6-10: make not installed (ALLOW_NO_MAKE=1)"
     if [[ "$fails" -ne 0 ]]; then echo "$fails code-gate self-test(s) failed"; exit 1; fi
     echo "code-gate self-tests passed (make-dependent cases skipped)"
     exit 0
@@ -112,6 +112,14 @@ r="$(new_repo broken-makefile)"
 printf 'ci:\n  echo spaces-not-tab\n' > "$r/Makefile"
 commit_all "$r"
 expect "broken-makefile-fails" "$r" 1 "other than a missing target"
+
+# 10. ci target whose prerequisite is undefined is broken, not absent: it
+# must fail even with no source ("No rule to make target 'lint', needed by
+# 'ci'" must not be read as "no ci target").
+r="$(new_repo ci-missing-prereq)"
+printf 'ci: lint\n\t@echo MAKE_CI_RAN\n' > "$r/Makefile"
+commit_all "$r"
+expect "ci-target-missing-prerequisite-fails" "$r" 1 "needed by 'ci'"
 
 if [[ "$fails" -ne 0 ]]; then
   echo "$fails code-gate self-test(s) failed"
