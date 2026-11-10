@@ -1,4 +1,5 @@
 import { isIP } from 'node:net';
+import { resolve } from 'node:path';
 
 // Dev-mode guard, see plan §5 on EZF-43. The API is unauthenticated and dev-only.
 
@@ -15,6 +16,8 @@ export interface ApiConfig {
   /** Exact Host header values accepted (DNS-rebinding guard). Lower-case, no wildcards. */
   allowedHosts: readonly string[];
   logLevel: string;
+  /** Dev data directory (agent session logs). Gitignored, never holds secrets. */
+  dataDir: string;
 }
 
 export const DEFAULT_HOST = '127.0.0.1';
@@ -99,5 +102,6 @@ export function loadConfig(env: NodeJS.ProcessEnv): ApiConfig {
     devCompose,
     allowedHosts,
     logLevel: env.NEXUS_LOG_LEVEL?.trim() || 'info',
+    dataDir: resolve(env.NEXUS_DEV_DATA_DIR?.trim() || '.nexus-dev-data'),
   };
 }

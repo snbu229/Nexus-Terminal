@@ -173,10 +173,11 @@ describe('fixtures', () => {
     hostFixtures,
     terminalSessionFixtures,
     agentSessionFixtures,
-    agentEventFixtures,
+    ...Object.values(agentEventFixtures),
     approvalFixtures,
   ];
   it('are deeply frozen (A4)', () => {
+    expect(Object.isFrozen(agentEventFixtures)).toBe(true);
     for (const list of all) {
       expect(Object.isFrozen(list)).toBe(true);
       for (const item of list) expect(Object.isFrozen(item)).toBe(true);
@@ -193,6 +194,19 @@ describe('fixtures', () => {
     for (const a of approvalFixtures) {
       if (a.hostId !== null) expect(hosts.has(a.hostId), a.id).toBe(true);
       if (a.agentSessionId !== null) expect(agents.has(a.agentSessionId), a.id).toBe(true);
+    }
+  });
+  it('has one event list per agent session, contiguous from seq 1, ending at lastEventSeq', () => {
+    expect(new Set(Object.keys(agentEventFixtures))).toEqual(
+      new Set(agentSessionFixtures.map((a) => a.id)),
+    );
+    for (const a of agentSessionFixtures) {
+      const events = agentEventFixtures[a.id] ?? [];
+      expect(
+        events.map((e) => e.seq),
+        a.id,
+      ).toEqual(events.map((_, i) => i + 1));
+      expect(events.at(-1)?.seq ?? 0, a.id).toBe(a.lastEventSeq);
     }
   });
 });

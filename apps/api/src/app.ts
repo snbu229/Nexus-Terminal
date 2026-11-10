@@ -1,5 +1,6 @@
 import cors from '@fastify/cors';
-import Fastify, { type FastifyInstance, type FastifyReply } from 'fastify';
+import websocket from '@fastify/websocket';
+import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import {
   API_PREFIX,
   HealthzSchema,
@@ -10,6 +11,8 @@ import {
   hostFixtures,
   type ErrorResponse,
 } from '@nexus/contracts';
+import { AgentSessionRegistry, MockHarnessAdapter } from '@nexus/agent-sessions';
+import { WS_MAX_PAYLOAD_BYTES, registerAgentRoutes } from './agent-routes.js';
 import type { ApiConfig } from './config.js';
 
 /** Largest accepted request body. Terminal input is capped at 64 KiB by the contract; the rest is JSON overhead. */
@@ -18,9 +21,22 @@ export const BODY_LIMIT_BYTES = 128 * 1024;
 export interface BuildOptions {
   /** Log destination (tests capture it); defaults to stdout. */
   logStream?: { write(msg: string): void };
+  /** Agent session registry; defaults to a file-backed registry with the mock harness under config.dataDir. */
+  registry?: AgentSessionRegistry;
 }
 
 const errorBody = (code: string, message: string): ErrorResponse => ({ error: { code, message } });
+
+/**
+ * 403 for a failed Host/Origin check. A rejected WebSocket upgrade is detached from the HTTP server's
+ * connection tracking, so its socket must be closed here or it lingers and blocks shutdown.
+ */
+function reject(req: FastifyRequest, reply: FastifyReply, body: ErrorResponse) {
+  if (req.headers.upgrade !== undefined) {
+    reply.raw.once('finish', () => req.raw.socket.destroy());
+  }
+  return reply.code(403).header('connection', 'close').send(body);
+}
 
 export function buildApp(config: ApiConfig, options: BuildOptions = {}): FastifyInstance {
   const app = Fastify({
@@ -49,7 +65,7 @@ export function buildApp(config: ApiConfig, options: BuildOptions = {}): Fastify
   app.addHook('onRequest', async (req, reply) => {
     const host = req.headers.host?.toLowerCase();
     if (host === undefined || !allowedHosts.has(host)) {
-      return reply.code(403).send(errorBody('host_not_allowed', 'Host is not allowed.'));
+      return reject(req, reply, errorBody('host_not_allowed', 'Host is not allowed.'));
     }
   });
 
@@ -58,7 +74,7 @@ export function buildApp(config: ApiConfig, options: BuildOptions = {}): Fastify
   app.addHook('onRequest', async (req, reply) => {
     const origin = req.headers.origin;
     if (origin !== undefined && origin !== config.allowedOrigin) {
-      return reply.code(403).send(errorBody('origin_not_allowed', 'Origin is not allowed.'));
+      return reject(req, reply, errorBody('origin_not_allowed', 'Origin is not allowed.'));
     }
   });
 
@@ -80,6 +96,26 @@ export function buildApp(config: ApiConfig, options: BuildOptions = {}): Fastify
     req.log.error({ err: { name: err.name, code: err.code } }, 'unhandled error');
     return reply.code(500).send(errorBody('internal', 'Internal error.'));
   });
+
+  const registry =
+    options.registry ??
+    new AgentSessionRegistry({ dataDir: config.dataDir, adapter: new MockHarnessAdapter() });
+  // Reload persisted sessions (reattach, resume or fail them) before the server accepts traffic.
+  app.addHook('onReady', async () => {
+    const report = await registry.recover();
+    app.log.info(
+      {
+        reattached: report.reattached.length,
+        resumed: report.resumed.length,
+        failed: report.failed.length,
+        corrupt: report.corrupt.length,
+      },
+      'agent sessions recovered',
+    );
+  });
+  app.addHook('onClose', async () => registry.close());
+  void app.register(websocket, { options: { maxPayload: WS_MAX_PAYLOAD_BYTES } });
+  void app.register(async (scope) => registerAgentRoutes(scope, registry));
 
   app.get('/healthz', async () => HealthzSchema.parse({ status: 'ok', dev: true }));
 

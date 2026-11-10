@@ -132,24 +132,37 @@ export const agentSessionFixtures: readonly AgentSession[] = deepFreeze([
   },
 ]);
 
-export const agentEventFixtures: readonly AgentEvent[] = deepFreeze([
-  { seq: 1, ts: '2026-11-10T09:05:00.000Z', kind: 'status', state: 'running' },
-  { seq: 2, ts: '2026-11-10T09:05:01.000Z', kind: 'output', text: 'Reading build script...' },
-  {
-    seq: 3,
-    ts: '2026-11-10T09:05:02.000Z',
-    kind: 'tool_call',
-    tool: 'read_file',
-    summary: 'scripts/build.sh',
-  },
-  {
-    seq: 4,
-    ts: '2026-11-10T09:05:03.000Z',
-    kind: 'needs_input',
-    prompt: 'Overwrite scripts/build.sh? (mock)',
-  },
-  { seq: 5, ts: '2026-11-10T09:06:00.000Z', kind: 'exit', code: 0 },
-]);
+/** Event logs keyed by agent session id. Each log is contiguous from seq 1 and ends at the session's lastEventSeq. */
+export const agentEventFixtures: Readonly<Record<string, readonly AgentEvent[]>> = deepFreeze({
+  'agent-dev-01': [
+    { seq: 1, ts: '2026-11-10T09:05:00.000Z', kind: 'status', state: 'running' },
+    { seq: 2, ts: '2026-11-10T09:05:01.000Z', kind: 'output', text: 'Reading build script...' },
+    {
+      seq: 3,
+      ts: '2026-11-10T09:05:02.000Z',
+      kind: 'tool_call',
+      tool: 'read_file',
+      summary: 'scripts/build.sh',
+    },
+  ],
+  'agent-dev-02': [
+    { seq: 1, ts: '2026-11-10T08:45:00.000Z', kind: 'status', state: 'running' },
+    { seq: 2, ts: '2026-11-10T08:45:01.000Z', kind: 'output', text: 'Reading CHANGELOG.md...' },
+    {
+      seq: 3,
+      ts: '2026-11-10T08:45:02.000Z',
+      kind: 'tool_call',
+      tool: 'read_file',
+      summary: 'CHANGELOG.md',
+    },
+    {
+      seq: 4,
+      ts: '2026-11-10T08:45:03.000Z',
+      kind: 'needs_input',
+      prompt: 'Overwrite CHANGELOG.md? (mock)',
+    },
+  ],
+});
 
 export const approvalFixtures: readonly Approval[] = deepFreeze([
   {

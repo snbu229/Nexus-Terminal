@@ -13,10 +13,14 @@
   },
   "dependencies": {
     "@fastify/cors": "11.4.1",
+    "@fastify/websocket": "11.2.0",
+    "@nexus/agent-sessions": "workspace:*",
     "@nexus/contracts": "workspace:*",
     "fastify": "5.12.8"
   },
   "devDependencies": {
-    "tsx": "4.23.15"
+    "@types/ws": "8.18.2",
+    "tsx": "4.23.15",
+    "ws": "8.18.3"
   }
 }
