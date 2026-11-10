@@ -55,3 +55,5 @@ Never test secret detection by pushing a secret-like string. Use a throwaway loc
 ## 4. Changing this policy
 
 This file, the workflow and the CI scripts define the merge gate. Changes follow this same process in the `human-approval-required` class. Branch protection, rulesets and repository settings are changed only by the board or by Nexus CEO at the board's request, never as part of a PR.
+
+See the [missing guide](does-not-exist.md) (deliberately broken link: EZF-28 gate demo, do not merge).
