@@ -28,6 +28,7 @@ If in doubt, use `human-approval-required`.
 - anything under `.github/`, including **any new file under `.github/workflows/`** (a second workflow could also publish a job named `ci-required`)
 - anything under `scripts/ci/`, and this file
 - secret-scan suppressions: `.gitleaks.toml` and `.gitleaksignore` at any depth, and **any added inline `gitleaks:allow` comment**
+- `.gitattributes` at any depth: it can mark files binary or non-diffable, which hides their content from diff-based scanners and collapses them in the pull-request diff view (the secret scan forces a textual patch with `--text`, but a reviewer still has to see the change)
 - scanner and linter configs: `lychee.toml` and `.lycheeignore`, `osv-scanner.toml`, and `.markdownlint*` and `.markdownlintignore` at any depth
 - the `Makefile` `ci` target and everything it depends on: any Makefile or `*.mk` file, plus the scripts and configs its prerequisites run
 
@@ -41,7 +42,7 @@ Runs on every pull request to `main` and every push to `main`. It uses GitHub-ho
 | --- | --- |
 | `workflow-lint` | `actionlint` (with shellcheck) on all workflows; `shellcheck` on `scripts/ci/*.sh` |
 | `docs` | `markdownlint-cli2` (config in `.markdownlint-cli2.jsonc`; the read-only spec kit `docs/reference/` is excluded) and an **offline** relative-link and anchor check with `lychee` over every tracked `*.md`, including `docs/reference/`. No external URLs are fetched. |
-| `security` | Gate-config guard (self-tested): a warning for every gitleaks suppression or merge-gate file changed in the range (section 2). Then `gitleaks` over the PR's commit range (on push: the pushed range), failing on any finding; `osv-scanner` dependency vulnerability scan with licence summary, which passes while there are no manifests |
+| `security` | Gate-config guard (self-tested): a warning for every gitleaks suppression or merge-gate file changed in the range (section 2). Then `gitleaks` over the PR's commit range (on push: the pushed range) via `scripts/ci/secret-scan.sh`, failing on any finding. The scan reads `git log -p --text --no-textconv`, so `.gitattributes` cannot hide a file's content, and a self-test proves it; `osv-scanner` dependency vulnerability scan with licence summary, which passes while there are no manifests |
 | `code` | Self-tests the gate, then runs `make ci` if the target exists. **Fails** if source files exist under `apps/`, `packages/` or `services/` without a `ci` target. Skips with a notice only while those directories hold no source. |
 | `ci-required` | Aggregator. Fails unless **every** job above succeeded (failure, cancelled or skipped all fail). This is the only check branch protection references. **Do not rename it.** |
 
@@ -56,12 +57,12 @@ actionlint
 npx --yes markdownlint-cli2@0.24.0 '**/*.md' '.github/**/*.md'
 git ls-files -z -- '*.md' | xargs -0 lychee --offline --include-fragments --no-progress --
 scripts/ci/test-gate-config-guard.sh && scripts/ci/gate-config-guard.sh origin/main HEAD
-gitleaks git --redact --exit-code 1 --log-opts="origin/main..HEAD" .
+scripts/ci/test-secret-scan.sh && scripts/ci/secret-scan.sh origin/main..HEAD
 osv-scanner scan source --recursive --allow-no-lockfiles --licenses .
 scripts/ci/test-code-gate.sh && scripts/ci/code-gate.sh
 ```
 
-Never test secret detection by pushing a secret-like string. Use a throwaway local repository.
+Never test secret detection by pushing a secret-like string. Use a throwaway local repository, as `scripts/ci/test-secret-scan.sh` does.
 
 ## 4. Changing this policy
 

@@ -101,6 +101,8 @@ jobs:
           else
             scripts/ci/gate-config-guard.sh "$PUSH_BEFORE" "$PUSH_AFTER"
           fi
+      - name: Secret-scan self-test (.gitattributes cannot hide a secret)
+        run: scripts/ci/test-secret-scan.sh
       - name: gitleaks secret scan of the change range
         env:
           EVENT: ${{ github.event_name }}
@@ -116,8 +118,8 @@ jobs:
           else
             range="${PUSH_BEFORE}..${PUSH_AFTER}"
           fi
-          echo "Scanning commit range: $range"
-          gitleaks git --redact --no-banner --verbose --exit-code 1 --log-opts="$range" .
+          # Uses `git log -p --text`, so .gitattributes cannot hide content.
+          scripts/ci/secret-scan.sh "$range"
       - name: osv-scanner dependency vulnerability + licence summary
         # --allow-no-lockfiles: passes cleanly while the repo has no manifests.
         # Licence allowlist enforcement follows once the licence ledger fixes it.

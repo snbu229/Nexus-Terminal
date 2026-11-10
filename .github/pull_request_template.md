@@ -22,6 +22,7 @@
   - [ ] security policy, including any merge-gate file (`docs/process/git-workflow.md` section 2):
     - anything under `.github/` (including any new workflow) or `scripts/ci/`; branch rules; `docs/process/git-workflow.md`
     - `.gitleaks.toml` or `.gitleaksignore` (at any depth), or an added inline `gitleaks:allow`
+    - `.gitattributes` (at any depth)
     - `lychee.toml`, `.lycheeignore`, `osv-scanner.toml`, or `.markdownlint*` / `.markdownlintignore` (at any depth)
     - any Makefile or `*.mk` file, or anything the `make ci` target runs
   - [ ] deployment

@@ -13,8 +13,13 @@
 #     .gitleaksignore, at any depth), and any added inline gitleaks allow
 #     comment: these turn secret findings off;
 #   - any change to another file that defines the merge gate (see
-#     GATE_FILE_PATTERNS). Such PRs are `human-approval-required` under
-#     docs/process/git-workflow.md section 2.
+#     is_gate_file), including .gitattributes at any depth, which can mark
+#     files as binary/non-diffable. Such PRs are `human-approval-required`
+#     under docs/process/git-workflow.md section 2.
+#
+# The patch is read with --text (and fixed a/ b/ prefixes), so .gitattributes
+# cannot hide added lines from the parser, and an added marker line whose
+# path cannot be parsed still warns.
 #
 # It only warns: review is the control. It exits non-zero only if the range
 # cannot be computed, so a broken guard fails closed. An empty or all-zero
@@ -43,12 +48,24 @@ is_gitleaks_file() {
 is_gate_file() {
   case "$1" in
     .github/* | scripts/ci/* | docs/process/git-workflow.md) return 0 ;;
+    .gitattributes | */.gitattributes) return 0 ;;
     Makefile | */Makefile | makefile | */makefile | GNUmakefile | */GNUmakefile | *.mk) return 0 ;;
     lychee.toml | */lychee.toml | .lycheeignore | */.lycheeignore) return 0 ;;
     osv-scanner.toml | */osv-scanner.toml) return 0 ;;
     .markdownlint* | */.markdownlint*) return 0 ;;
   esac
   return 1
+}
+
+# Escape a value for a workflow-command property (file=..., line=...).
+prop() {
+  local v="$1"
+  v="${v//%/%25}"
+  v="${v//$'\r'/%0D}"
+  v="${v//$'\n'/%0A}"
+  v="${v//:/%3A}"
+  v="${v//,/%2C}"
+  printf '%s' "$v"
 }
 
 summary() {
@@ -74,45 +91,69 @@ while IFS= read -r -d '' path; do
   fi
 done < <(git diff --no-renames --name-only -z "$from" "$head" --)
 
-# Added lines carrying the inline allow marker, as "path:line".
+# Added lines carrying the inline allow marker, as "path:line". "+++ " is a
+# file header only between "diff --git" and the first "@@"; inside a hunk it
+# is an added line whose content starts with "++".
+UNPARSED="<unparsed path>"
 allow_hits=()
-file="" line=0
+file="" line=0 in_hunk=0
 while IFS= read -r l; do
   case "$l" in
-    "+++ b/"*) file="${l#+++ b/}" ;;
-    "+++ "*) file="" ;;
+    "diff --git "*)
+      file="" in_hunk=0
+      continue
+      ;;
     "@@ "*)
+      in_hunk=1
       line="${l#*+}"
       line="${line%%[, ]*}"
+      continue
       ;;
+  esac
+  if [[ "$in_hunk" -eq 0 ]]; then
+    case "$l" in
+      "+++ b/"*) file="${l#+++ b/}" ;;
+      # Still C-quoted (control characters, '"' or '\' in the name): keep
+      # git's escaped form, which is enough to find the file.
+      '+++ "b/'*)
+        file="${l#+++ \"b/}"
+        file="${file%\"}"
+        ;;
+      "+++ "*) file="" ;;
+    esac
+    continue
+  fi
+  case "$l" in
     "+"*)
-      if [[ -n "$file" && "$l" == *"$ALLOW_MARKER"* ]]; then
-        allow_hits+=("${file}:${line}")
+      if [[ "$l" == *"$ALLOW_MARKER"* ]]; then
+        allow_hits+=("${file:-$UNPARSED}:${line}")
       fi
       line=$((line + 1))
       ;;
     " "*) line=$((line + 1)) ;;
   esac
-done < <(git diff --no-renames --no-color --no-ext-diff -U0 "$from" "$head" --)
+done < <(git -c core.quotePath=false diff --no-renames --no-color --no-ext-diff --no-textconv --text \
+  --src-prefix=a/ --dst-prefix=b/ -U0 "$from" "$head" --)
 
+# ${a[@]+"${a[@]}"}: empty arrays under set -u abort macOS's bash 3.2.
 warned=0
 if [[ ${#gitleaks_files[@]} -gt 0 || ${#allow_hits[@]} -gt 0 ]]; then
   warned=1
   summary "### Secret-scan suppression changed (human-approval-required)"
-  for f in "${gitleaks_files[@]}"; do
-    echo "::warning file=${f},title=gitleaks config changed::${f} changes what gitleaks reports. It can turn secret findings off while ci-required stays green. Human approval required."
+  for f in ${gitleaks_files[@]+"${gitleaks_files[@]}"}; do
+    echo "::warning file=$(prop "$f"),title=gitleaks config changed::${f} changes what gitleaks reports. It can turn secret findings off while ci-required stays green. Human approval required."
     summary "- gitleaks config changed: \`${f}\`"
   done
-  for h in "${allow_hits[@]}"; do
-    echo "::warning file=${h%%:*},line=${h##*:},title=inline gitleaks allow added::${h} adds an inline gitleaks allow comment, which suppresses secret findings on that line. Human approval required."
+  for h in ${allow_hits[@]+"${allow_hits[@]}"}; do
+    echo "::warning file=$(prop "${h%:*}"),line=${h##*:},title=inline gitleaks allow added::${h} adds an inline gitleaks allow comment, which suppresses secret findings on that line. Human approval required."
     summary "- inline gitleaks allow added: \`${h}\`"
   done
 fi
 if [[ ${#gate_files[@]} -gt 0 ]]; then
   warned=1
   summary "### Merge-gate files changed (human-approval-required)"
-  for f in "${gate_files[@]}"; do
-    echo "::warning file=${f},title=merge-gate file changed::${f} defines or configures the CI merge gate. Human approval required."
+  for f in ${gate_files[@]+"${gate_files[@]}"}; do
+    echo "::warning file=$(prop "$f"),title=merge-gate file changed::${f} defines or configures the CI merge gate. Human approval required."
     summary "- \`${f}\`"
   done
 fi

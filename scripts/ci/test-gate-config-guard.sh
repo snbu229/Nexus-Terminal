@@ -113,6 +113,46 @@ expect "all-zero-base-scans-everything" "$r" 00000000000000000000000000000000000
 r="$(new_repo bad-base)"
 expect "unknown-base-fails" "$r" 1111111111111111111111111111111111111111 128 ""
 
+# 10. .gitattributes (root and nested) is a merge-gate file: it can mark files
+#     binary/non-diffable and hide them from diff-based scanners.
+r="$(new_repo gitattributes)"
+echo "*.txt -diff" > "$r/.gitattributes"
+echo "*.txt binary" > "$r/src/.gitattributes"
+commit_head "$r"
+expect "gitattributes-warns" "$r" HEAD~1 0 "::warning file=.gitattributes,title=merge-gate file changed"
+expect "nested-gitattributes-warns" "$r" HEAD~1 0 "::warning file=src/.gitattributes,title=merge-gate file changed"
+
+# 11. An added line starting with "++" (shown as "+++ ..." in the patch) is
+#     content, not a file header: a later marker in the same hunk still warns.
+r="$(new_repo plusplus)"
+printf '++ counter\nx # %s\n' "$MARKER" >> "$r/src/app.txt"
+commit_head "$r"
+expect "plusplus-line-then-allow-warns" "$r" HEAD~1 0 "::warning file=src/app.txt,line=3,title=inline gitleaks allow added"
+
+# 12. Non-ASCII path (quoted by default core.quotePath) is parsed.
+r="$(new_repo non-ascii)"
+echo "x # $MARKER" > "$r/src/caf$(printf '\303\251').txt"
+commit_head "$r"
+expect "non-ascii-path-allow-warns" "$r" HEAD~1 0 "::warning file=src/caf$(printf '\303\251').txt,line=1,title=inline gitleaks allow added"
+
+# 13. Path that git still C-quotes (backslash in name): warns with git's form.
+r="$(new_repo quoted-path)"
+echo "x # $MARKER" > "$r/src/a\\b.txt"
+commit_head "$r"
+expect "c-quoted-path-allow-warns" "$r" HEAD~1 0 'file=src/a\\b.txt,line=1,title=inline gitleaks allow added'
+
+# 14. Marker in a file .gitattributes marks binary, and in a file with a NUL
+#     byte: the patch is read with --text, so both warn.
+r="$(new_repo binary-marked)"
+echo "*.dat -diff" > "$r/.gitattributes"
+git_t "$r" add .gitattributes
+git_t "$r" commit -q -m attrs
+echo "x # $MARKER" > "$r/src/a.dat"
+printf 'bin\000\nx # %s\n' "$MARKER" > "$r/src/b.bin"
+commit_head "$r"
+expect "allow-in-non-diffable-file-warns" "$r" HEAD~1 0 "::warning file=src/a.dat,line=1,title=inline gitleaks allow added"
+expect "allow-in-nul-byte-file-warns" "$r" HEAD~1 0 "::warning file=src/b.bin,line=2,title=inline gitleaks allow added"
+
 if [[ "$fails" -ne 0 ]]; then
   echo "$fails gate-config-guard self-test(s) failed"
   exit 1
