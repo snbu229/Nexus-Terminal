@@ -1,0 +1,128 @@
+run_at=2026-11-10T10:44:25Z
+node=v24.22.2 host=Linux 5.15.0-143-generic x86_64 os=Debian GNU/Linux 13 (trixie) getconf="glibc 2.41"
+module: /app/packages/shared/src/agent-runner.ts
+sha256: 80d720592871d8a7abde88f543c9ededffc8cf562c7c07ceba45bebbbb820202
+PAPERCLIP_RUNNER_MINIMUM_GLIBC_VERSION=2.39
+
+PASS  claude_local    Ubuntu 22.04 LTS linux/x64 glibc 2.35                      expected=LEGACY actual=LEGACY
+PASS  codex_local     Ubuntu 22.04 LTS linux/x64 glibc 2.35                      expected=LEGACY actual=LEGACY
+PASS  opencode_local  Ubuntu 22.04 LTS linux/x64 glibc 2.35                      expected=LEGACY actual=LEGACY
+PASS  pi_local        Ubuntu 22.04 LTS linux/x64 glibc 2.35                      expected=LEGACY actual=LEGACY
+PASS  claude_local    Ubuntu 22.04 LTS linux/arm64 glibc 2.35                    expected=LEGACY actual=LEGACY
+PASS  codex_local     Ubuntu 22.04 LTS linux/arm64 glibc 2.35                    expected=LEGACY actual=LEGACY
+PASS  opencode_local  Ubuntu 22.04 LTS linux/arm64 glibc 2.35                    expected=LEGACY actual=LEGACY
+PASS  pi_local        Ubuntu 22.04 LTS linux/arm64 glibc 2.35                    expected=LEGACY actual=LEGACY
+PASS  claude_local    Ubuntu 24.04 LTS linux/x64 glibc 2.39                      expected=RUNNER actual=RUNNER
+PASS  codex_local     Ubuntu 24.04 LTS linux/x64 glibc 2.39                      expected=RUNNER actual=RUNNER
+PASS  opencode_local  Ubuntu 24.04 LTS linux/x64 glibc 2.39                      expected=RUNNER actual=RUNNER
+PASS  pi_local        Ubuntu 24.04 LTS linux/x64 glibc 2.39                      expected=RUNNER actual=RUNNER
+PASS  claude_local    Ubuntu 24.04 LTS linux/arm64 glibc 2.39                    expected=RUNNER actual=RUNNER
+PASS  codex_local     Ubuntu 24.04 LTS linux/arm64 glibc 2.39                    expected=RUNNER actual=RUNNER
+PASS  opencode_local  Ubuntu 24.04 LTS linux/arm64 glibc 2.39                    expected=LEGACY actual=LEGACY
+PASS  pi_local        Ubuntu 24.04 LTS linux/arm64 glibc 2.39                    expected=LEGACY actual=LEGACY
+PASS  claude_local    Ubuntu 26.04 LTS linux/x64 glibc 2.43                      expected=RUNNER actual=RUNNER
+PASS  codex_local     Ubuntu 26.04 LTS linux/x64 glibc 2.43                      expected=RUNNER actual=RUNNER
+PASS  opencode_local  Ubuntu 26.04 LTS linux/x64 glibc 2.43                      expected=RUNNER actual=RUNNER
+PASS  pi_local        Ubuntu 26.04 LTS linux/x64 glibc 2.43                      expected=RUNNER actual=RUNNER
+PASS  claude_local    Ubuntu 26.04 LTS linux/arm64 glibc 2.43                    expected=RUNNER actual=RUNNER
+PASS  codex_local     Ubuntu 26.04 LTS linux/arm64 glibc 2.43                    expected=RUNNER actual=RUNNER
+PASS  opencode_local  Ubuntu 26.04 LTS linux/arm64 glibc 2.43                    expected=LEGACY actual=LEGACY
+PASS  pi_local        Ubuntu 26.04 LTS linux/arm64 glibc 2.43                    expected=LEGACY actual=LEGACY
+PASS  claude_local    Debian 12 bookworm linux/x64 glibc 2.36                    expected=LEGACY actual=LEGACY
+PASS  codex_local     Debian 12 bookworm linux/x64 glibc 2.36                    expected=LEGACY actual=LEGACY
+PASS  opencode_local  Debian 12 bookworm linux/x64 glibc 2.36                    expected=LEGACY actual=LEGACY
+PASS  pi_local        Debian 12 bookworm linux/x64 glibc 2.36                    expected=LEGACY actual=LEGACY
+PASS  claude_local    Debian 12 bookworm linux/arm64 glibc 2.36                  expected=LEGACY actual=LEGACY
+PASS  codex_local     Debian 12 bookworm linux/arm64 glibc 2.36                  expected=LEGACY actual=LEGACY
+PASS  opencode_local  Debian 12 bookworm linux/arm64 glibc 2.36                  expected=LEGACY actual=LEGACY
+PASS  pi_local        Debian 12 bookworm linux/arm64 glibc 2.36                  expected=LEGACY actual=LEGACY
+PASS  claude_local    Debian 13 trixie linux/x64 glibc 2.41                      expected=RUNNER actual=RUNNER
+PASS  codex_local     Debian 13 trixie linux/x64 glibc 2.41                      expected=RUNNER actual=RUNNER
+PASS  opencode_local  Debian 13 trixie linux/x64 glibc 2.41                      expected=RUNNER actual=RUNNER
+PASS  pi_local        Debian 13 trixie linux/x64 glibc 2.41                      expected=RUNNER actual=RUNNER
+PASS  claude_local    Debian 13 trixie linux/arm64 glibc 2.41                    expected=RUNNER actual=RUNNER
+PASS  codex_local     Debian 13 trixie linux/arm64 glibc 2.41                    expected=RUNNER actual=RUNNER
+PASS  opencode_local  Debian 13 trixie linux/arm64 glibc 2.41                    expected=LEGACY actual=LEGACY
+PASS  pi_local        Debian 13 trixie linux/arm64 glibc 2.41                    expected=LEGACY actual=LEGACY
+PASS  claude_local    RHEL/Rocky/Alma 8 linux/x64 glibc 2.28                     expected=LEGACY actual=LEGACY
+PASS  codex_local     RHEL/Rocky/Alma 8 linux/x64 glibc 2.28                     expected=LEGACY actual=LEGACY
+PASS  opencode_local  RHEL/Rocky/Alma 8 linux/x64 glibc 2.28                     expected=LEGACY actual=LEGACY
+PASS  pi_local        RHEL/Rocky/Alma 8 linux/x64 glibc 2.28                     expected=LEGACY actual=LEGACY
+PASS  claude_local    RHEL/Rocky/Alma 8 linux/arm64 glibc 2.28                   expected=LEGACY actual=LEGACY
+PASS  codex_local     RHEL/Rocky/Alma 8 linux/arm64 glibc 2.28                   expected=LEGACY actual=LEGACY
+PASS  opencode_local  RHEL/Rocky/Alma 8 linux/arm64 glibc 2.28                   expected=LEGACY actual=LEGACY
+PASS  pi_local        RHEL/Rocky/Alma 8 linux/arm64 glibc 2.28                   expected=LEGACY actual=LEGACY
+PASS  claude_local    RHEL/Rocky/Alma 9 linux/x64 glibc 2.34                     expected=LEGACY actual=LEGACY
+PASS  codex_local     RHEL/Rocky/Alma 9 linux/x64 glibc 2.34                     expected=LEGACY actual=LEGACY
+PASS  opencode_local  RHEL/Rocky/Alma 9 linux/x64 glibc 2.34                     expected=LEGACY actual=LEGACY
+PASS  pi_local        RHEL/Rocky/Alma 9 linux/x64 glibc 2.34                     expected=LEGACY actual=LEGACY
+PASS  claude_local    RHEL/Rocky/Alma 9 linux/arm64 glibc 2.34                   expected=LEGACY actual=LEGACY
+PASS  codex_local     RHEL/Rocky/Alma 9 linux/arm64 glibc 2.34                   expected=LEGACY actual=LEGACY
+PASS  opencode_local  RHEL/Rocky/Alma 9 linux/arm64 glibc 2.34                   expected=LEGACY actual=LEGACY
+PASS  pi_local        RHEL/Rocky/Alma 9 linux/arm64 glibc 2.34                   expected=LEGACY actual=LEGACY
+PASS  claude_local    RHEL/Rocky/Alma 10 (CentOS Stream 10) linux/x64 glibc 2.39 expected=RUNNER actual=RUNNER
+PASS  codex_local     RHEL/Rocky/Alma 10 (CentOS Stream 10) linux/x64 glibc 2.39 expected=RUNNER actual=RUNNER
+PASS  opencode_local  RHEL/Rocky/Alma 10 (CentOS Stream 10) linux/x64 glibc 2.39 expected=RUNNER actual=RUNNER
+PASS  pi_local        RHEL/Rocky/Alma 10 (CentOS Stream 10) linux/x64 glibc 2.39 expected=RUNNER actual=RUNNER
+PASS  claude_local    RHEL/Rocky/Alma 10 (CentOS Stream 10) linux/arm64 glibc 2.39 expected=RUNNER actual=RUNNER
+PASS  codex_local     RHEL/Rocky/Alma 10 (CentOS Stream 10) linux/arm64 glibc 2.39 expected=RUNNER actual=RUNNER
+PASS  opencode_local  RHEL/Rocky/Alma 10 (CentOS Stream 10) linux/arm64 glibc 2.39 expected=LEGACY actual=LEGACY
+PASS  pi_local        RHEL/Rocky/Alma 10 (CentOS Stream 10) linux/arm64 glibc 2.39 expected=LEGACY actual=LEGACY
+PASS  claude_local    Amazon Linux 2023 linux/x64 glibc 2.34                     expected=LEGACY actual=LEGACY
+PASS  codex_local     Amazon Linux 2023 linux/x64 glibc 2.34                     expected=LEGACY actual=LEGACY
+PASS  opencode_local  Amazon Linux 2023 linux/x64 glibc 2.34                     expected=LEGACY actual=LEGACY
+PASS  pi_local        Amazon Linux 2023 linux/x64 glibc 2.34                     expected=LEGACY actual=LEGACY
+PASS  claude_local    Amazon Linux 2023 linux/arm64 glibc 2.34                   expected=LEGACY actual=LEGACY
+PASS  codex_local     Amazon Linux 2023 linux/arm64 glibc 2.34                   expected=LEGACY actual=LEGACY
+PASS  opencode_local  Amazon Linux 2023 linux/arm64 glibc 2.34                   expected=LEGACY actual=LEGACY
+PASS  pi_local        Amazon Linux 2023 linux/arm64 glibc 2.34                   expected=LEGACY actual=LEGACY
+PASS  claude_local    Fedora 44 linux/x64 glibc 2.43                             expected=RUNNER actual=RUNNER
+PASS  codex_local     Fedora 44 linux/x64 glibc 2.43                             expected=RUNNER actual=RUNNER
+PASS  opencode_local  Fedora 44 linux/x64 glibc 2.43                             expected=RUNNER actual=RUNNER
+PASS  pi_local        Fedora 44 linux/x64 glibc 2.43                             expected=RUNNER actual=RUNNER
+PASS  claude_local    Fedora 44 linux/arm64 glibc 2.43                           expected=RUNNER actual=RUNNER
+PASS  codex_local     Fedora 44 linux/arm64 glibc 2.43                           expected=RUNNER actual=RUNNER
+PASS  opencode_local  Fedora 44 linux/arm64 glibc 2.43                           expected=LEGACY actual=LEGACY
+PASS  pi_local        Fedora 44 linux/arm64 glibc 2.43                           expected=LEGACY actual=LEGACY
+PASS  claude_local    openSUSE Leap 15.6 linux/x64 glibc 2.38                    expected=LEGACY actual=LEGACY
+PASS  codex_local     openSUSE Leap 15.6 linux/x64 glibc 2.38                    expected=LEGACY actual=LEGACY
+PASS  opencode_local  openSUSE Leap 15.6 linux/x64 glibc 2.38                    expected=LEGACY actual=LEGACY
+PASS  pi_local        openSUSE Leap 15.6 linux/x64 glibc 2.38                    expected=LEGACY actual=LEGACY
+PASS  claude_local    openSUSE Leap 15.6 linux/arm64 glibc 2.38                  expected=LEGACY actual=LEGACY
+PASS  codex_local     openSUSE Leap 15.6 linux/arm64 glibc 2.38                  expected=LEGACY actual=LEGACY
+PASS  opencode_local  openSUSE Leap 15.6 linux/arm64 glibc 2.38                  expected=LEGACY actual=LEGACY
+PASS  pi_local        openSUSE Leap 15.6 linux/arm64 glibc 2.38                  expected=LEGACY actual=LEGACY
+PASS  claude_local    SLES 16 / openSUSE Leap 16 linux/x64 glibc 2.40            expected=RUNNER actual=RUNNER
+PASS  codex_local     SLES 16 / openSUSE Leap 16 linux/x64 glibc 2.40            expected=RUNNER actual=RUNNER
+PASS  opencode_local  SLES 16 / openSUSE Leap 16 linux/x64 glibc 2.40            expected=RUNNER actual=RUNNER
+PASS  pi_local        SLES 16 / openSUSE Leap 16 linux/x64 glibc 2.40            expected=RUNNER actual=RUNNER
+PASS  claude_local    SLES 16 / openSUSE Leap 16 linux/arm64 glibc 2.40          expected=RUNNER actual=RUNNER
+PASS  codex_local     SLES 16 / openSUSE Leap 16 linux/arm64 glibc 2.40          expected=RUNNER actual=RUNNER
+PASS  opencode_local  SLES 16 / openSUSE Leap 16 linux/arm64 glibc 2.40          expected=LEGACY actual=LEGACY
+PASS  pi_local        SLES 16 / openSUSE Leap 16 linux/arm64 glibc 2.40          expected=LEGACY actual=LEGACY
+PASS  claude_local    Alpine (musl) linux/x64                                    expected=LEGACY actual=LEGACY
+PASS  claude_local    Alpine (musl) linux/arm64                                  expected=LEGACY actual=LEGACY
+PASS  claude_local    Linux libc unknown (getconf missing)                       expected=LEGACY actual=LEGACY
+PASS  claude_local    Linux glibc malformed version string                       expected=LEGACY actual=LEGACY
+PASS  claude_local    Linux 32-bit ARM (armv7l)                                  expected=LEGACY actual=LEGACY
+PASS  claude_local    macOS Apple Silicon (darwin/arm64)                         expected=RUNNER actual=RUNNER
+PASS  claude_local    macOS Intel (darwin/x64)                                   expected=RUNNER actual=RUNNER
+PASS  claude_local    Windows x64 (out of Nexus scope)                           expected=LEGACY actual=LEGACY
+PASS  codex_local     Alpine (musl) linux/x64                                    expected=LEGACY actual=LEGACY
+PASS  codex_local     Alpine (musl) linux/arm64                                  expected=LEGACY actual=LEGACY
+PASS  codex_local     Linux libc unknown (getconf missing)                       expected=LEGACY actual=LEGACY
+PASS  codex_local     Linux glibc malformed version string                       expected=LEGACY actual=LEGACY
+PASS  codex_local     Linux 32-bit ARM (armv7l)                                  expected=LEGACY actual=LEGACY
+PASS  codex_local     macOS Apple Silicon (darwin/arm64)                         expected=RUNNER actual=RUNNER
+PASS  codex_local     macOS Intel (darwin/x64)                                   expected=RUNNER actual=RUNNER
+PASS  codex_local     Windows x64 (out of Nexus scope)                           expected=LEGACY actual=LEGACY
+
+selection source sha256: ffd0780061168c5df134ccc003907c5bb939d6186ecaaef00ab8f5000180f1ee
+local probe output (this host):
+Linux
+x86_64
+glibc
+glibc 2.41
+
+112/112 cases match expected routing
+exit=0
