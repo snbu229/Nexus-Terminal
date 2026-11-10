@@ -32,9 +32,9 @@ describe('fixtures validate against their schemas', () => {
   it.each(agentSessionFixtures)('agent session $id', (s) =>
     expect(AgentSessionSchema.parse(s)).toEqual(s),
   );
-  it.each(agentEventFixtures)('agent event seq $seq ($kind)', (e) =>
-    expect(AgentEventSchema.parse(e)).toEqual(e),
-  );
+  it.each(
+    Object.entries(agentEventFixtures).flatMap(([sid, evs]) => evs.map((e) => [sid, e] as const)),
+  )('agent event %s', (_sid, e) => expect(AgentEventSchema.parse(e)).toEqual(e));
   it.each(approvalFixtures)('approval $id', (a) => expect(ApprovalSchema.parse(a)).toEqual(a));
 });
 

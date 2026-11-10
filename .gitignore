@@ -9,3 +9,4 @@ coverage/
 .claude/
 test-results/
 playwright-report/
+.nexus-dev-data/

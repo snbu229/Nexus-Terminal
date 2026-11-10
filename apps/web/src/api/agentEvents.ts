@@ -16,14 +16,14 @@ export interface AgentEventSource {
 
 /** Mock source: replays fixture events up to `lastSeq` (no WebSocket involved). */
 export function createMockEventSource(
-  loadEvents: () => Promise<readonly AgentEvent[]>,
+  loadEvents: (id: string) => Promise<readonly AgentEvent[]>,
   lastSeqOf: (id: string) => Promise<number>,
 ): AgentEventSource {
   return {
     subscribe(id, h, afterSeq) {
       let stopped = false;
       h.onState('connecting');
-      void Promise.all([loadEvents(), lastSeqOf(id)]).then(([events, last]) => {
+      void Promise.all([loadEvents(id), lastSeqOf(id)]).then(([events, last]) => {
         if (stopped) return;
         for (const e of events) if (e.seq > afterSeq && e.seq <= last) h.onEvent(e);
         h.onState('live');

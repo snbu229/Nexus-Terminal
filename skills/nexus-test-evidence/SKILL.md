@@ -22,6 +22,10 @@ Read first: `docs/reference/Nexus_Terminal_V3_1_Cross_Platform_Paperclip_Kit/TES
 
 Each feature ships the denials its skill lists: e.g. unknown host key rejected, a request with `approved:true` rejected, a raw byte sets the BR-16 latch, `PAPERCLIP_*` and GitHub tokens absent from the sandbox shell env, forged OSC 133 ignored, a revoked user denied on reattach. A feature with only happy-path tests is not done.
 
+## Outage simulations
+
+Features that span a connector, Paperclip, the browser or a tmux session also need the outage and fault scenarios from `qa-chaos-and-release`: connector crash and restart, host reboot, Paperclip outage, connector outage, browser disconnect while tmux keeps running, duplicate delivery and a second writer. Run them only where that skill allows; otherwise report each one as **not run**, with the reason.
+
 ## What counts as evidence
 
 - Raw artifacts attached to the Paperclip issue: the exact command run, the commit SHA it ran on, the full or tail test output with pass/fail counts, the CI run link, and artifact digests where there are artifacts.

@@ -13,9 +13,9 @@ interface Api {
 const ApiContext = createContext<Api | null>(null);
 
 // Literal env comparison so Vite drops the dynamic import (and the fixtures) from real builds.
-const loadMockEvents = async () => {
+const loadMockEvents = async (id: string) => {
   if (import.meta.env.VITE_NEXUS_API === 'real') return [];
-  return (await import('@nexus/contracts/fixtures')).agentEventFixtures;
+  return (await import('@nexus/contracts/fixtures')).agentEventFixtures[id] ?? [];
 };
 
 export function makeApi(config: ApiConfig = readApiConfig()): Api {
