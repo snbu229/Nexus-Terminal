@@ -1,0 +1,1468 @@
+{
+  "generated_at_utc": "2026-11-10T08:46:37Z",
+  "generator": "tools/license-ledger/fetch_evidence.py",
+  "components": {
+    "acp-spec": {
+      "repo": "https://github.com/agentclientprotocol/agent-client-protocol",
+      "head_commit": "ab82539032aeaa3926cebfb001007fb8a9ba58a2",
+      "release_tag": "v1.16.0",
+      "release_version": "1.16.0",
+      "pinned_commit": "759775f6b0a2369886c378d1f64e900175041120",
+      "pinned_ref": "v1.16.0",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/agentclientprotocol/agent-client-protocol/759775f6b0a2369886c378d1f64e900175041120/LICENSE",
+          "bytes": 10782,
+          "sha256": "f250d08cee4549b22b3b4aaaf3a743473336fd280316df5d0340717e5127a221",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Apache License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "f250d08cee4549b22b3b4aaaf3a743473336fd280316df5d0340717e5127a221",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:38:43Z"
+    },
+    "ceph": {
+      "repo": "https://github.com/ceph/ceph",
+      "head_commit": "f3710b2338538b124ab1cc7ba3c154e14674b1e1",
+      "release_tag": "v22.0.0",
+      "release_version": "22.0.0",
+      "pinned_commit": "90b50e9b87998f8a55e36e3db7852be0b1ca8cbb",
+      "pinned_ref": "v22.0.0",
+      "license_files": [
+        {
+          "path": "COPYING",
+          "url": "https://raw.githubusercontent.com/ceph/ceph/90b50e9b87998f8a55e36e3db7852be0b1ca8cbb/COPYING",
+          "bytes": 9598,
+          "sha256": "1021e984d0c594fd9cbe183b2cda46d47e752a9c68dc5e73149685bc87c05ab2",
+          "detected_spdx": [
+            "AGPL-3.0",
+            "Apache-2.0",
+            "MIT",
+            "BSD-3-Clause"
+          ],
+          "first_line": "Format-Specification: http://anonscm.debian.org/viewvc/dep/web/deps/dep5/copyright-format.xml?revision=279&view=markup"
+        },
+        {
+          "path": "COPYING-LGPL2.1",
+          "url": "https://raw.githubusercontent.com/ceph/ceph/90b50e9b87998f8a55e36e3db7852be0b1ca8cbb/COPYING-LGPL2.1",
+          "bytes": 26436,
+          "sha256": "5df07007198989c622f5d41de8d703e7bef3d0e79d62e24332ee739a452af62a",
+          "detected_spdx": [
+            "LGPL-2.1"
+          ],
+          "first_line": "GNU LESSER GENERAL PUBLIC LICENSE"
+        },
+        {
+          "path": "COPYING-LGPL3",
+          "url": "https://raw.githubusercontent.com/ceph/ceph/90b50e9b87998f8a55e36e3db7852be0b1ca8cbb/COPYING-LGPL3",
+          "bytes": 7652,
+          "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118",
+          "detected_spdx": [
+            "LGPL-3.0"
+          ],
+          "first_line": "GNU LESSER GENERAL PUBLIC LICENSE"
+        }
+      ],
+      "primary_license_path": "COPYING",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "1021e984d0c594fd9cbe183b2cda46d47e752a9c68dc5e73149685bc87c05ab2",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:41:47Z"
+    },
+    "claude-code": {
+      "repo": "https://github.com/anthropics/claude-code",
+      "head_commit": "ce6cb8ee39759afb5d8bf2e3fd26582f575e9095",
+      "release_tag": "v2.1.322",
+      "release_version": "2.1.322",
+      "pinned_commit": "6e1e44f6433bfa17d198e932bff53373aa229eea",
+      "pinned_ref": "v2.1.322",
+      "license_files": [
+        {
+          "path": "LICENSE.md",
+          "url": "https://raw.githubusercontent.com/anthropics/claude-code/6e1e44f6433bfa17d198e932bff53373aa229eea/LICENSE.md",
+          "bytes": 150,
+          "sha256": "728158fd1037143fad6907e8fa34804177e598b7326519503fe83cafdef849e6",
+          "detected_spdx": [
+            "LicenseRef-Anthropic-Commercial-Terms"
+          ],
+          "first_line": "\u00a9 Anthropic PBC. All rights reserved. Use is subject to Anthropic's [Commercial Terms of Service](https://www.anthropic.com/legal/commercial-terms)."
+        }
+      ],
+      "primary_license_path": "LICENSE.md",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "728158fd1037143fad6907e8fa34804177e598b7326519503fe83cafdef849e6",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:45:10Z"
+    },
+    "codemirror-dev-archived": {
+      "repo": "https://github.com/codemirror/dev",
+      "head_commit": "c010426d06689a7115aa9df08425126b6d3ead2f",
+      "release_tag": null,
+      "release_version": null,
+      "pinned_commit": "c010426d06689a7115aa9df08425126b6d3ead2f",
+      "pinned_ref": "HEAD",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/codemirror/dev/c010426d06689a7115aa9df08425126b6d3ead2f/LICENSE",
+          "bytes": 1150,
+          "sha256": "7dc7fb9b4a0822d404e866ec96742fd774104ac22442ef7fd2d9879ada23c90c",
+          "detected_spdx": [
+            "MIT"
+          ],
+          "first_line": "MIT License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": null,
+      "archived": "This repository was archived by the owner on Apr 15, 2026",
+      "fetched_at_utc": "2026-11-10T08:42:50Z"
+    },
+    "codemirror-state": {
+      "repo": "https://code.haverbeke.berlin/codemirror/state.git",
+      "head_commit": "651084c8a322b3a19b2bb3e00eee7d4a61d641af",
+      "release_tag": "6.7.6",
+      "release_version": "6.7.6",
+      "pinned_commit": "651084c8a322b3a19b2bb3e00eee7d4a61d641af",
+      "pinned_ref": "6.7.6",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://code.haverbeke.berlin/codemirror/state/raw/commit/651084c8a322b3a19b2bb3e00eee7d4a61d641af/LICENSE",
+          "bytes": 1118,
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+          "detected_spdx": [
+            "MIT"
+          ],
+          "first_line": "MIT License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": null,
+      "archived": "n/a",
+      "fetched_at_utc": "2026-11-10T08:41:48Z"
+    },
+    "codemirror-view": {
+      "repo": "https://code.haverbeke.berlin/codemirror/view.git",
+      "head_commit": "40b85bb4bec608e5996696712132e44ca5b249c9",
+      "release_tag": "6.43.15",
+      "release_version": "6.43.15",
+      "pinned_commit": "da63d53a7b1f9011a09481f5fa2397294104d73a",
+      "pinned_ref": "6.43.15",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://code.haverbeke.berlin/codemirror/view/raw/commit/da63d53a7b1f9011a09481f5fa2397294104d73a/LICENSE",
+          "bytes": 1118,
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+          "detected_spdx": [
+            "MIT"
+          ],
+          "first_line": "MIT License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07",
+        "changed_since_pin": false
+      },
+      "archived": "n/a",
+      "fetched_at_utc": "2026-11-10T08:41:45Z"
+    },
+    "codex-acp": {
+      "repo": "https://github.com/agentclientprotocol/codex-acp",
+      "head_commit": "ab7a968e982a95d8a765c1e6c6682a520d4f7638",
+      "release_tag": "v2.6.0",
+      "release_version": "2.6.0",
+      "pinned_commit": "f3208913693bd4d5171d6c6b9be5ec1ff96c6431",
+      "pinned_ref": "v2.6.0",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/agentclientprotocol/codex-acp/f3208913693bd4d5171d6c6b9be5ec1ff96c6431/LICENSE",
+          "bytes": 10760,
+          "sha256": "72ea310b40e1ee2c4aa61935d22065155c50bfde288b114c9cfd3e1fa34f8049",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Copyright 2025 JetBrains s.r.o."
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "72ea310b40e1ee2c4aa61935d22065155c50bfde288b114c9cfd3e1fa34f8049",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:38:42Z"
+    },
+    "codex-acp-zed-archived": {
+      "repo": "https://github.com/zed-industries/codex-acp",
+      "head_commit": "296069e841634cd4bb9bc4515602d836e49231ec",
+      "release_tag": "v0.16.0",
+      "release_version": "0.16.0",
+      "pinned_commit": "bb590500e8646f6daf879b8b3c6a659fbd29017d",
+      "pinned_ref": "v0.16.0",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/zed-industries/codex-acp/bb590500e8646f6daf879b8b3c6a659fbd29017d/LICENSE",
+          "bytes": 10768,
+          "sha256": "752daf2fb234ca4a1fa372c073fe127f44b7b90fd2529ae44273a64f9d53da7a",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Copyright 2022 - 2025 Zed Industries, Inc."
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "752daf2fb234ca4a1fa372c073fe127f44b7b90fd2529ae44273a64f9d53da7a",
+        "changed_since_pin": false
+      },
+      "archived": "This repository was archived by the owner on Jul 22, 2026",
+      "fetched_at_utc": "2026-11-10T08:39:43Z"
+    },
+    "codex-cli": {
+      "repo": "https://github.com/openai/codex",
+      "head_commit": "bcbb7f5a9cb8279166352369aa8995469552d1a4",
+      "release_tag": "rust-v0.167.0",
+      "release_version": "0.167.0",
+      "pinned_commit": "086ccc833bc9cf01024ad2dd6af7dbd421b6bf9a",
+      "pinned_ref": "rust-v0.167.0",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/openai/codex/086ccc833bc9cf01024ad2dd6af7dbd421b6bf9a/LICENSE",
+          "bytes": 10926,
+          "sha256": "d17f227e4df5da1600391338865ce0f3055211760a36688f816941d58232d8dc",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Apache License"
+        },
+        {
+          "path": "NOTICE",
+          "url": "https://raw.githubusercontent.com/openai/codex/086ccc833bc9cf01024ad2dd6af7dbd421b6bf9a/NOTICE",
+          "bytes": 242,
+          "sha256": "9d71575ecfd9a843fc1677b0efb08053c6ba9fd686a0de1a6f5382fd3c220915",
+          "detected_spdx": [],
+          "first_line": "OpenAI Codex"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "d17f227e4df5da1600391338865ce0f3055211760a36688f816941d58232d8dc",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:39:37Z"
+    },
+    "garage": {
+      "repo": "https://github.com/deuxfleurs-org/garage",
+      "head_commit": "ed3befd8d70eac09795e973a9477f60440de1a3e",
+      "release_tag": "v2.5.0",
+      "release_version": "2.5.0",
+      "pinned_commit": "586726edb0170bb46f604e84fba09e5659610649",
+      "pinned_ref": "v2.5.0",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/deuxfleurs-org/garage/586726edb0170bb46f604e84fba09e5659610649/LICENSE",
+          "bytes": 34523,
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+          "detected_spdx": [
+            "AGPL-3.0"
+          ],
+          "first_line": "GNU AFFERO GENERAL PUBLIC LICENSE"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:39:47Z"
+    },
+    "ghostty": {
+      "repo": "https://github.com/ghostty-org/ghostty",
+      "head_commit": "bd1e6a43476325dbf37939de939eac326696b08f",
+      "release_tag": "v1.4.0",
+      "release_version": "1.4.0",
+      "pinned_commit": "83fb95624b0439ee660c2679b43b38c8b63769cd",
+      "pinned_ref": "v1.4.0",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/ghostty-org/ghostty/83fb95624b0439ee660c2679b43b38c8b63769cd/LICENSE",
+          "bytes": 1097,
+          "sha256": "386211873e5b7a02f663ae4d7adf96285999f91608f8f9f31fecfd0f4095e6f1",
+          "detected_spdx": [
+            "MIT"
+          ],
+          "first_line": "MIT License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "386211873e5b7a02f663ae4d7adf96285999f91608f8f9f31fecfd0f4095e6f1",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:45:03Z"
+    },
+    "gotify": {
+      "repo": "https://github.com/gotify/server",
+      "head_commit": "01086b95a8b69ee87383f6e8bcae601d8c33384b",
+      "release_tag": "v3.1.1",
+      "release_version": "3.1.1",
+      "pinned_commit": "e6361caa512547052b1013dbf4544e6d7ff32604",
+      "pinned_ref": "v3.1.1",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/gotify/server/e6361caa512547052b1013dbf4544e6d7ff32604/LICENSE",
+          "bytes": 1216,
+          "sha256": "82b75f7d50d903a2071a69a37591fe034d064cf419ddf67112bd583ae6d9602c",
+          "detected_spdx": [
+            "MIT"
+          ],
+          "first_line": "MIT License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "82b75f7d50d903a2071a69a37591fe034d064cf419ddf67112bd583ae6d9602c",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:42:50Z"
+    },
+    "grafana": {
+      "repo": "https://github.com/grafana/grafana",
+      "head_commit": "f01876a9ae6910e84e85b38633820ce48975cf21",
+      "release_tag": "v13.3.0",
+      "release_version": "13.3.0",
+      "pinned_commit": "752e3462ff71a43a5c1fb62d00a482fa2dc0ee6a",
+      "pinned_ref": "v13.3.0",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/grafana/grafana/752e3462ff71a43a5c1fb62d00a482fa2dc0ee6a/LICENSE",
+          "bytes": 34523,
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+          "detected_spdx": [
+            "AGPL-3.0"
+          ],
+          "first_line": "GNU AFFERO GENERAL PUBLIC LICENSE"
+        },
+        {
+          "path": "LICENSING.md",
+          "url": "https://raw.githubusercontent.com/grafana/grafana/752e3462ff71a43a5c1fb62d00a482fa2dc0ee6a/LICENSING.md",
+          "bytes": 991,
+          "sha256": "4393edddf47e6bea89b817a2eb28f99d8a245da390bf6a6ed317e070e018948d",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "# Licensing"
+        },
+        {
+          "path": "NOTICE.md",
+          "url": "https://raw.githubusercontent.com/grafana/grafana/752e3462ff71a43a5c1fb62d00a482fa2dc0ee6a/NOTICE.md",
+          "bytes": 105,
+          "sha256": "78cf8b70fbfde43dbc26e91f9b9039b52afcbc5ca0b5b3dcdfb226d275849ee4",
+          "detected_spdx": [],
+          "first_line": "Copyright 2014-2021 Grafana Labs"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:46:37Z"
+    },
+    "guacamole-client": {
+      "repo": "https://github.com/apache/guacamole-client",
+      "head_commit": "a8daafeb38b60b0acb4059c5218e6d5bacfaeb8f",
+      "release_tag": "1.6.0",
+      "release_version": "1.6.0",
+      "pinned_commit": "0537c89cd783681b986ff8f8c4e0b97ec6873371",
+      "pinned_ref": "1.6.0",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/apache/guacamole-client/0537c89cd783681b986ff8f8c4e0b97ec6873371/LICENSE",
+          "bytes": 15705,
+          "sha256": "3c7f148c26065e0a581b5dda114e68e16243bf5ae0b4f6209749a0e3373201d5",
+          "detected_spdx": [
+            "Apache-2.0",
+            "BSD-3-Clause"
+          ],
+          "first_line": "Apache License"
+        },
+        {
+          "path": "NOTICE",
+          "url": "https://raw.githubusercontent.com/apache/guacamole-client/0537c89cd783681b986ff8f8c4e0b97ec6873371/NOTICE",
+          "bytes": 166,
+          "sha256": "9f1ec0252c59b209f5470b739039fcb5d29f51d832cef643000bf5e1d3dd29ff",
+          "detected_spdx": [],
+          "first_line": "Apache Guacamole"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "3c7f148c26065e0a581b5dda114e68e16243bf5ae0b4f6209749a0e3373201d5",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:43:53Z"
+    },
+    "guacamole-server": {
+      "repo": "https://github.com/apache/guacamole-server",
+      "head_commit": "bb1ba8ed1414ec6a239cea265d4e9c7e23b9c6a3",
+      "release_tag": "1.6.0",
+      "release_version": "1.6.0",
+      "pinned_commit": "1f664e08feae6e7d15d8146b78acab2e6fb470ae",
+      "pinned_ref": "1.6.0",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/apache/guacamole-server/1f664e08feae6e7d15d8146b78acab2e6fb470ae/LICENSE",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Apache License"
+        },
+        {
+          "path": "NOTICE",
+          "url": "https://raw.githubusercontent.com/apache/guacamole-server/1f664e08feae6e7d15d8146b78acab2e6fb470ae/NOTICE",
+          "bytes": 165,
+          "sha256": "b081db94e1cf4408518b76c4f582c9585040dd9409a331666fbb08a20d4997b9",
+          "detected_spdx": [],
+          "first_line": "Apache Guacamole"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:43:50Z"
+    },
+    "hapi": {
+      "repo": "https://github.com/tiann/hapi",
+      "head_commit": "a9024c0eb8f9f484f3d41eddc9ea3fc8e2267292",
+      "release_tag": "v0.34.5",
+      "release_version": "0.34.5",
+      "pinned_commit": "b312641b30b4650dbe7ebcf826d5e91a692349cf",
+      "pinned_ref": "v0.34.5",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/tiann/hapi/b312641b30b4650dbe7ebcf826d5e91a692349cf/LICENSE",
+          "bytes": 34524,
+          "sha256": "9a32109537554d51dd83792f3e9d6999376e0974d1d309cb1f922acad3946d1c",
+          "detected_spdx": [
+            "AGPL-3.0"
+          ],
+          "first_line": "GNU AFFERO GENERAL PUBLIC LICENSE"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "9a32109537554d51dd83792f3e9d6999376e0974d1d309cb1f922acad3946d1c",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:37:38Z"
+    },
+    "happier": {
+      "repo": "https://github.com/happier-dev/happier",
+      "head_commit": "7b37d65ca75e58560f8f3ca850958ac5407d2e75",
+      "release_tag": null,
+      "release_version": null,
+      "pinned_commit": "7b37d65ca75e58560f8f3ca850958ac5407d2e75",
+      "pinned_ref": "HEAD",
+      "license_files": [
+        {
+          "path": "LICENCE",
+          "url": "https://raw.githubusercontent.com/happier-dev/happier/7b37d65ca75e58560f8f3ca850958ac5407d2e75/LICENCE",
+          "bytes": 1081,
+          "sha256": "e251d0448ef3ce023c20ebac9b90a7d8642b1434825838247d6e457668eb3e00",
+          "detected_spdx": [
+            "MIT"
+          ],
+          "first_line": "MIT License"
+        }
+      ],
+      "primary_license_path": "LICENCE",
+      "head_drift": null,
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:38:37Z"
+    },
+    "headscale": {
+      "repo": "https://github.com/juanfont/headscale",
+      "head_commit": "48416ce0894ef7bef0ef9c064609b4aa76a0d9b6",
+      "release_tag": "v0.29.7",
+      "release_version": "0.29.7",
+      "pinned_commit": "c9cf210b8bc84d13177e18b91f555788a44b47b6",
+      "pinned_ref": "v0.29.7",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/juanfont/headscale/c9cf210b8bc84d13177e18b91f555788a44b47b6/LICENSE",
+          "bytes": 1517,
+          "sha256": "e77c52635a2043a215a2905d3cf5288562acdf119a32bc8fd794d45b542c9fd8",
+          "detected_spdx": [
+            "BSD-3-Clause"
+          ],
+          "first_line": "BSD 3-Clause License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "e77c52635a2043a215a2905d3cf5288562acdf119a32bc8fd794d45b542c9fd8",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:41:52Z"
+    },
+    "herdr": {
+      "repo": "https://github.com/herdrdev/herdr",
+      "head_commit": "ee5bfb5041bb3e4a49d591c72308aae3c81ecdde",
+      "release_tag": "v0.9.5",
+      "release_version": "0.9.5",
+      "pinned_commit": "2ecf19a92fc3a7fff75b6ce3655ef04f4625ec01",
+      "pinned_ref": "v0.9.5",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/herdrdev/herdr/2ecf19a92fc3a7fff75b6ce3655ef04f4625ec01/LICENSE",
+          "bytes": 11357,
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Apache License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:38:37Z"
+    },
+    "hermes-agent": {
+      "repo": "https://github.com/NousResearch/hermes-agent",
+      "head_commit": "b7db40d82568ea68ce321ac1ead3bfea354c7f56",
+      "release_tag": "v2026.9.24",
+      "release_version": "2026.9.24",
+      "pinned_commit": "f97608f178d1ffeca59860195ab7da295f7c8e5f",
+      "pinned_ref": "v2026.9.24",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/f97608f178d1ffeca59860195ab7da295f7c8e5f/LICENSE",
+          "bytes": 1070,
+          "sha256": "821556e6336796450ab852d375117b48a4887e71d255794fd6318d99982a5ab6",
+          "detected_spdx": [
+            "MIT"
+          ],
+          "first_line": "MIT License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "821556e6336796450ab852d375117b48a4887e71d255794fd6318d99982a5ab6",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:38:49Z"
+    },
+    "keycloak": {
+      "repo": "https://github.com/keycloak/keycloak",
+      "head_commit": "6fc1bebe693ae9b7bb943295182e9d28f5c4bb18",
+      "release_tag": "26.8.2",
+      "release_version": "26.8.2",
+      "pinned_commit": "e514445f9dcdabc5bdcf67cab56c1e49655de067",
+      "pinned_ref": "26.8.2",
+      "license_files": [
+        {
+          "path": "LICENSE.txt",
+          "url": "https://raw.githubusercontent.com/keycloak/keycloak/e514445f9dcdabc5bdcf67cab56c1e49655de067/LICENSE.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Apache License"
+        }
+      ],
+      "primary_license_path": "LICENSE.txt",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:44:56Z"
+    },
+    "mcp-spec": {
+      "repo": "https://github.com/modelcontextprotocol/modelcontextprotocol",
+      "head_commit": "632a0c9a65c9b4fbc889d8aface5c9cf5edef3b7",
+      "release_tag": null,
+      "release_version": null,
+      "pinned_commit": "632a0c9a65c9b4fbc889d8aface5c9cf5edef3b7",
+      "pinned_ref": "HEAD",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/modelcontextprotocol/modelcontextprotocol/632a0c9a65c9b4fbc889d8aface5c9cf5edef3b7/LICENSE",
+          "bytes": 12227,
+          "sha256": "0382b0057770ca05e9c350a50aa3b1c1fea84da0bc81d723bf00b9aa841be58a",
+          "detected_spdx": [
+            "Apache-2.0",
+            "MIT",
+            "CC-BY-4.0"
+          ],
+          "first_line": "The MCP project is undergoing a licensing transition from the MIT License to the Apache License, Version 2.0 (\"Apache-2.0\"). All new code and specification cont"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": null,
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:38:43Z"
+    },
+    "meshcentral": {
+      "repo": "https://github.com/Ylianst/MeshCentral",
+      "head_commit": "72e40656fcd153226a5af70e2f6e0ea9326ef3ea",
+      "release_tag": "1.3.1",
+      "release_version": "1.3.1",
+      "pinned_commit": "f436143527458d56da0336ea3047c006703fb4e4",
+      "pinned_ref": "1.3.1",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/Ylianst/MeshCentral/f436143527458d56da0336ea3047c006703fb4e4/LICENSE",
+          "bytes": 11352,
+          "sha256": "b7158523c38e5d643531d44ddbedbc823f0797f58f88ad4acef8ab037a6fc94b",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Apache License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "b7158523c38e5d643531d44ddbedbc823f0797f58f88ad4acef8ab037a6fc94b",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:42:53Z"
+    },
+    "minio": {
+      "repo": "https://github.com/minio/minio",
+      "head_commit": "7aac2a2c5b7c882e68c1ce017d8256be2feea27f",
+      "release_tag": "RELEASE.2025-10-15T17-29-55Z",
+      "release_version": "RELEASE.2025-10-15T17-29-55Z",
+      "pinned_commit": "9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a",
+      "pinned_ref": "RELEASE.2025-10-15T17-29-55Z",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/minio/minio/9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a/LICENSE",
+          "bytes": 34523,
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+          "detected_spdx": [
+            "AGPL-3.0"
+          ],
+          "first_line": "GNU AFFERO GENERAL PUBLIC LICENSE"
+        },
+        {
+          "path": "NOTICE",
+          "url": "https://raw.githubusercontent.com/minio/minio/9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a/NOTICE",
+          "bytes": 367,
+          "sha256": "e74f1fdf2e9de7b4efc317bee3333ed26454f24fd147527707fe4185b706703a",
+          "detected_spdx": [],
+          "first_line": "MinIO Project, (C) 2015-2023 MinIO, Inc."
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+        "changed_since_pin": false
+      },
+      "archived": "This repository was archived by the owner on Apr 25, 2026",
+      "fetched_at_utc": "2026-11-10T08:40:46Z"
+    },
+    "ntfy": {
+      "repo": "https://github.com/binwiederhier/ntfy",
+      "head_commit": "59f9931f0f365f1e33871ed9d641b33e8039c190",
+      "release_tag": "v2.37.2",
+      "release_version": "2.37.2",
+      "pinned_commit": "05109571fd0931affb6f92b17bbfd62c4d2ea68a",
+      "pinned_ref": "v2.37.2",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/binwiederhier/ntfy/05109571fd0931affb6f92b17bbfd62c4d2ea68a/LICENSE",
+          "bytes": 11347,
+          "sha256": "41c6b5205cdb17128b6d003732c48e1d1cdf1080160fc8ac8dc9d992dd8dc398",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Apache License"
+        },
+        {
+          "path": "LICENSE.GPLv2",
+          "url": "https://raw.githubusercontent.com/binwiederhier/ntfy/05109571fd0931affb6f92b17bbfd62c4d2ea68a/LICENSE.GPLv2",
+          "bytes": 18024,
+          "sha256": "4e5a9c09473dfc6348286ad82fae8e851a476d7e53cedbed8c9f3bcb5a870469",
+          "detected_spdx": [
+            "GPL-2.0"
+          ],
+          "first_line": "GNU GENERAL PUBLIC LICENSE"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "41c6b5205cdb17128b6d003732c48e1d1cdf1080160fc8ac8dc9d992dd8dc398",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:42:49Z"
+    },
+    "opencode": {
+      "repo": "https://github.com/anomalyco/opencode",
+      "head_commit": "5f76acb12572932297cbce81bd0026e59b16e7ac",
+      "release_tag": "v2.2.7",
+      "release_version": "2.2.7",
+      "pinned_commit": "fedc6f208aa2bd54c1019227214568083f6380ad",
+      "pinned_ref": "v2.2.7",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/anomalyco/opencode/fedc6f208aa2bd54c1019227214568083f6380ad/LICENSE",
+          "bytes": 1065,
+          "sha256": "625f0f619133f89bbbb2abe37369613dfa1885eba1e50d02170deb62bb42cb6b",
+          "detected_spdx": [
+            "MIT"
+          ],
+          "first_line": "MIT License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "625f0f619133f89bbbb2abe37369613dfa1885eba1e50d02170deb62bb42cb6b",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:37:40Z"
+    },
+    "openssh-portable": {
+      "repo": "https://github.com/openssh/openssh-portable",
+      "head_commit": "1d28115e040b792075a391de01b0f0c033a4850a",
+      "release_tag": "V_10_6_P2",
+      "release_version": "10_6_P2",
+      "pinned_commit": "d449e662b6b8b8cb20e852d8084c269af1c5e8f1",
+      "pinned_ref": "V_10_6_P2",
+      "license_files": [
+        {
+          "path": "LICENCE",
+          "url": "https://raw.githubusercontent.com/openssh/openssh-portable/d449e662b6b8b8cb20e852d8084c269af1c5e8f1/LICENCE",
+          "bytes": 21140,
+          "sha256": "5bb5b160726ef5756e4f32fe95b35249c294962419650f48d05134b486d27ccb",
+          "detected_spdx": [
+            "MIT",
+            "BSD-3-Clause",
+            "SSH-OpenSSH"
+          ],
+          "first_line": "This file is part of the OpenSSH software."
+        }
+      ],
+      "primary_license_path": "LICENCE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "5bb5b160726ef5756e4f32fe95b35249c294962419650f48d05134b486d27ccb",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:43:58Z"
+    },
+    "paperclip": {
+      "repo": "https://github.com/paperclipai/paperclip",
+      "head_commit": "2f59b9c67c25d93a88fc37a372c3f0b9b12137ef",
+      "release_tag": "v2026.1106.0",
+      "release_version": "2026.1106.0",
+      "pinned_commit": "d69631b01b9c658f80bf8bed389863dce82643e1",
+      "pinned_ref": "v2026.1106.0",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/paperclipai/paperclip/d69631b01b9c658f80bf8bed389863dce82643e1/LICENSE",
+          "bytes": 1069,
+          "sha256": "7f8a27f0979bded50e240caa8c8c29f3088ddf87032cb83e5a9732bff91d18b4",
+          "detected_spdx": [
+            "MIT"
+          ],
+          "first_line": "MIT License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "7f8a27f0979bded50e240caa8c8c29f3088ddf87032cb83e5a9732bff91d18b4",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:43:54Z"
+    },
+    "prometheus": {
+      "repo": "https://github.com/prometheus/prometheus",
+      "head_commit": "bd517f6636ce1b6263dada9dfecb3fe92c84d96f",
+      "release_tag": "v3.16.0",
+      "release_version": "3.16.0",
+      "pinned_commit": "e2e28adeee2c5883d000fc82aca6008cfbf7e96d",
+      "pinned_ref": "v3.16.0",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/prometheus/prometheus/e2e28adeee2c5883d000fc82aca6008cfbf7e96d/LICENSE",
+          "bytes": 11357,
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Apache License"
+        },
+        {
+          "path": "NOTICE",
+          "url": "https://raw.githubusercontent.com/prometheus/prometheus/e2e28adeee2c5883d000fc82aca6008cfbf7e96d/NOTICE",
+          "bytes": 4370,
+          "sha256": "ac9e304462a58a4d71b6488423d4447e614c8b31d517fe24345016522c102a78",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "The Prometheus systems and service monitoring server"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:42:46Z"
+    },
+    "redis": {
+      "repo": "https://github.com/redis/redis",
+      "head_commit": "889672c7633163a378fca1277f8bcd7a064600df",
+      "release_tag": "8.10.3",
+      "release_version": "8.10.3",
+      "pinned_commit": "1a2574ce1551d3de6e0b4a56756c0fdbc6659e4f",
+      "pinned_ref": "8.10.3",
+      "license_files": [
+        {
+          "path": "LICENSE.txt",
+          "url": "https://raw.githubusercontent.com/redis/redis/1a2574ce1551d3de6e0b4a56756c0fdbc6659e4f/LICENSE.txt",
+          "bytes": 72266,
+          "sha256": "4a0e416b9537688f30dfe69ddaceb2ca64d96b7df02a0a6760d376890ddc4e40",
+          "detected_spdx": [
+            "AGPL-3.0",
+            "SSPL-1.0",
+            "RSALv2"
+          ],
+          "first_line": "Starting with Redis 8, Redis Open Source is moving to a tri-licensing model with all new Redis code"
+        }
+      ],
+      "primary_license_path": "LICENSE.txt",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "4a0e416b9537688f30dfe69ddaceb2ca64d96b7df02a0a6760d376890ddc4e40",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:42:50Z"
+    },
+    "rustfs": {
+      "repo": "https://github.com/rustfs/rustfs",
+      "head_commit": "0b1ebeffec4c8cc5cce1bd6c13e36f6b6e5f0d1f",
+      "release_tag": "1.0.4",
+      "release_version": "1.0.4",
+      "pinned_commit": "46337942d55f3a8e6a97b147ca98d9ea8115555d",
+      "pinned_ref": "1.0.4",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/rustfs/rustfs/46337942d55f3a8e6a97b147ca98d9ea8115555d/LICENSE",
+          "bytes": 11548,
+          "sha256": "8ef87773cd6df917c9cf75bdb3075d92b78ad4cdf8e51d6c98030292442524d8",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Apache License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "8ef87773cd6df917c9cf75bdb3075d92b78ad4cdf8e51d6c98030292442524d8",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:39:52Z"
+    },
+    "seaweedfs": {
+      "repo": "https://github.com/seaweedfs/seaweedfs",
+      "head_commit": "3f5b07475dc31f020035c3eaae6cc8bf94f86f59",
+      "release_tag": "4.53",
+      "release_version": "4.53",
+      "pinned_commit": "4ab66fb76da83700739f5839e62fcaf15fb7d02a",
+      "pinned_ref": "4.53",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/seaweedfs/seaweedfs/4ab66fb76da83700739f5839e62fcaf15fb7d02a/LICENSE",
+          "bytes": 11337,
+          "sha256": "d789d433cc11da163273d1e39be2e8fa67642f9a58ef220d3f258fa9c14ef613",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Apache License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "d789d433cc11da163273d1e39be2e8fa67642f9a58ef220d3f258fa9c14ef613",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:40:47Z"
+    },
+    "step-ca": {
+      "repo": "https://github.com/smallstep/certificates",
+      "head_commit": "6d5a251fbe010383c93ead1ab451a329986b80ca",
+      "release_tag": "v0.30.2",
+      "release_version": "0.30.2",
+      "pinned_commit": "6e8ec61405239cf3f37b2bbf260a587b7d2e4e31",
+      "pinned_ref": "v0.30.2",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/smallstep/certificates/6e8ec61405239cf3f37b2bbf260a587b7d2e4e31/LICENSE",
+          "bytes": 11351,
+          "sha256": "6fac0a40e0507e3ba32cd3471c808fa5ba4b088700bd22d81250f40f6cc74db5",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Apache License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "6fac0a40e0507e3ba32cd3471c808fa5ba4b088700bd22d81250f40f6cc74db5",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:44:05Z"
+    },
+    "tabby": {
+      "repo": "https://github.com/Eugeny/tabby",
+      "head_commit": "467ce8ebfa467fb88cf6d154c9a5891e3d3647f0",
+      "release_tag": "v1.0.238",
+      "release_version": "1.0.238",
+      "pinned_commit": "54869e108aaa336fdd01bc4de5b160fd8feccf7b",
+      "pinned_ref": "v1.0.238",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/Eugeny/tabby/54869e108aaa336fdd01bc4de5b160fd8feccf7b/LICENSE",
+          "bytes": 1083,
+          "sha256": "ac295694b9f56e90dce3cf58313ed891d0bd9178adec02d8503a0c07d9d34c68",
+          "detected_spdx": [
+            "MIT"
+          ],
+          "first_line": "The MIT License (MIT)"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "ac295694b9f56e90dce3cf58313ed891d0bd9178adec02d8503a0c07d9d34c68",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:44:58Z"
+    },
+    "tauri": {
+      "repo": "https://github.com/tauri-apps/tauri",
+      "head_commit": "6c20c1844b8fb0124dc253099700f7697bf7cff4",
+      "release_tag": "tauri-v2.12.5",
+      "release_version": "2.12.5",
+      "pinned_commit": "993038c49185307dfc895ab7657d77ca0d5ed7c7",
+      "pinned_ref": "tauri-v2.12.5",
+      "license_files": [
+        {
+          "path": "LICENSE-MIT",
+          "url": "https://raw.githubusercontent.com/tauri-apps/tauri/993038c49185307dfc895ab7657d77ca0d5ed7c7/LICENSE-MIT",
+          "bytes": 1090,
+          "sha256": "9dd42ea92cff2ede5cd477cbfcce051b2d0115c0ac7f368ee88cb545055dff1d",
+          "detected_spdx": [
+            "MIT"
+          ],
+          "first_line": "MIT License"
+        },
+        {
+          "path": "LICENSE-APACHE-2.0",
+          "url": "https://raw.githubusercontent.com/tauri-apps/tauri/993038c49185307dfc895ab7657d77ca0d5ed7c7/LICENSE-APACHE-2.0",
+          "bytes": 10174,
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Apache License"
+        },
+        {
+          "path": "LICENSE.spdx",
+          "url": "https://raw.githubusercontent.com/tauri-apps/tauri/993038c49185307dfc895ab7657d77ca0d5ed7c7/LICENSE.spdx",
+          "bytes": 889,
+          "sha256": "5e834fe9788c524210deda859c46a550ffa5aa0cba9ea0572f0d81120e97c008",
+          "detected_spdx": [],
+          "first_line": "SPDXVersion: SPDX-2.1"
+        }
+      ],
+      "primary_license_path": "LICENSE-MIT",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "9dd42ea92cff2ede5cd477cbfcce051b2d0115c0ac7f368ee88cb545055dff1d",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:42:53Z"
+    },
+    "teleport": {
+      "repo": "https://github.com/gravitational/teleport",
+      "head_commit": "1283425b60ec5f60d509ba4c791183d452923ff7",
+      "release_tag": "v18.11.1",
+      "release_version": "18.11.1",
+      "pinned_commit": "27eb07217a0efca4a5d2dd88bce7472cba5f406a",
+      "pinned_ref": "v18.11.1",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/gravitational/teleport/27eb07217a0efca4a5d2dd88bce7472cba5f406a/LICENSE",
+          "bytes": 34522,
+          "sha256": "88a722879257e3ddf202789119d13f77da8718d03a4ee936ce5c12f0ce6f6ecf",
+          "detected_spdx": [
+            "AGPL-3.0"
+          ],
+          "first_line": "GNU AFFERO GENERAL PUBLIC LICENSE"
+        },
+        {
+          "path": "api/LICENSE",
+          "url": "https://raw.githubusercontent.com/gravitational/teleport/27eb07217a0efca4a5d2dd88bce7472cba5f406a/api/LICENSE",
+          "bytes": 11316,
+          "sha256": "f12267a27f6e106e429deb966948ba83aa39a59b7bbfbe18bbea134d85ff37d2",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Apache License"
+        },
+        {
+          "path": "build.assets/LICENSE-community",
+          "url": "https://raw.githubusercontent.com/gravitational/teleport/27eb07217a0efca4a5d2dd88bce7472cba5f406a/build.assets/LICENSE-community",
+          "bytes": 11896,
+          "sha256": "3beda963b864fc67546e6926fd6ee8601cafee44a9d24440042efd68b7cab8f6",
+          "detected_spdx": [
+            "Apache-2.0",
+            "LicenseRef-Teleport-CE"
+          ],
+          "first_line": "Teleport Community Edition License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "88a722879257e3ddf202789119d13f77da8718d03a4ee936ce5c12f0ce6f6ecf",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:37:39Z"
+    },
+    "temporal": {
+      "repo": "https://github.com/temporalio/temporal",
+      "head_commit": "862b2db4c869a27607710238c52182658220041e",
+      "release_tag": "v1.32.2",
+      "release_version": "1.32.2",
+      "pinned_commit": "6d085822273f4336796e6959c73ab1d14a23eb77",
+      "pinned_ref": "v1.32.2",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/temporalio/temporal/6d085822273f4336796e6959c73ab1d14a23eb77/LICENSE",
+          "bytes": 1152,
+          "sha256": "6aab9afd99ceb1dcaf6a0d91386b46baef9bce17ae4006044e0f231e31430b69",
+          "detected_spdx": [
+            "MIT"
+          ],
+          "first_line": "The MIT License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "6aab9afd99ceb1dcaf6a0d91386b46baef9bce17ae4006044e0f231e31430b69",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:39:42Z"
+    },
+    "termix": {
+      "repo": "https://github.com/Termix-SSH/Termix",
+      "head_commit": "4061229760e84ca8b0aa817b8dc585dcd5e90320",
+      "release_tag": "v26.11.1",
+      "release_version": "26.11.1",
+      "pinned_commit": "92e16524a9bc2e72a276911a1321090f1c2f725f",
+      "pinned_ref": "v26.11.1",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/Termix-SSH/Termix/92e16524a9bc2e72a276911a1321090f1c2f725f/LICENSE",
+          "bytes": 11388,
+          "sha256": "de12c2043bfaa8e5cc5d2bb040af8f982444fff001634fde734a7354ab198517",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Copyright 2026 Luke Gustafson"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "de12c2043bfaa8e5cc5d2bb040af8f982444fff001634fde734a7354ab198517",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:37:39Z"
+    },
+    "tmux": {
+      "repo": "https://github.com/tmux/tmux",
+      "head_commit": "399d53b1579d286e323f1de4338469a5aeb6b5cf",
+      "release_tag": "3.8",
+      "release_version": "3.8",
+      "pinned_commit": "7f2a35ad3321f9ba57a1062ca73b1f3ff26aca53",
+      "pinned_ref": "3.8",
+      "license_files": [
+        {
+          "path": "COPYING",
+          "url": "https://raw.githubusercontent.com/tmux/tmux/7f2a35ad3321f9ba57a1062ca73b1f3ff26aca53/COPYING",
+          "bytes": 731,
+          "sha256": "2116115d46eeb1e736acfa562eed14fe6c34760794bc5b484642fe694adde0fd",
+          "detected_spdx": [
+            "ISC"
+          ],
+          "first_line": "Copyright (c) Various Authors"
+        }
+      ],
+      "primary_license_path": "COPYING",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "2116115d46eeb1e736acfa562eed14fe6c34760794bc5b484642fe694adde0fd",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:44:56Z"
+    },
+    "toolhive": {
+      "repo": "https://github.com/stacklok/toolhive",
+      "head_commit": "3f471e609c5c3880fda82ca8918aa327a0ea14aa",
+      "release_tag": "v0.63.0",
+      "release_version": "0.63.0",
+      "pinned_commit": "01f96bf4d16ac1a9fecb0b280c520d433fcf0221",
+      "pinned_ref": "v0.63.0",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/stacklok/toolhive/01f96bf4d16ac1a9fecb0b280c520d433fcf0221/LICENSE",
+          "bytes": 11344,
+          "sha256": "269187c8b1d9569c2a3a381eeb428150f96b2a2c93e168be7ce45e1247853168",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Apache License"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "269187c8b1d9569c2a3a381eeb428150f96b2a2c93e168be7ce45e1247853168",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:40:42Z"
+    },
+    "valkey": {
+      "repo": "https://github.com/valkey-io/valkey",
+      "head_commit": "39f27052bf9ee985c9d52a0aa908749f12633eb4",
+      "release_tag": "9.1.3",
+      "release_version": "9.1.3",
+      "pinned_commit": "29173b67508b2de4c0f0ed551f3b47cf19fc3ca8",
+      "pinned_ref": "9.1.3",
+      "license_files": [
+        {
+          "path": "COPYING",
+          "url": "https://raw.githubusercontent.com/valkey-io/valkey/29173b67508b2de4c0f0ed551f3b47cf19fc3ca8/COPYING",
+          "bytes": 3091,
+          "sha256": "1a53dca3aab7ce048e91e77b03c0342f3075366f9dede8ec4d19d0cf229e12a0",
+          "detected_spdx": [
+            "BSD-3-Clause"
+          ],
+          "first_line": "# License 1"
+        }
+      ],
+      "primary_license_path": "COPYING",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "9a67d40ae9076cd60b9d228135a9c0ce5d60f84f0c54c472965d4e03fdeb8f8f",
+        "changed_since_pin": true
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:40:48Z"
+    },
+    "versitygw": {
+      "repo": "https://github.com/versity/versitygw",
+      "head_commit": "5cf674f79f2f44cf0f65ba39cb6bf028dc9a893b",
+      "release_tag": "v1.11.0",
+      "release_version": "1.11.0",
+      "pinned_commit": "e42ae7ab8107201e64e52ee024824e8cab3683b3",
+      "pinned_ref": "v1.11.0",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/versity/versitygw/e42ae7ab8107201e64e52ee024824e8cab3683b3/LICENSE",
+          "bytes": 11357,
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Apache License"
+        },
+        {
+          "path": "NOTICE",
+          "url": "https://raw.githubusercontent.com/versity/versitygw/e42ae7ab8107201e64e52ee024824e8cab3683b3/NOTICE",
+          "bytes": 63,
+          "sha256": "df0d1fe31fcdd9f92ac2e7005ba685fdce9ba6bb9fb683c48ead5d76789bedc4",
+          "detected_spdx": [],
+          "first_line": "versitygw - Versity S3 Gateway"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:41:41Z"
+    },
+    "warp": {
+      "repo": "https://github.com/warpdotdev/warp",
+      "head_commit": "651109041b4dba1ee9f4e4ad94f77245274fc253",
+      "release_tag": null,
+      "release_version": null,
+      "pinned_commit": "651109041b4dba1ee9f4e4ad94f77245274fc253",
+      "pinned_ref": "HEAD",
+      "license_files": [
+        {
+          "path": "LICENSE-MIT",
+          "url": "https://raw.githubusercontent.com/warpdotdev/warp/651109041b4dba1ee9f4e4ad94f77245274fc253/LICENSE-MIT",
+          "bytes": 1074,
+          "sha256": "0cb5f8a282734dd41844fc3bdc28bda274cc71db8de289a9959263b61210daa9",
+          "detected_spdx": [
+            "MIT"
+          ],
+          "first_line": "Copyright (C) 2020-2026 Denver Technologies, Inc."
+        },
+        {
+          "path": "LICENSE-AGPL",
+          "url": "https://raw.githubusercontent.com/warpdotdev/warp/651109041b4dba1ee9f4e4ad94f77245274fc253/LICENSE-AGPL",
+          "bytes": 34574,
+          "sha256": "16f8dac5fd5755d74ba05cb377c23f49e794252d200548fb3b227e1c5dcbfaec",
+          "detected_spdx": [
+            "AGPL-3.0"
+          ],
+          "first_line": "Copyright (C) 2020-2026 Denver Technologies, Inc."
+        }
+      ],
+      "primary_license_path": "LICENSE-MIT",
+      "head_drift": null,
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:45:03Z"
+    },
+    "waveterm": {
+      "repo": "https://github.com/wavetermdev/waveterm",
+      "head_commit": "9f1c9670d407be3b93cf090319a63ef30bf54d0e",
+      "release_tag": "v0.14.5",
+      "release_version": "0.14.5",
+      "pinned_commit": "97e560027f494d20fed347b2d6b72b6bcb3e50e0",
+      "pinned_ref": "v0.14.5",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/wavetermdev/waveterm/97e560027f494d20fed347b2d6b72b6bcb3e50e0/LICENSE",
+          "bytes": 10937,
+          "sha256": "2961c11688c782253260f3094ef85163871b9bcef1cfc21f8e0650170c736828",
+          "detected_spdx": [
+            "Apache-2.0"
+          ],
+          "first_line": "Apache License"
+        },
+        {
+          "path": "NOTICE",
+          "url": "https://raw.githubusercontent.com/wavetermdev/waveterm/97e560027f494d20fed347b2d6b72b6bcb3e50e0/NOTICE",
+          "bytes": 34,
+          "sha256": "5438ef463dc1802048ab0f5fa04412d8a5abdc4ab4723b648bc12dfae6d8a153",
+          "detected_spdx": [],
+          "first_line": "Copyright 2025, Command Line Inc."
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "2961c11688c782253260f3094ef85163871b9bcef1cfc21f8e0650170c736828",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:44:55Z"
+    },
+    "wezterm": {
+      "repo": "https://github.com/wezterm/wezterm",
+      "head_commit": "458a100c1bf4134d36cb5c42dd90e4c8266d9e1a",
+      "release_tag": "20240203-110809-5046fc22",
+      "release_version": "20240203-110809-5046fc22",
+      "pinned_commit": "5046fc225992db6ba2ef8812743fadfdfe4b184a",
+      "pinned_ref": "20240203-110809-5046fc22",
+      "license_files": [
+        {
+          "path": "LICENSE.md",
+          "url": "https://raw.githubusercontent.com/wezterm/wezterm/5046fc225992db6ba2ef8812743fadfdfe4b184a/LICENSE.md",
+          "bytes": 1529,
+          "sha256": "37db33bbbd7348969eda397b89a16f252d56c1ca7481b6ccaf56ccdcbab5dcca",
+          "detected_spdx": [
+            "MIT"
+          ],
+          "first_line": "MIT License"
+        }
+      ],
+      "primary_license_path": "LICENSE.md",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "37db33bbbd7348969eda397b89a16f252d56c1ca7481b6ccaf56ccdcbab5dcca",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:44:57Z"
+    },
+    "xtermjs": {
+      "repo": "https://github.com/xtermjs/xterm.js",
+      "head_commit": "f70764dd3da05ebda0390605c6f9adbbea3f0e90",
+      "release_tag": "6.0.0",
+      "release_version": "6.0.0",
+      "pinned_commit": "f447274f430fd22513f6adbf9862d19524471c04",
+      "pinned_ref": "6.0.0",
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/xtermjs/xterm.js/f447274f430fd22513f6adbf9862d19524471c04/LICENSE",
+          "bytes": 1261,
+          "sha256": "b569f629d00f2626a8100df2a1798210535621e42164dfd426a6fe5aac7b0ccd",
+          "detected_spdx": [
+            "MIT"
+          ],
+          "first_line": "Copyright (c) 2017-2019, The xterm.js authors (https://github.com/xtermjs/xterm.js)"
+        }
+      ],
+      "primary_license_path": "LICENSE",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "b569f629d00f2626a8100df2a1798210535621e42164dfd426a6fe5aac7b0ccd",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:42:01Z"
+    },
+    "zellij": {
+      "repo": "https://github.com/zellij-org/zellij",
+      "head_commit": "dddd5418b672a98eaeb832c12e38f5d305aa87d5",
+      "release_tag": "v0.45.1",
+      "release_version": "0.45.1",
+      "pinned_commit": "efd8fd5a89a20c07a111d248ad7fce53848d2c18",
+      "pinned_ref": "v0.45.1",
+      "license_files": [
+        {
+          "path": "LICENSE.md",
+          "url": "https://raw.githubusercontent.com/zellij-org/zellij/efd8fd5a89a20c07a111d248ad7fce53848d2c18/LICENSE.md",
+          "bytes": 1076,
+          "sha256": "9aa6c363b18a48eeecbffe13ff390c76ede2c90eb37ba17dfbbaffc42892d87d",
+          "detected_spdx": [
+            "MIT"
+          ],
+          "first_line": "MIT License"
+        }
+      ],
+      "primary_license_path": "LICENSE.md",
+      "head_drift": {
+        "head_path_exists": true,
+        "head_sha256": "9aa6c363b18a48eeecbffe13ff390c76ede2c90eb37ba17dfbbaffc42892d87d",
+        "changed_since_pin": false
+      },
+      "archived": null,
+      "fetched_at_utc": "2026-11-10T08:43:59Z"
+    }
+  },
+  "errors": {}
+}
