@@ -55,8 +55,12 @@ Unmapped permissions are **denied**. The worst result wins and every reason is r
 `available → install_requested → (pending_approval) → installed → remove_requested → removed`.
 `available` is implicit. A removed package may be re-requested.
 
-- Checks run before any state is recorded: integrity, compatibility, policy. A denied or invalid
-  request leaves no record and no files.
+- Checks run before any state is recorded: integrity, compatibility, policy. Files are then
+  copied into a fresh `mkdtemp` staging dir inside `realpath(sandboxRoot)` and `rename`d into
+  place; only after that are `install_requested` and `installed` recorded. A denied, invalid or
+  failed request leaves no record and no files; cleanup removes only the staging dir. An existing
+  target or a symlinked package dir is refused (`sandbox_conflict`, `unsafe_path`), and all
+  filesystem failures surface as `MarketplaceError`.
 - `pending_approval` has **no exit in dev**. There is no approve API. `attemptApproval` only
   refuses (`self_approval` if the approver is the requester, otherwise `approval_unavailable`).
   Any `approved` key anywhere in input, or in a persisted state file, is rejected. A real
@@ -82,7 +86,7 @@ digest only, which proves consistency, not authorship.
 | Threat                                           | Mitigation in MK-1                                              |
 | ------------------------------------------------ | --------------------------------------------------------------- |
 | Tampered file or manifest                        | per-file sha256, manifest digest, index digest                  |
-| Path traversal, absolute path, symlink escape    | lexical checks plus `lstat` tree walk; sandbox prefix check     |
+| Path traversal, absolute path, symlink escape    | lexical checks plus `lstat` tree walk; sandbox install via realpath root, `lstat` refusal of symlinked package dirs, staging dir plus `rename`     |
 | Code execution at install                        | declarative allow-list, no hooks, no exec bits; nothing is run  |
 | Hidden extra payload                             | undeclared files rejected                                       |
 | Permission creep or invented permission          | closed enum, kind-implied permissions, default-deny policy      |
@@ -90,6 +94,15 @@ digest only, which proves consistency, not authorship.
 | Untrusted registry or publisher                  | policy allow-lists                                              |
 | Malicious content in text skills (prompt inject) | **not mitigated** here; agents must treat skills as untrusted input |
 | Publisher impersonation                          | **not mitigated** until signing                                 |
+
+## OS/arch compatibility
+
+Targets macOS and Linux, arm64 and x64. Packages are declarative files only, so there is no
+platform-specific code; manifests declare `os`/`arch` and installs are refused when incompatible.
+macOS filesystems are case-insensitive and normalise Unicode, so the manifest rejects file paths
+that collide after `NFC` + lowercase (otherwise the second write would conflict on macOS). Tests
+have so far run only on linux-x64; macOS and arm64 are untested. A `terminal-extension` keymap
+that sends text is effectively `terminal.input` and must declare that permission.
 
 ## Consequences
 

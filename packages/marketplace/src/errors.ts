@@ -20,7 +20,9 @@ export type MarketplaceErrorCode =
   | 'not_installed'
   | 'self_approval'
   | 'approval_unavailable'
-  | 'invalid_state_file';
+  | 'invalid_state_file'
+  | 'sandbox_conflict'
+  | 'install_failed';
 
 export class MarketplaceError extends Error {
   readonly code: MarketplaceErrorCode;

@@ -90,8 +90,10 @@ export const ManifestSchema = z
   .superRefine((m, ctx) => {
     const paths = new Set<string>();
     for (const f of m.files) {
-      if (paths.has(f.path)) ctx.addIssue({ code: 'custom', message: `duplicate file ${f.path}` });
-      paths.add(f.path);
+      // Case/Unicode-insensitive: macOS filesystems fold both, so such paths collide there.
+      const key = f.path.normalize('NFC').toLowerCase();
+      if (paths.has(key)) ctx.addIssue({ code: 'custom', message: `duplicate file ${f.path}` });
+      paths.add(key);
     }
     if (new Set(m.permissions).size !== m.permissions.length) {
       ctx.addIssue({ code: 'custom', message: 'duplicate permission' });

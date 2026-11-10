@@ -1,4 +1,4 @@
-import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, stat, symlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -276,6 +276,62 @@ describe('install state machine', () => {
     expect(await code(m.requestInstall({ packageId: 'test-skill', requester: 'a' }))).toBe(
       'invalid_transition',
     );
+  });
+
+  it('B1/B2: a conflicting sandbox target fails cleanly, keeps foreign data, leaves no record', async () => {
+    const { registry } = await makeRegistry();
+    const root = await tmp();
+    const m = await manager({ registry, sandboxRoot: root });
+    const dir = path.join(root, 'test-skill', '1.0.0');
+    await mkdir(dir, { recursive: true });
+    await writeFile(path.join(dir, 'keep.txt'), 'mine');
+    expect(await code(m.requestInstall({ packageId: 'test-skill', requester: 'a' }))).toBe(
+      'sandbox_conflict',
+    );
+    expect(await readFile(path.join(dir, 'keep.txt'), 'utf8')).toBe('mine');
+    expect(await m.list()).toEqual([]);
+    expect((await readdir(root)).filter((n) => n.startsWith('.staging-'))).toEqual([]);
+  });
+
+  it('B2: a second manager sharing the sandbox cannot delete the first manager’s files', async () => {
+    const { registry } = await makeRegistry();
+    const root = await tmp();
+    const a = await manager({ registry, sandboxRoot: root });
+    const rec = await a.requestInstall({ packageId: 'test-skill', requester: 'a' });
+    const b = await manager({ registry, sandboxRoot: root });
+    expect(await code(b.requestInstall({ packageId: 'test-skill', requester: 'b' }))).toBe(
+      'sandbox_conflict',
+    );
+    expect(await readFile(path.join(rec.sandboxPath ?? '', 'SKILL.md'), 'utf8')).toContain('SKILL');
+  });
+
+  it('B3: a symlink under the sandbox root cannot redirect writes outside it', async () => {
+    const { registry } = await makeRegistry();
+    const root = await tmp();
+    const outside = await tmp();
+    await symlink(outside, path.join(root, 'test-skill'));
+    const m = await manager({ registry, sandboxRoot: root });
+    expect(await code(m.requestInstall({ packageId: 'test-skill', requester: 'a' }))).toBe(
+      'unsafe_path',
+    );
+    expect(await readdir(outside)).toEqual([]);
+    expect(await m.list()).toEqual([]);
+  });
+
+  it('S2: invalid JSON in the state file raises invalid_state_file', async () => {
+    const file = path.join(await tmp(), 'state.json');
+    await writeFile(file, '{not json');
+    expect(await code(new JsonFileInstallStore(file).all())).toBe('invalid_state_file');
+  });
+
+  it('S1: file paths differing only in case or Unicode form are rejected', async () => {
+    for (const files of [
+      [{ path: 'a.md' }, { path: 'A.md' }],
+      [{ path: 'caf\u00e9.md' }, { path: 'cafe\u0301.md' }],
+    ]) {
+      const { registry } = await makeRegistry({ files });
+      expect(await code(registry.fetch('test-skill'))).toBe('invalid_manifest');
+    }
   });
 
   it('removes an installed package, deletes the sandbox copy, and allows reinstall', async () => {

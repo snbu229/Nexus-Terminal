@@ -1,7 +1,7 @@
 // Install/remove state machine. "Installing" records the package and copies its verified
 // declarative files into a sandbox directory. Nothing is ever executed, and there is no
 // approve API in dev: pending_approval is terminal until a real approval path exists.
-import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, mkdtemp, readFile, realpath, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { z } from 'zod';
 import { MarketplaceError } from './errors.ts';
@@ -79,7 +79,13 @@ export class JsonFileInstallStore implements InstallStore {
     } catch {
       return [];
     }
-    const parsed = z.array(InstallRecordSchema).safeParse(JSON.parse(text));
+    let json: unknown;
+    try {
+      json = JSON.parse(text);
+    } catch {
+      throw new MarketplaceError('invalid_state_file', 'install state file is not valid JSON');
+    }
+    const parsed = z.array(InstallRecordSchema).safeParse(json);
     if (!parsed.success)
       throw new MarketplaceError('invalid_state_file', 'install state file is invalid');
     return parsed.data;
@@ -206,29 +212,60 @@ export class InstallManager {
       decision,
       sandboxPath: null,
     };
-    await this.transition(rec, 'install_requested');
     if (decision.decision === 'require_approval') {
+      await this.transition(rec, 'install_requested');
       await this.transition(rec, 'pending_approval');
       return rec;
     }
 
-    const target = path.join(this.sandboxRoot, manifest.id, manifest.version);
+    // Copy first, into a fresh staging dir, then record. A failed copy removes only the staging
+    // dir and leaves no record, so a retry is always possible.
+    rec.sandboxPath = await this.stageAndPlace(manifest.id, manifest.version, files);
+    await this.transition(rec, 'install_requested');
+    await this.transition(rec, 'installed');
+    return rec;
+  }
+
+  private async stageAndPlace(
+    id: string,
+    version: string,
+    files: Map<string, Uint8Array>,
+  ): Promise<string> {
+    let staging: string | undefined;
     try {
+      await mkdir(this.sandboxRoot, { recursive: true, mode: 0o700 });
+      const root = await realpath(this.sandboxRoot);
+      const idDir = path.join(root, id);
+      const target = path.join(idDir, version);
+      // Refuse symlinks anywhere below the real root, and never touch an existing target.
+      await mkdir(idDir, { recursive: true, mode: 0o700 });
+      if ((await lstat(idDir)).isSymbolicLink()) {
+        throw new MarketplaceError('unsafe_path', `symlink in sandbox: ${id}`);
+      }
+      const existing = await lstat(target).catch(() => undefined);
+      if (existing) {
+        throw new MarketplaceError(
+          'sandbox_conflict',
+          `${id}@${version} already exists in sandbox`,
+        );
+      }
+      staging = await mkdtemp(path.join(root, '.staging-'));
       for (const [rel, data] of files) {
-        const dest = path.join(target, ...rel.split('/'));
-        if (!dest.startsWith(target + path.sep)) {
+        const dest = path.join(staging, ...rel.split('/'));
+        if (!dest.startsWith(staging + path.sep)) {
           throw new MarketplaceError('unsafe_path', `escapes sandbox: ${rel}`);
         }
         await mkdir(path.dirname(dest), { recursive: true, mode: 0o700 });
         await writeFile(dest, data, { flag: 'wx', mode: 0o600 });
       }
+      await rename(staging, target); // fails on a non-empty existing dir; never overwrites
+      staging = undefined;
+      return target;
     } catch (err) {
-      await rm(target, { recursive: true, force: true });
-      throw err;
+      if (staging) await rm(staging, { recursive: true, force: true });
+      if (err instanceof MarketplaceError) throw err;
+      throw new MarketplaceError('install_failed', `copy failed: ${(err as Error).message}`);
     }
-    rec.sandboxPath = target;
-    await this.transition(rec, 'installed');
-    return rec;
   }
 
   async requestRemove(input: unknown): Promise<InstallRecord> {
