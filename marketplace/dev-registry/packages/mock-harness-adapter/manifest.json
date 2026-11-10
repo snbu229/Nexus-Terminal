@@ -1,0 +1,27 @@
+{
+  "version": "0.1.0",
+  "publisher": "nexus-samples",
+  "license": "Apache-2.0",
+  "source": {
+    "registry": "local-dev",
+    "ref": "dev-fixture-1"
+  },
+  "id": "mock-harness-adapter",
+  "kind": "harness-adapter",
+  "description": "Mock harness adapter descriptor (metadata only, not runnable).",
+  "categories": ["harness", "mock"],
+  "compatibility": {
+    "nexus": ">=0.0.0 <1.0.0",
+    "os": ["macos", "linux"],
+    "arch": ["arm64", "x64"],
+    "harness": ["mock"]
+  },
+  "files": [
+    {
+      "path": "descriptor.json",
+      "sha256": "91f1d23715387ff159f030e0c932d91d42a280f838abf87b40c57e4365d42c43"
+    }
+  ],
+  "permissions": ["process.spawn"],
+  "digest": "3a459f3f69b8b1c77b445df1b3b17e7916edbf38465a389a9ad257cd770a2d89"
+}

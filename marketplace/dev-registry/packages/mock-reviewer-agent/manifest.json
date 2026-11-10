@@ -1,0 +1,27 @@
+{
+  "version": "0.1.0",
+  "publisher": "nexus-samples",
+  "license": "Apache-2.0",
+  "source": {
+    "registry": "local-dev",
+    "ref": "dev-fixture-1"
+  },
+  "id": "mock-reviewer-agent",
+  "kind": "agent-template",
+  "description": "Mock agent template for the M-D1 mock harness: reviews a workspace diff.",
+  "categories": ["review", "mock"],
+  "compatibility": {
+    "nexus": ">=0.0.0 <1.0.0",
+    "os": ["macos", "linux"],
+    "arch": ["arm64", "x64"],
+    "harness": ["mock"]
+  },
+  "files": [
+    {
+      "path": "template.json",
+      "sha256": "0ee7be386d88fd09e86144f9a98a746ad8d6a2b5afb787b70ec650c44348279f"
+    }
+  ],
+  "permissions": ["agent.session.start", "fs.read.workspace"],
+  "digest": "a7b8b4d1bc320dbdcfa3fb177af85393efbf9b62fe2b261c9ed5be67215b40be"
+}

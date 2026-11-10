@@ -1,0 +1,27 @@
+{
+  "version": "0.1.0",
+  "publisher": "nexus-samples",
+  "license": "Apache-2.0",
+  "source": {
+    "registry": "local-dev",
+    "ref": "dev-fixture-1"
+  },
+  "id": "solarized-night-theme",
+  "kind": "terminal-extension",
+  "description": "Declarative terminal colour theme.",
+  "categories": ["theme"],
+  "compatibility": {
+    "nexus": ">=0.0.0 <1.0.0",
+    "os": ["macos", "linux"],
+    "arch": ["arm64", "x64"],
+    "harness": ["any"]
+  },
+  "files": [
+    {
+      "path": "theme.json",
+      "sha256": "733f8f49bbc1c22ba3b81fc23436a5967a6daffc4e6da236f20bd389ed8b7664"
+    }
+  ],
+  "permissions": ["ui.theme"],
+  "digest": "fb77693a7d9a616054085a97b646f5ff8cf058bcf1a90ed5b87b0cf391a138fb"
+}

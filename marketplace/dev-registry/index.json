@@ -1,0 +1,41 @@
+{
+  "registry": "local-dev",
+  "entries": [
+    {
+      "id": "shell-safety-skill",
+      "version": "0.1.0",
+      "path": "packages/shell-safety-skill",
+      "digest": "862746372799fb5d4cf2fd1cfa540f9a255af5a15b40597968c3bb96ad47e49e"
+    },
+    {
+      "id": "commit-message-skill",
+      "version": "0.1.0",
+      "path": "packages/commit-message-skill",
+      "digest": "039ab4bbb2928d68964b11f1115d7294666c8ab5d8fa85fc49fa2c85a957b1ec"
+    },
+    {
+      "id": "mock-reviewer-agent",
+      "version": "0.1.0",
+      "path": "packages/mock-reviewer-agent",
+      "digest": "a7b8b4d1bc320dbdcfa3fb177af85393efbf9b62fe2b261c9ed5be67215b40be"
+    },
+    {
+      "id": "mock-docs-mcp",
+      "version": "0.1.0",
+      "path": "packages/mock-docs-mcp",
+      "digest": "46e31ba7388d62f493ec59c758f1966e8aa5a22aa167f4d3089856bdfe39cdb6"
+    },
+    {
+      "id": "mock-harness-adapter",
+      "version": "0.1.0",
+      "path": "packages/mock-harness-adapter",
+      "digest": "3a459f3f69b8b1c77b445df1b3b17e7916edbf38465a389a9ad257cd770a2d89"
+    },
+    {
+      "id": "solarized-night-theme",
+      "version": "0.1.0",
+      "path": "packages/solarized-night-theme",
+      "digest": "fb77693a7d9a616054085a97b646f5ff8cf058bcf1a90ed5b87b0cf391a138fb"
+    }
+  ]
+}

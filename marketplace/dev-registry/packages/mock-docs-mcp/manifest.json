@@ -1,0 +1,27 @@
+{
+  "version": "0.1.0",
+  "publisher": "nexus-samples",
+  "license": "Apache-2.0",
+  "source": {
+    "registry": "local-dev",
+    "ref": "dev-fixture-1"
+  },
+  "id": "mock-docs-mcp",
+  "kind": "mcp-server",
+  "description": "Mock MCP server descriptor (metadata only, not runnable).",
+  "categories": ["docs", "mock"],
+  "compatibility": {
+    "nexus": ">=0.0.0 <1.0.0",
+    "os": ["macos", "linux"],
+    "arch": ["arm64", "x64"],
+    "harness": ["any"]
+  },
+  "files": [
+    {
+      "path": "descriptor.json",
+      "sha256": "62d308987c13f87cad8a9fadfc2f855e8b001d4df26be0620c507d89cd7eaac5"
+    }
+  ],
+  "permissions": ["net.egress"],
+  "digest": "46e31ba7388d62f493ec59c758f1966e8aa5a22aa167f4d3089856bdfe39cdb6"
+}

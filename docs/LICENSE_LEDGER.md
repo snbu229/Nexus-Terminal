@@ -14,6 +14,8 @@ One line per dependency. Permissive licences only; versions pinned exactly.
 | prettier          | 3.9.10  | MIT        | EZF-44   | Formatting (dev)                                         |
 | @types/node       | 24.19.2 | MIT        | EZF-44   | Node typings (dev)                                       |
 
+EZF-69 (`@nexus/marketplace`) adds no new dependency: it reuses `zod` 4.6.7 (above) and Node built-ins. Semver handling is a small in-repo implementation, not a library.
+
 Transitive dependencies are recorded in `pnpm-lock.yaml`. `pnpm licenses list` scan at EZF-44 (MIT 104, Apache-2.0 14, ISC 8, BSD-2-Clause 6, BSD-3-Clause 2, MPL-2.0 2, BlueOak-1.0.0 1; no AGPL/GPL) found these non-default licences:
 
 | Package                                       | Licence     | Note                                                                |
