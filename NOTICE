@@ -1,0 +1,11 @@
+Nexus Terminal
+Copyright 2026 The Nexus Terminal Authors
+
+This product includes software developed as part of the Nexus Terminal
+project, licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Third-party components keep their own licences and notices. No third-party
+source code or binaries are distributed in this repository at this time.
+When a third-party component is added, its required notices are recorded in
+the licence ledger (docs/research/license-ledger.md) and reproduced in
+THIRD_PARTY_NOTICES before it ships in any Nexus artefact.
