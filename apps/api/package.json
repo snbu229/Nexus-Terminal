@@ -6,8 +6,17 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json",
-    "dev": "echo \"no dev server yet\"",
+    "dev": "NEXUS_DEV_MODE=${NEXUS_DEV_MODE:-1} tsx watch src/main.ts",
     "build": "echo \"nothing to build yet\"",
-    "test": "vitest run"
+    "test": "vitest run",
+    "start": "tsx src/main.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "11.4.1",
+    "@nexus/contracts": "workspace:*",
+    "fastify": "5.12.8"
+  },
+  "devDependencies": {
+    "tsx": "4.23.15"
   }
 }

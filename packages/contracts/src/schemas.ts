@@ -4,6 +4,11 @@ import { z } from 'zod';
 
 export const API_PREFIX = '/api/v0';
 
+// Size limits for client-controlled strings (A2). Keep in sync with openapi.yaml (drift test).
+export const MAX_TERMINAL_INPUT_BYTES = 64 * 1024;
+export const MAX_AGENT_TEXT_CHARS = 64 * 1024;
+export const MAX_TERMINAL_OUTPUT_B64_CHARS = 256 * 1024;
+
 const id = z.string().min(1).max(64);
 const timestamp = z.iso.datetime();
 
@@ -74,14 +79,16 @@ const seq = z.number().int().nonnegative();
 const dim = z.number().int().min(1).max(1000);
 
 export const TerminalClientFrameSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('input'), data: z.string() }).strict(),
+  z.object({ type: z.literal('input'), data: z.string().max(MAX_TERMINAL_INPUT_BYTES) }).strict(),
   z.object({ type: z.literal('resize'), cols: dim, rows: dim }).strict(),
   z.object({ type: z.literal('resume'), afterSeq: seq }).strict(),
 ]);
 
 export const TerminalServerFrameSchema = z.discriminatedUnion('type', [
   // data is base64-encoded terminal output
-  z.object({ type: z.literal('output'), seq, data: z.base64() }).strict(),
+  z
+    .object({ type: z.literal('output'), seq, data: z.base64().max(MAX_TERMINAL_OUTPUT_B64_CHARS) })
+    .strict(),
   z.object({ type: z.literal('state'), state: TerminalSessionStateSchema }).strict(),
   z.object({ type: z.literal('exit'), code: z.number().int() }).strict(),
 ]);
@@ -125,16 +132,18 @@ const eventBase = { seq, ts: timestamp };
 
 export const AgentEventSchema = z.discriminatedUnion('kind', [
   z.object({ ...eventBase, kind: z.literal('status'), state: AgentSessionStateSchema }).strict(),
-  z.object({ ...eventBase, kind: z.literal('output'), text: z.string() }).strict(),
+  z
+    .object({ ...eventBase, kind: z.literal('output'), text: z.string().max(MAX_AGENT_TEXT_CHARS) })
+    .strict(),
   z
     .object({
       ...eventBase,
       kind: z.literal('tool_call'),
-      tool: z.string().min(1),
-      summary: z.string(),
+      tool: z.string().min(1).max(128),
+      summary: z.string().max(2000),
     })
     .strict(),
-  z.object({ ...eventBase, kind: z.literal('needs_input'), prompt: z.string() }).strict(),
+  z.object({ ...eventBase, kind: z.literal('needs_input'), prompt: z.string().max(2000) }).strict(),
   z.object({ ...eventBase, kind: z.literal('exit'), code: z.number().int() }).strict(),
 ]);
 
@@ -167,7 +176,9 @@ export const ApprovalListResponseSchema = z
 
 // --- errors ---------------------------------------------------------------
 export const ErrorResponseSchema = z
-  .object({ error: z.object({ code: z.string(), message: z.string() }).strict() })
+  .object({
+    error: z.object({ code: z.string().min(1).max(64), message: z.string().max(1000) }).strict(),
+  })
   .strict();
 
 // --- types ----------------------------------------------------------------
