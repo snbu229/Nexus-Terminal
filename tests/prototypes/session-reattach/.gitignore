@@ -1,0 +1,5 @@
+# Run output. Commit only summary.md/summary.json/environment.json/events.jsonl/raw
+# after review; throwaway SSH keys must never be committed.
+results/*/keys/
+lib/__pycache__/
+__pycache__/

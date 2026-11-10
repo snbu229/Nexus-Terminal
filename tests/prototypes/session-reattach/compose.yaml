@@ -1,0 +1,48 @@
+# NX2-002 reattach prototype: 2 disposable Linux test nodes + 1 gateway.
+# Base images are pinned by multi-arch index digest (resolved 2026-11-10 from
+# registry-1.docker.io). No ports are published to the host.
+name: nx-reattach
+
+x-node: &node
+  build:
+    context: .
+    dockerfile: node.Dockerfile
+  networks: [nxnet]
+  volumes:
+    - ${NX_RUN_DIR:?run.sh sets NX_RUN_DIR}/keys/pub:/keys:ro
+  restart: "no"
+
+services:
+  node1:
+    <<: *node
+    hostname: node1
+    build:
+      context: .
+      dockerfile: node.Dockerfile
+      args:
+        BASE: debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2
+  node2:
+    <<: *node
+    hostname: node2
+    build:
+      context: .
+      dockerfile: node.Dockerfile
+      args:
+        BASE: ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+  gateway:
+    hostname: gateway
+    build:
+      context: .
+      dockerfile: node.Dockerfile
+      args:
+        BASE: debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2
+    environment:
+      NX_ROLE: gateway
+    networks: [nxnet]
+    # No bind mounts: run.sh copies the gateway key in with `docker compose cp`
+    # and copies /capture out, so host file ownership is never changed.
+    restart: "no"
+
+networks:
+  nxnet:
+    driver: bridge
