@@ -13,7 +13,7 @@
 | Threat model | Done (§5). |
 | Identity and revocation workflow design | Done (§6). |
 | **Hands-on test of the identity/revocation workflow** | **NOT done.** The run host has no docker or podman, and the task forbids installing packages on shared hosts. §7 is an executable test plan, not results. |
-| Acceptance criterion "tested identity/revocation workflow" | **Unmet.** It needs either a disposable container host approved by the board or a human-run lab, and it must use throwaway GitHub identities. |
+| Acceptance criterion "tested identity/revocation workflow" | **Unmet; split out by board decision (2026-11-10, option B).** T-01..T-19 are tracked in follow-up issue EZF-20. No test is passed until EZF-20 executes it and attaches raw evidence. This gate stays blocked. |
 
 Claims below are marked **[doc]** (stated in a fetched official page), **[inferred]** (my reading, not verified), or **[unverified]** (needs a lab test).
 
