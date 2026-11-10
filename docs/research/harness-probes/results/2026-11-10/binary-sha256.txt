@@ -1,0 +1,4 @@
+e14fc83739c13c1074b12bd1acce4010c893c7f6fbfc1593b4a31d74cabb57af  /usr/local/lib/node_modules/@openai/codex/bin/codex.js
+7df4e4136301f16589b0f30bf91a61380fca5f8ef22dd36570f5ebe1d4ec802c  /usr/local/lib/node_modules/opencode-ai/bin/opencode.exe
+bfb3703ad5380242328459bc62ada4bde8ae7ba57c6e1eeadb9c00e08874c478  /usr/local/lib/node_modules/@anthropic-ai/claude-code/bin/claude.exe
+cdcb45aaa01d0f14e298985e09465aebccd47f64ecd298aea44814af7b62bbda  /usr/local/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex

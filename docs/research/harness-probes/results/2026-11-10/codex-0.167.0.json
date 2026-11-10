@@ -1,0 +1,379 @@
+{
+  "argv": [
+    "codex",
+    "app-server"
+  ],
+  "method_outcomes": {
+    "0:first:initialize": "ok",
+    "10:after-restart:thread/loaded/list": "ok",
+    "11:after-restart:thread/resume": "error -32600: no rollout found for thread id 01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40",
+    "12:after-restart:thread/read": "error -32600: thread not loaded: 01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40",
+    "13:after-restart:thread/unsubscribe": "ok",
+    "14:after-restart:thread/resume": "error -32600: no rollout found for thread id 00000000-0000-0000-0000-000000000000",
+    "1:first:thread/start": "ok",
+    "2:first:thread/list": "ok",
+    "3:first:thread/loaded/list": "ok",
+    "4:first:thread/resume": "error -32600: no rollout found for thread id 01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40",
+    "5:first:thread/read": "ok",
+    "6:first:thread/unsubscribe": "ok",
+    "7:first:thread/resume": "error -32600: no rollout found for thread id 00000000-0000-0000-0000-000000000000",
+    "8:after-restart:initialize": "ok",
+    "9:after-restart:thread/list": "ok"
+  },
+  "notification_methods": [
+    "configWarning",
+    "remoteControl/status/changed",
+    "thread/started"
+  ],
+  "probe": "nexus-codex-probe 0.1.0",
+  "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c\" (codex_home: AbsolutePathBuf(\"/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/home/.codex\"))\n\u001b[2m2026-11-10T10:03:10.182437Z\u001b[0m \u001b[31mERROR\u001b[0m \u001b[2mcodex_app_server\u001b[0m\u001b[2m:\u001b[0m Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.\n\n--- restart ---\nWARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c\" (codex_home: AbsolutePathBuf(\"/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/home/.codex\"))\n\u001b[2m2026-11-10T10:03:10.662197Z\u001b[0m \u001b[31mERROR\u001b[0m \u001b[2mcodex_app_server\u001b[0m\u001b[2m:\u001b[0m Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.\n",
+  "steps": [
+    {
+      "method": "initialize",
+      "ms": 518,
+      "params": {
+        "clientInfo": {
+          "name": "nexus-codex-probe",
+          "version": "0.1.0"
+        }
+      },
+      "phase": "first",
+      "response": {
+        "id": 1,
+        "result": {
+          "codexHome": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/home/.codex",
+          "platformFamily": "unix",
+          "platformOs": "linux",
+          "userAgent": "nexus-codex-probe/0.167.0 (Debian 13.0.0; x86_64) unknown (nexus-codex-probe; 0.1.0)"
+        }
+      }
+    },
+    {
+      "method": "thread/start",
+      "ms": 167,
+      "params": {
+        "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/work"
+      },
+      "phase": "first",
+      "response": {
+        "id": 2,
+        "result": {
+          "activePermissionProfile": {
+            "extends": null,
+            "id": ":read-only"
+          },
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "user",
+          "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/work",
+          "disabledPluginIds": [],
+          "instructionSources": [],
+          "model": "gpt-6.1-sol",
+          "modelProvider": "openai",
+          "multiAgentMode": "explicitRequestOnly",
+          "reasoningEffort": null,
+          "runtimeWorkspaceRoots": [
+            "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/work"
+          ],
+          "sandbox": {
+            "networkAccess": false,
+            "type": "readOnly"
+          },
+          "serviceTier": null,
+          "thread": {
+            "agentNickname": null,
+            "agentRole": null,
+            "canAcceptDirectInput": true,
+            "cliVersion": "0.167.0",
+            "createdAt": 1794304990,
+            "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/work",
+            "daybreakEnabled": null,
+            "environments": [
+              {
+                "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/work",
+                "environmentId": "local",
+                "runtimeWorkspaceRoots": [
+                  "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/work"
+                ]
+              }
+            ],
+            "ephemeral": false,
+            "extra": null,
+            "forkedFromId": null,
+            "gitInfo": null,
+            "historyMode": "paginated",
+            "id": "01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40",
+            "model": "gpt-6.1-sol",
+            "modelProvider": "openai",
+            "name": null,
+            "originator": "nexus-codex-probe",
+            "parentThreadId": null,
+            "path": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/home/.codex/sessions/2026/11/10/rollout-2026-11-10T10-03-10-01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40.jsonl",
+            "preview": "",
+            "projectId": null,
+            "reasoningEffort": null,
+            "recencyAt": 1794304990,
+            "section": null,
+            "sectionEnteredAt": null,
+            "sessionId": "01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40",
+            "source": "vscode",
+            "status": {
+              "type": "idle"
+            },
+            "threadSource": null,
+            "turns": [],
+            "updatedAt": 1794304990
+          }
+        }
+      }
+    },
+    {
+      "method": "thread/list",
+      "ms": 6,
+      "params": {
+        "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/work"
+      },
+      "phase": "first",
+      "response": {
+        "id": 3,
+        "result": {
+          "backwardsCursor": null,
+          "data": [],
+          "nextCursor": null,
+          "readStates": {}
+        }
+      }
+    },
+    {
+      "method": "thread/loaded/list",
+      "ms": 3,
+      "params": {},
+      "phase": "first",
+      "response": {
+        "id": 4,
+        "result": {
+          "data": [
+            "01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40"
+          ],
+          "nextCursor": null
+        }
+      }
+    },
+    {
+      "method": "thread/resume",
+      "ms": 5,
+      "params": {
+        "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/work",
+        "threadId": "01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40"
+      },
+      "phase": "first",
+      "response": {
+        "error": {
+          "code": -32600,
+          "message": "no rollout found for thread id 01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40"
+        },
+        "id": 5
+      }
+    },
+    {
+      "method": "thread/read",
+      "ms": 2,
+      "params": {
+        "threadId": "01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40"
+      },
+      "phase": "first",
+      "response": {
+        "id": 6,
+        "result": {
+          "readState": null,
+          "thread": {
+            "agentNickname": null,
+            "agentRole": null,
+            "canAcceptDirectInput": true,
+            "cliVersion": "0.167.0",
+            "createdAt": 1794304990,
+            "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/work",
+            "daybreakEnabled": null,
+            "environments": [
+              {
+                "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/work",
+                "environmentId": "local",
+                "runtimeWorkspaceRoots": [
+                  "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/work"
+                ]
+              }
+            ],
+            "ephemeral": false,
+            "extra": null,
+            "forkedFromId": null,
+            "gitInfo": null,
+            "historyMode": "paginated",
+            "id": "01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40",
+            "model": "gpt-6.1-sol",
+            "modelProvider": "openai",
+            "name": null,
+            "originator": "nexus-codex-probe",
+            "parentThreadId": null,
+            "path": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/home/.codex/sessions/2026/11/10/rollout-2026-11-10T10-03-10-01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40.jsonl",
+            "preview": "",
+            "projectId": null,
+            "reasoningEffort": null,
+            "recencyAt": 1794304990,
+            "section": null,
+            "sectionEnteredAt": null,
+            "sessionId": "01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40",
+            "source": "vscode",
+            "status": {
+              "type": "idle"
+            },
+            "threadSource": null,
+            "turns": [],
+            "updatedAt": 1794304990
+          }
+        }
+      }
+    },
+    {
+      "method": "thread/unsubscribe",
+      "ms": 0,
+      "params": {
+        "threadId": "01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40"
+      },
+      "phase": "first",
+      "response": {
+        "id": 7,
+        "result": {
+          "status": "unsubscribed"
+        }
+      }
+    },
+    {
+      "method": "thread/resume",
+      "ms": 1,
+      "params": {
+        "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/work",
+        "threadId": "00000000-0000-0000-0000-000000000000"
+      },
+      "phase": "first",
+      "response": {
+        "error": {
+          "code": -32600,
+          "message": "no rollout found for thread id 00000000-0000-0000-0000-000000000000"
+        },
+        "id": 8
+      }
+    },
+    {
+      "method": "initialize",
+      "ms": 80,
+      "params": {
+        "clientInfo": {
+          "name": "nexus-codex-probe",
+          "version": "0.1.0"
+        }
+      },
+      "phase": "after-restart",
+      "response": {
+        "id": 1,
+        "result": {
+          "codexHome": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/home/.codex",
+          "platformFamily": "unix",
+          "platformOs": "linux",
+          "userAgent": "nexus-codex-probe/0.167.0 (Debian 13.0.0; x86_64) unknown (nexus-codex-probe; 0.1.0)"
+        }
+      }
+    },
+    {
+      "method": "thread/list",
+      "ms": 6,
+      "params": {
+        "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/work"
+      },
+      "phase": "after-restart",
+      "response": {
+        "id": 2,
+        "result": {
+          "backwardsCursor": null,
+          "data": [],
+          "nextCursor": null,
+          "readStates": {}
+        }
+      }
+    },
+    {
+      "method": "thread/loaded/list",
+      "ms": 0,
+      "params": {},
+      "phase": "after-restart",
+      "response": {
+        "id": 3,
+        "result": {
+          "data": [],
+          "nextCursor": null
+        }
+      }
+    },
+    {
+      "method": "thread/resume",
+      "ms": 3,
+      "params": {
+        "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/work",
+        "threadId": "01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40"
+      },
+      "phase": "after-restart",
+      "response": {
+        "error": {
+          "code": -32600,
+          "message": "no rollout found for thread id 01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40"
+        },
+        "id": 4
+      }
+    },
+    {
+      "method": "thread/read",
+      "ms": 1,
+      "params": {
+        "threadId": "01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40"
+      },
+      "phase": "after-restart",
+      "response": {
+        "error": {
+          "code": -32600,
+          "message": "thread not loaded: 01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40"
+        },
+        "id": 5
+      }
+    },
+    {
+      "method": "thread/unsubscribe",
+      "ms": 0,
+      "params": {
+        "threadId": "01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40"
+      },
+      "phase": "after-restart",
+      "response": {
+        "id": 6,
+        "result": {
+          "status": "notLoaded"
+        }
+      }
+    },
+    {
+      "method": "thread/resume",
+      "ms": 1,
+      "params": {
+        "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/codex-probe-s3mvqw0c/work",
+        "threadId": "00000000-0000-0000-0000-000000000000"
+      },
+      "phase": "after-restart",
+      "response": {
+        "error": {
+          "code": -32600,
+          "message": "no rollout found for thread id 00000000-0000-0000-0000-000000000000"
+        },
+        "id": 7
+      }
+    }
+  ],
+  "thread_id": "01a1c4e9-5c5c-7832-b762-ea2dfbbf8f40",
+  "utc": "2026-11-10T10:03:10Z"
+}

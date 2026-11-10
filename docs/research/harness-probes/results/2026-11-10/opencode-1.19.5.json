@@ -1,0 +1,823 @@
+{
+  "argv": [
+    "opencode",
+    "acp"
+  ],
+  "method_outcomes": {
+    "0:initialize": "ok",
+    "10:session/list": "ok",
+    "11:session/resume": "ok",
+    "12:session/load": "ok",
+    "1:session/new": "ok",
+    "2:session/list": "ok",
+    "3:session/load": "ok",
+    "4:session/resume": "ok",
+    "5:session/close": "ok",
+    "6:session/resume": "ok",
+    "7:session/load": "error -32603: Internal error: OpenCode service failure",
+    "8:--- process restart ---": "ok",
+    "9:initialize": "ok"
+  },
+  "notifications": [
+    {
+      "jsonrpc": "2.0",
+      "method": "session/update",
+      "params": {
+        "sessionId": "ses_e3b173f62ffeGiPBIX8gLSCPQw",
+        "update": {
+          "availableCommands": [
+            {
+              "description": "Use ONLY when the user is editing or creating opencode's own configuration: opencode.json, opencode.jsonc, files under .opencode/, or files under ~/.config/opencode/. Also use when creating or fixing opencode agents, subagents, skills, plugins, MCP servers, or permission rules. Do not use for the user's own application code, or for any project that is not configuring opencode itself.",
+              "name": "customize-opencode"
+            },
+            {
+              "description": "guided AGENTS.md setup",
+              "name": "init"
+            },
+            {
+              "description": "review changes [commit|branch|pr], defaults to uncommitted",
+              "name": "review"
+            }
+          ],
+          "sessionUpdate": "available_commands_update"
+        }
+      }
+    }
+  ],
+  "probe": "nexus-acp-probe 0.1.0",
+  "stderr_tail": "Error handling request {\n  jsonrpc: \"2.0\",\n  id: 8,\n  method: \"session/load\",\n  params: {\n    sessionId: \"nexus-probe-nonexistent\",\n    cwd: \"/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/acp-probe-pyipgtdy/work\",\n    mcpServers: [],\n  },\n} {\n  code: -32603,\n  message: \"Internal error: OpenCode service failure\",\n  data: {\n    service: \"session\",\n  },\n}\n\n--- restart ---\n",
+  "steps": [
+    {
+      "method": "initialize",
+      "ms": 1500,
+      "params": {
+        "clientCapabilities": {
+          "fs": {
+            "readTextFile": false,
+            "writeTextFile": false
+          },
+          "terminal": false
+        },
+        "clientInfo": {
+          "name": "nexus-acp-probe",
+          "version": "0.1.0"
+        },
+        "protocolVersion": 1
+      },
+      "response": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "result": {
+          "agentCapabilities": {
+            "loadSession": true,
+            "mcpCapabilities": {
+              "http": true,
+              "sse": true
+            },
+            "promptCapabilities": {
+              "embeddedContext": true,
+              "image": true
+            },
+            "sessionCapabilities": {
+              "close": {},
+              "fork": {},
+              "list": {},
+              "resume": {}
+            }
+          },
+          "agentInfo": {
+            "name": "OpenCode",
+            "version": "1.19.5"
+          },
+          "authMethods": [
+            {
+              "description": "Run `opencode auth login` in the terminal",
+              "id": "opencode-login",
+              "name": "Login with opencode"
+            }
+          ],
+          "protocolVersion": 1
+        }
+      }
+    },
+    {
+      "method": "session/new",
+      "ms": 824,
+      "params": {
+        "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/acp-probe-pyipgtdy/work",
+        "mcpServers": []
+      },
+      "response": {
+        "id": 2,
+        "jsonrpc": "2.0",
+        "result": {
+          "configOptions": [
+            {
+              "category": "model",
+              "currentValue": "opencode/big-pickle",
+              "id": "model",
+              "name": "Model",
+              "options": [
+                {
+                  "name": "OpenCode/Beam Free",
+                  "value": "opencode/beam-free"
+                },
+                {
+                  "name": "OpenCode/Big Pickle",
+                  "value": "opencode/big-pickle"
+                },
+                {
+                  "name": "OpenCode/DeepSeek V4.1 Flash Free",
+                  "value": "opencode/deepseek-v4.1-flash-free"
+                },
+                {
+                  "name": "OpenCode/Flint 40B Free",
+                  "value": "opencode/flint-40b-free"
+                },
+                {
+                  "name": "OpenCode/GLM-5.3-Flash Free",
+                  "value": "opencode/glm-5.3-flash-free"
+                },
+                {
+                  "name": "OpenCode/Iceman Free",
+                  "value": "opencode/iceman-free"
+                },
+                {
+                  "name": "OpenCode/Inkling 2 Small Free",
+                  "value": "opencode/inkling-2-small-free"
+                },
+                {
+                  "name": "OpenCode/LongCat 2.5 Free",
+                  "value": "opencode/longcat-2.5-free"
+                },
+                {
+                  "name": "OpenCode/MiMo-V2.6-Flash Free",
+                  "value": "opencode/mimo-v2.6-flash-free"
+                },
+                {
+                  "name": "OpenCode/MiniMax M3.1 Flash Free",
+                  "value": "opencode/minimax-m3.1-flash-free"
+                },
+                {
+                  "name": "OpenCode/Nemotron 3.5 Lightning Free",
+                  "value": "opencode/nemotron-3.5-lightning-free"
+                },
+                {
+                  "name": "OpenCode/Nemotron 3.5 Super VL Free",
+                  "value": "opencode/nemotron-3.5-super-vl-free"
+                }
+              ],
+              "type": "select"
+            },
+            {
+              "category": "mode",
+              "currentValue": "build",
+              "id": "mode",
+              "name": "Session Mode",
+              "options": [
+                {
+                  "description": "The default agent. Executes tools based on configured permissions.",
+                  "name": "build",
+                  "value": "build"
+                },
+                {
+                  "description": "Plan mode. Disallows all edit tools.",
+                  "name": "plan",
+                  "value": "plan"
+                }
+              ],
+              "type": "select"
+            }
+          ],
+          "sessionId": "ses_e3b173f62ffeGiPBIX8gLSCPQw"
+        }
+      }
+    },
+    {
+      "method": "session/list",
+      "ms": 7,
+      "params": {
+        "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/acp-probe-pyipgtdy/work"
+      },
+      "response": {
+        "id": 3,
+        "jsonrpc": "2.0",
+        "result": {
+          "sessions": [
+            {
+              "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/acp-probe-pyipgtdy/work",
+              "sessionId": "ses_e3b173f62ffeGiPBIX8gLSCPQw",
+              "title": "New session - 2026-11-10T10:02:30.429Z",
+              "updatedAt": "2026-11-10T10:02:30.429Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "session/load",
+      "ms": 11,
+      "params": {
+        "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/acp-probe-pyipgtdy/work",
+        "mcpServers": [],
+        "sessionId": "ses_e3b173f62ffeGiPBIX8gLSCPQw"
+      },
+      "response": {
+        "id": 4,
+        "jsonrpc": "2.0",
+        "result": {
+          "configOptions": [
+            {
+              "category": "model",
+              "currentValue": "opencode/big-pickle",
+              "id": "model",
+              "name": "Model",
+              "options": [
+                {
+                  "name": "OpenCode/Beam Free",
+                  "value": "opencode/beam-free"
+                },
+                {
+                  "name": "OpenCode/Big Pickle",
+                  "value": "opencode/big-pickle"
+                },
+                {
+                  "name": "OpenCode/DeepSeek V4.1 Flash Free",
+                  "value": "opencode/deepseek-v4.1-flash-free"
+                },
+                {
+                  "name": "OpenCode/Flint 40B Free",
+                  "value": "opencode/flint-40b-free"
+                },
+                {
+                  "name": "OpenCode/GLM-5.3-Flash Free",
+                  "value": "opencode/glm-5.3-flash-free"
+                },
+                {
+                  "name": "OpenCode/Iceman Free",
+                  "value": "opencode/iceman-free"
+                },
+                {
+                  "name": "OpenCode/Inkling 2 Small Free",
+                  "value": "opencode/inkling-2-small-free"
+                },
+                {
+                  "name": "OpenCode/LongCat 2.5 Free",
+                  "value": "opencode/longcat-2.5-free"
+                },
+                {
+                  "name": "OpenCode/MiMo-V2.6-Flash Free",
+                  "value": "opencode/mimo-v2.6-flash-free"
+                },
+                {
+                  "name": "OpenCode/MiniMax M3.1 Flash Free",
+                  "value": "opencode/minimax-m3.1-flash-free"
+                },
+                {
+                  "name": "OpenCode/Nemotron 3.5 Lightning Free",
+                  "value": "opencode/nemotron-3.5-lightning-free"
+                },
+                {
+                  "name": "OpenCode/Nemotron 3.5 Super VL Free",
+                  "value": "opencode/nemotron-3.5-super-vl-free"
+                }
+              ],
+              "type": "select"
+            },
+            {
+              "category": "mode",
+              "currentValue": "build",
+              "id": "mode",
+              "name": "Session Mode",
+              "options": [
+                {
+                  "description": "The default agent. Executes tools based on configured permissions.",
+                  "name": "build",
+                  "value": "build"
+                },
+                {
+                  "description": "Plan mode. Disallows all edit tools.",
+                  "name": "plan",
+                  "value": "plan"
+                }
+              ],
+              "type": "select"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "session/resume",
+      "ms": 8,
+      "params": {
+        "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/acp-probe-pyipgtdy/work",
+        "mcpServers": [],
+        "sessionId": "ses_e3b173f62ffeGiPBIX8gLSCPQw"
+      },
+      "response": {
+        "id": 5,
+        "jsonrpc": "2.0",
+        "result": {
+          "configOptions": [
+            {
+              "category": "model",
+              "currentValue": "opencode/big-pickle",
+              "id": "model",
+              "name": "Model",
+              "options": [
+                {
+                  "name": "OpenCode/Beam Free",
+                  "value": "opencode/beam-free"
+                },
+                {
+                  "name": "OpenCode/Big Pickle",
+                  "value": "opencode/big-pickle"
+                },
+                {
+                  "name": "OpenCode/DeepSeek V4.1 Flash Free",
+                  "value": "opencode/deepseek-v4.1-flash-free"
+                },
+                {
+                  "name": "OpenCode/Flint 40B Free",
+                  "value": "opencode/flint-40b-free"
+                },
+                {
+                  "name": "OpenCode/GLM-5.3-Flash Free",
+                  "value": "opencode/glm-5.3-flash-free"
+                },
+                {
+                  "name": "OpenCode/Iceman Free",
+                  "value": "opencode/iceman-free"
+                },
+                {
+                  "name": "OpenCode/Inkling 2 Small Free",
+                  "value": "opencode/inkling-2-small-free"
+                },
+                {
+                  "name": "OpenCode/LongCat 2.5 Free",
+                  "value": "opencode/longcat-2.5-free"
+                },
+                {
+                  "name": "OpenCode/MiMo-V2.6-Flash Free",
+                  "value": "opencode/mimo-v2.6-flash-free"
+                },
+                {
+                  "name": "OpenCode/MiniMax M3.1 Flash Free",
+                  "value": "opencode/minimax-m3.1-flash-free"
+                },
+                {
+                  "name": "OpenCode/Nemotron 3.5 Lightning Free",
+                  "value": "opencode/nemotron-3.5-lightning-free"
+                },
+                {
+                  "name": "OpenCode/Nemotron 3.5 Super VL Free",
+                  "value": "opencode/nemotron-3.5-super-vl-free"
+                }
+              ],
+              "type": "select"
+            },
+            {
+              "category": "mode",
+              "currentValue": "build",
+              "id": "mode",
+              "name": "Session Mode",
+              "options": [
+                {
+                  "description": "The default agent. Executes tools based on configured permissions.",
+                  "name": "build",
+                  "value": "build"
+                },
+                {
+                  "description": "Plan mode. Disallows all edit tools.",
+                  "name": "plan",
+                  "value": "plan"
+                }
+              ],
+              "type": "select"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "session/close",
+      "ms": 7,
+      "params": {
+        "sessionId": "ses_e3b173f62ffeGiPBIX8gLSCPQw"
+      },
+      "response": {
+        "id": 6,
+        "jsonrpc": "2.0",
+        "result": {}
+      }
+    },
+    {
+      "method": "session/resume",
+      "ms": 7,
+      "params": {
+        "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/acp-probe-pyipgtdy/work",
+        "mcpServers": [],
+        "sessionId": "ses_e3b173f62ffeGiPBIX8gLSCPQw"
+      },
+      "response": {
+        "id": 7,
+        "jsonrpc": "2.0",
+        "result": {
+          "configOptions": [
+            {
+              "category": "model",
+              "currentValue": "opencode/big-pickle",
+              "id": "model",
+              "name": "Model",
+              "options": [
+                {
+                  "name": "OpenCode/Beam Free",
+                  "value": "opencode/beam-free"
+                },
+                {
+                  "name": "OpenCode/Big Pickle",
+                  "value": "opencode/big-pickle"
+                },
+                {
+                  "name": "OpenCode/DeepSeek V4.1 Flash Free",
+                  "value": "opencode/deepseek-v4.1-flash-free"
+                },
+                {
+                  "name": "OpenCode/Flint 40B Free",
+                  "value": "opencode/flint-40b-free"
+                },
+                {
+                  "name": "OpenCode/GLM-5.3-Flash Free",
+                  "value": "opencode/glm-5.3-flash-free"
+                },
+                {
+                  "name": "OpenCode/Iceman Free",
+                  "value": "opencode/iceman-free"
+                },
+                {
+                  "name": "OpenCode/Inkling 2 Small Free",
+                  "value": "opencode/inkling-2-small-free"
+                },
+                {
+                  "name": "OpenCode/LongCat 2.5 Free",
+                  "value": "opencode/longcat-2.5-free"
+                },
+                {
+                  "name": "OpenCode/MiMo-V2.6-Flash Free",
+                  "value": "opencode/mimo-v2.6-flash-free"
+                },
+                {
+                  "name": "OpenCode/MiniMax M3.1 Flash Free",
+                  "value": "opencode/minimax-m3.1-flash-free"
+                },
+                {
+                  "name": "OpenCode/Nemotron 3.5 Lightning Free",
+                  "value": "opencode/nemotron-3.5-lightning-free"
+                },
+                {
+                  "name": "OpenCode/Nemotron 3.5 Super VL Free",
+                  "value": "opencode/nemotron-3.5-super-vl-free"
+                }
+              ],
+              "type": "select"
+            },
+            {
+              "category": "mode",
+              "currentValue": "build",
+              "id": "mode",
+              "name": "Session Mode",
+              "options": [
+                {
+                  "description": "The default agent. Executes tools based on configured permissions.",
+                  "name": "build",
+                  "value": "build"
+                },
+                {
+                  "description": "Plan mode. Disallows all edit tools.",
+                  "name": "plan",
+                  "value": "plan"
+                }
+              ],
+              "type": "select"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "session/load",
+      "ms": 15,
+      "params": {
+        "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/acp-probe-pyipgtdy/work",
+        "mcpServers": [],
+        "sessionId": "nexus-probe-nonexistent"
+      },
+      "response": {
+        "error": {
+          "code": -32603,
+          "data": {
+            "service": "session"
+          },
+          "message": "Internal error: OpenCode service failure"
+        },
+        "id": 8,
+        "jsonrpc": "2.0"
+      }
+    },
+    {
+      "method": "--- process restart ---",
+      "ms": 0,
+      "params": null,
+      "response": {
+        "result": null
+      }
+    },
+    {
+      "method": "initialize",
+      "ms": 1237,
+      "params": {
+        "clientCapabilities": {
+          "fs": {
+            "readTextFile": false,
+            "writeTextFile": false
+          },
+          "terminal": false
+        },
+        "clientInfo": {
+          "name": "nexus-acp-probe",
+          "version": "0.1.0"
+        },
+        "protocolVersion": 1
+      },
+      "response": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "result": {
+          "agentCapabilities": {
+            "loadSession": true,
+            "mcpCapabilities": {
+              "http": true,
+              "sse": true
+            },
+            "promptCapabilities": {
+              "embeddedContext": true,
+              "image": true
+            },
+            "sessionCapabilities": {
+              "close": {},
+              "fork": {},
+              "list": {},
+              "resume": {}
+            }
+          },
+          "agentInfo": {
+            "name": "OpenCode",
+            "version": "1.19.5"
+          },
+          "authMethods": [
+            {
+              "description": "Run `opencode auth login` in the terminal",
+              "id": "opencode-login",
+              "name": "Login with opencode"
+            }
+          ],
+          "protocolVersion": 1
+        }
+      }
+    },
+    {
+      "method": "session/list",
+      "ms": 39,
+      "params": {
+        "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/acp-probe-pyipgtdy/work"
+      },
+      "response": {
+        "id": 2,
+        "jsonrpc": "2.0",
+        "result": {
+          "sessions": [
+            {
+              "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/acp-probe-pyipgtdy/work",
+              "sessionId": "ses_e3b173f62ffeGiPBIX8gLSCPQw",
+              "title": "New session - 2026-11-10T10:02:30.429Z",
+              "updatedAt": "2026-11-10T10:02:30.429Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "session/resume",
+      "ms": 640,
+      "params": {
+        "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/acp-probe-pyipgtdy/work",
+        "mcpServers": [],
+        "sessionId": "ses_e3b173f62ffeGiPBIX8gLSCPQw"
+      },
+      "response": {
+        "id": 3,
+        "jsonrpc": "2.0",
+        "result": {
+          "configOptions": [
+            {
+              "category": "model",
+              "currentValue": "opencode/big-pickle",
+              "id": "model",
+              "name": "Model",
+              "options": [
+                {
+                  "name": "OpenCode/Beam Free",
+                  "value": "opencode/beam-free"
+                },
+                {
+                  "name": "OpenCode/Big Pickle",
+                  "value": "opencode/big-pickle"
+                },
+                {
+                  "name": "OpenCode/DeepSeek V4.1 Flash Free",
+                  "value": "opencode/deepseek-v4.1-flash-free"
+                },
+                {
+                  "name": "OpenCode/Flint 40B Free",
+                  "value": "opencode/flint-40b-free"
+                },
+                {
+                  "name": "OpenCode/GLM-5.3-Flash Free",
+                  "value": "opencode/glm-5.3-flash-free"
+                },
+                {
+                  "name": "OpenCode/Iceman Free",
+                  "value": "opencode/iceman-free"
+                },
+                {
+                  "name": "OpenCode/Inkling 2 Small Free",
+                  "value": "opencode/inkling-2-small-free"
+                },
+                {
+                  "name": "OpenCode/LongCat 2.5 Free",
+                  "value": "opencode/longcat-2.5-free"
+                },
+                {
+                  "name": "OpenCode/MiMo-V2.6-Flash Free",
+                  "value": "opencode/mimo-v2.6-flash-free"
+                },
+                {
+                  "name": "OpenCode/MiniMax M3.1 Flash Free",
+                  "value": "opencode/minimax-m3.1-flash-free"
+                },
+                {
+                  "name": "OpenCode/Nemotron 3.5 Lightning Free",
+                  "value": "opencode/nemotron-3.5-lightning-free"
+                },
+                {
+                  "name": "OpenCode/Nemotron 3.5 Super VL Free",
+                  "value": "opencode/nemotron-3.5-super-vl-free"
+                }
+              ],
+              "type": "select"
+            },
+            {
+              "category": "mode",
+              "currentValue": "build",
+              "id": "mode",
+              "name": "Session Mode",
+              "options": [
+                {
+                  "description": "The default agent. Executes tools based on configured permissions.",
+                  "name": "build",
+                  "value": "build"
+                },
+                {
+                  "description": "Plan mode. Disallows all edit tools.",
+                  "name": "plan",
+                  "value": "plan"
+                }
+              ],
+              "type": "select"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "session/load",
+      "ms": 10,
+      "params": {
+        "cwd": "/tmp/paperclip-run-ezf-11-2914c497-4ac-2ZAzZU/acp-probe-pyipgtdy/work",
+        "mcpServers": [],
+        "sessionId": "ses_e3b173f62ffeGiPBIX8gLSCPQw"
+      },
+      "response": {
+        "id": 4,
+        "jsonrpc": "2.0",
+        "result": {
+          "configOptions": [
+            {
+              "category": "model",
+              "currentValue": "opencode/big-pickle",
+              "id": "model",
+              "name": "Model",
+              "options": [
+                {
+                  "name": "OpenCode/Beam Free",
+                  "value": "opencode/beam-free"
+                },
+                {
+                  "name": "OpenCode/Big Pickle",
+                  "value": "opencode/big-pickle"
+                },
+                {
+                  "name": "OpenCode/DeepSeek V4.1 Flash Free",
+                  "value": "opencode/deepseek-v4.1-flash-free"
+                },
+                {
+                  "name": "OpenCode/Flint 40B Free",
+                  "value": "opencode/flint-40b-free"
+                },
+                {
+                  "name": "OpenCode/GLM-5.3-Flash Free",
+                  "value": "opencode/glm-5.3-flash-free"
+                },
+                {
+                  "name": "OpenCode/Iceman Free",
+                  "value": "opencode/iceman-free"
+                },
+                {
+                  "name": "OpenCode/Inkling 2 Small Free",
+                  "value": "opencode/inkling-2-small-free"
+                },
+                {
+                  "name": "OpenCode/LongCat 2.5 Free",
+                  "value": "opencode/longcat-2.5-free"
+                },
+                {
+                  "name": "OpenCode/MiMo-V2.6-Flash Free",
+                  "value": "opencode/mimo-v2.6-flash-free"
+                },
+                {
+                  "name": "OpenCode/MiniMax M3.1 Flash Free",
+                  "value": "opencode/minimax-m3.1-flash-free"
+                },
+                {
+                  "name": "OpenCode/Nemotron 3.5 Lightning Free",
+                  "value": "opencode/nemotron-3.5-lightning-free"
+                },
+                {
+                  "name": "OpenCode/Nemotron 3.5 Super VL Free",
+                  "value": "opencode/nemotron-3.5-super-vl-free"
+                }
+              ],
+              "type": "select"
+            },
+            {
+              "category": "mode",
+              "currentValue": "build",
+              "id": "mode",
+              "name": "Session Mode",
+              "options": [
+                {
+                  "description": "The default agent. Executes tools based on configured permissions.",
+                  "name": "build",
+                  "value": "build"
+                },
+                {
+                  "description": "Plan mode. Disallows all edit tools.",
+                  "name": "plan",
+                  "value": "plan"
+                }
+              ],
+              "type": "select"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "summary": {
+    "agentInfo": {
+      "name": "OpenCode",
+      "version": "1.19.5"
+    },
+    "authMethods": [
+      "opencode-login"
+    ],
+    "loadSession": true,
+    "mcpCapabilities": {
+      "http": true,
+      "sse": true
+    },
+    "promptCapabilities": {
+      "embeddedContext": true,
+      "image": true
+    },
+    "protocolVersion": 1,
+    "sessionCapabilities": {
+      "close": {},
+      "fork": {},
+      "list": {},
+      "resume": {}
+    }
+  },
+  "utc": "2026-11-10T10:02:32Z"
+}
