@@ -108,7 +108,7 @@ PATTERNS = [
     ("MPL-2.0", ["mozilla public license", "2.0"]),
     ("LicenseRef-Teleport-CE", ["teleport community edition license"]),
     ("SSPL-1.0", ["server side public license"]),
-    ("RSALv2", ["redis source available license"]),
+    ("LicenseRef-RSALv2", ["redis source available license"]),  # not on the SPDX License List
     ("BUSL-1.1", ["business source license"]),
     ("Elastic-2.0", ["elastic license 2.0"]),
     ("OFL-1.1", ["sil open font license"]),

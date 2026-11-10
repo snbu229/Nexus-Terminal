@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-11-10T08:46:37Z",
+  "generated_at_utc": "2026-11-10T08:53:19Z",
   "generator": "tools/license-ledger/fetch_evidence.py",
   "components": {
     "acp-spec": {
@@ -912,7 +912,7 @@
           "detected_spdx": [
             "AGPL-3.0",
             "SSPL-1.0",
-            "RSALv2"
+            "LicenseRef-RSALv2"
           ],
           "first_line": "Starting with Redis 8, Redis Open Source is moving to a tri-licensing model with all new Redis code"
         }
@@ -924,7 +924,7 @@
         "changed_since_pin": false
       },
       "archived": null,
-      "fetched_at_utc": "2026-11-10T08:42:50Z"
+      "fetched_at_utc": "2026-11-10T08:53:19Z"
     },
     "rustfs": {
       "repo": "https://github.com/rustfs/rustfs",

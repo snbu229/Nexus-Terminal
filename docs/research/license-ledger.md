@@ -4,7 +4,7 @@
 |---|---|
 | Backlog / issue | NX2-005 · EZF-5 (Epic E00, M0/P00) |
 | Author | A1 Nexus CTO / Research Architect |
-| Review routing | C1: A5 QA & Security Reviewer · C2: A0 Nexus CEO · Legal sign-off: **human counsel, not yet performed** (§7) |
+| Review routing | C1: A5 QA & Security Reviewer · C2: A0 Nexus CEO · Legal sign-off: **human counsel, not yet performed**, tracked in [EZF-24](/EZF/issues/EZF-24) (§7) |
 | Evidence date | 2026-11-10 (UTC). Per-row timestamps are in `license-ledger.csv` → `verified_utc` |
 | Machine-readable | [`license-ledger.csv`](license-ledger.csv) · raw evidence [`license-evidence/evidence.json`](license-evidence/evidence.json) |
 | Tooling | `tools/license-ledger/{fetch_evidence,build_ledger,check_ledger}.py` + `decisions.json` |
@@ -83,7 +83,7 @@ The table is generated from `license-ledger.csv`; do not edit it by hand. Commit
 | versitygw | `Apache-2.0` | `v1.11.0` @ [`e42ae7ab8107`](https://raw.githubusercontent.com/versity/versitygw/e42ae7ab8107201e64e52ee024824e8cab3683b3/LICENSE) | NO | **adopt** |
 | ceph | `LGPL-2.1-only OR LGPL-3.0-only` | `v22.0.0` @ [`90b50e9b8799`](https://raw.githubusercontent.com/ceph/ceph/90b50e9b87998f8a55e36e3db7852be0b1ca8cbb/COPYING) | NO (LGPL has no network clause) | **external-service-only** |
 | valkey | `BSD-3-Clause` | `9.1.3` @ [`29173b67508b`](https://raw.githubusercontent.com/valkey-io/valkey/29173b67508b2de4c0f0ed551f3b47cf19fc3ca8/COPYING) | NO | **adopt** |
-| redis | `RSALv2 OR SSPL-1.0 OR AGPL-3.0-only` | `8.10.3` @ [`1a2574ce1551`](https://raw.githubusercontent.com/redis/redis/1a2574ce1551d3de6e0b4a56756c0fdbc6659e4f/LICENSE.txt) | YES | **reject** |
+| redis | `LicenseRef-RSALv2 OR SSPL-1.0 OR AGPL-3.0-only` | `8.10.3` @ [`1a2574ce1551`](https://raw.githubusercontent.com/redis/redis/1a2574ce1551d3de6e0b4a56756c0fdbc6659e4f/LICENSE.txt) | YES | **reject** |
 | grafana | `AGPL-3.0-only AND Apache-2.0` | `v13.3.0` @ [`752e3462ff71`](https://raw.githubusercontent.com/grafana/grafana/752e3462ff71a43a5c1fb62d00a482fa2dc0ee6a/LICENSE) | YES | **external-service-only** |
 | prometheus | `Apache-2.0` | `v3.16.0` @ [`e2e28adeee2c`](https://raw.githubusercontent.com/prometheus/prometheus/e2e28adeee2c5883d000fc82aca6008cfbf7e96d/LICENSE) | NO | **adopt** |
 | ntfy | `Apache-2.0 OR GPL-2.0-only` | `v2.37.2` @ [`05109571fd09`](https://raw.githubusercontent.com/binwiederhier/ntfy/05109571fd0931affb6f92b17bbfd62c4d2ea68a/LICENSE) | NO (under the Apache-2.0 branch) | **adopt** |
@@ -131,12 +131,21 @@ Totals: **36 adopt · 5 external-service-only · 6 reject** (47 rows). The per-r
 
 ## 6. AGPL / network-copyleft and redistribution rules (enforced by `check_ledger.py`)
 
-1. **Never `adopt`** a row whose every licence branch includes AGPL, SSPL, RSAL, BUSL or a
-   `LicenseRef-` (proprietary or custom) term. Allowed outcomes: `external-service-only` or `reject`.
+1. **Never `adopt`** a row whose every licence branch includes AGPL, SSPL, RSAL (`LicenseRef-RSALv2`;
+   RSALv2 is not on the SPDX License List), BUSL or a `LicenseRef-` (proprietary or custom) term. Allowed outcomes: `external-service-only` or `reject`.
 2. **Never `adopt`** an archived upstream.
 3. Fixed decisions from the plan and agent rules: Teleport = `external-service-only`, MinIO = `reject`,
    Redis = `reject`, Valkey = `adopt`, HAPI = `reject`.
-4. The SPDX expression must agree with what the evidence actually detected in upstream licence files.
+4. The SPDX expression must agree with what the evidence actually detected in upstream licence files,
+   **in both directions**:
+   - every ID in the expression must have been detected upstream;
+   - every GPL-family (GPL/LGPL/AGPL), SSPL, RSAL, BUSL or `LicenseRef-` licence detected in *any* licence file
+     must appear in the expression, or `decisions.json` must record a `license_carveouts` entry
+     (licence, file, reason). Each carve-out is bound to that file's sha256 and to the recommendation it was
+     reviewed under. If upstream changes the file, or the row's recommendation changes, the check fails until
+     the carve-out is reviewed again. Carve-outs that no longer match are reported as stale. The CSV
+     `license_carveouts` column shows them. The only carve-out today is Ceph `COPYING`, where AGPL-3.0 applies
+     only to the `src/script/backport-*` developer scripts.
 5. `pinned_commit`, `pinned_ref` and `primary_license_sha256` must match the evidence file.
 
 Architecture boundary for `external-service-only` (Teleport, Grafana, Garage, Ceph, Claude Code):
@@ -147,8 +156,10 @@ Architecture boundary for `external-service-only` (Teleport, Grafana, Garage, Ce
 
 ## 7. Legal review status (acceptance criterion: "legal review")
 
-**Not performed.** No agent is qualified to give legal sign-off, and none may self-approve it. Before
-any external release, a human with legal authority must review these questions:
+**Not performed. Tracked in [EZF-24](/EZF/issues/EZF-24) (human-only).** No agent is qualified to give legal
+sign-off, and none may self-approve it. C2 can accept this ledger as the engineering deliverable, but legal
+sign-off stays **pending** until a human answers EZF-24. Before any external release, a human with legal
+authority must review these questions:
 
 1. **Nexus outbound licence.** Not yet chosen (no ADR). All `adopt` rows are compatible with Apache-2.0 or MIT
    as the outbound licence (subject to the ntfy Apache election, F9). Choosing AGPL for Nexus would change the HAPI and Warp outcomes.
@@ -168,8 +179,9 @@ any external release, a human with legal authority must review these questions:
   `teleport-ce-2024` (<https://scancode-licensedb.aboutcode.org/teleport-ce-2024.html>).
 - Teleport AGPL "or later" grant: `lib/auth/auth.go` header at the pinned tag.
 - MinIO AGPL "or later" grant: `cmd/server-main.go` header at the pinned tag.
-- HAPI AGPL-3.0-only: `package.json` at `v0.34.4` (`2161a9ff96`, the pin of the first evidence run; v0.34.5 shipped the
-  same day and its LICENSE is AGPL-3.0); <https://hapi.run/docs/guide/faq>.
+- HAPI AGPL-3.0-only: `"license": "AGPL-3.0-only"` in `cli/package.json` (`@twsxtd/hapi`), `hub/`, `web/` and
+  `relay/package.json` at the pinned `v0.34.5` (`b312641b30`), re-checked 2026-11-10; <https://hapi.run/docs/guide/faq>.
+- Ceph AGPL scope: `COPYING` (DEP-5) lines 220-228 at the pinned `v22.0.0` (`90b50e9b87`).
 - Garage `AGPL-3.0` (deprecated SPDX id = only): `src/garage/Cargo.toml` at the pinned tag.
 - Warp licensing: `README.md` "Licensing" section and `Cargo.toml` (`license = "AGPL-3.0-only"`) at the pinned HEAD.
 - codex-acp move: `README.md` of <https://github.com/zed-industries/codex-acp> at its final commit.

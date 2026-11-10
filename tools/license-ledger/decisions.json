@@ -1,5 +1,5 @@
 {
-  "_comment": "Hand-maintained judgement columns for the NX2-005 license ledger. Evidence columns (repo, commit, sha256, archive state) come from docs/research/license-evidence/evidence.json via build_ledger.py. Notice shorthands are expanded in docs/research/license-ledger.md section 3.",
+  "_comment": "Hand-maintained judgement columns for the NX2-005 license ledger. Evidence columns (repo, commit, sha256, archive state) come from docs/research/license-evidence/evidence.json via build_ledger.py. Notice shorthands are expanded in docs/research/license-ledger.md section 3. license_carveouts: a restricted licence (GPL family, SSPL, RSAL, BUSL, LicenseRef-) detected upstream but deliberately left out of spdx_expression; bound to the file sha256 and the recommendation it was reviewed for (check_ledger.py rule 4b).",
   "rows": [
     {
       "component_id": "teleport",
@@ -69,7 +69,7 @@
       "redistribution_limits": "No code, assets or prompts copied into Nexus. Clean-room study of public docs and behaviour only.",
       "recommendation": "reject",
       "alternatives": "Happier (MIT); original ACP client",
-      "notes": "AGPL-3.0-only confirmed by LICENSE, package.json and hapi.run docs. Reject covers code reuse and bundling. Black-box behaviour study is still allowed under CLEAN_ROOM_RESEARCH_PLAYBOOK.md."
+      "notes": "AGPL-3.0-only confirmed by LICENSE, cli/hub/web/relay package.json and hapi.run docs at the pinned v0.34.5 commit. Reject covers code reuse and bundling. Black-box behaviour study is still allowed under CLEAN_ROOM_RESEARCH_PLAYBOOK.md."
     },
     {
       "component_id": "hermes-agent",
@@ -279,7 +279,16 @@
       "redistribution_limits": "Do not bundle. Too heavy for Nexus self-host. Use only an operator-run cluster through the S3 API.",
       "recommendation": "external-service-only",
       "alternatives": "SeaweedFS; Versity S3 Gateway",
-      "notes": "COPYING is a DEP-5 file. Files: * = 'LGPL-2.1 or LGPL-3', so -only is the conservative reading. The AGPL-3.0 detected in COPYING applies only to developer scripts (src/script/backport-*), not to RGW runtime code."
+      "notes": "COPYING is a DEP-5 file. Files: * = 'LGPL-2.1 or LGPL-3', so -only is the conservative reading. COPYING lines 220-228 grant AGPL-3.0 only to two developer scripts, src/script/backport-create-issue and src/script/backport-resolve-issue (release tooling, not shipped in RGW/RADOS runtime packages), so network_copyleft_trigger = NO for the S3 service. Recorded as a license_carveouts entry.",
+      "license_carveouts": [
+        {
+          "license": "AGPL-3.0",
+          "file": "COPYING",
+          "file_sha256": "1021e984d0c594fd9cbe183b2cda46d47e752a9c68dc5e73149685bc87c05ab2",
+          "recommendation": "external-service-only",
+          "reason": "DEP-5 stanzas at COPYING lines 220-228 scope AGPL-3.0 to src/script/backport-create-issue and src/script/backport-resolve-issue only: developer release tooling, not part of the RGW runtime that Nexus would talk to over S3. Nexus never vendors Ceph source."
+        }
+      ]
     },
     {
       "component_id": "valkey",
@@ -299,7 +308,7 @@
       "component_id": "redis",
       "component": "Redis Open Source 8.x",
       "role_in_nexus": "None (rejected)",
-      "spdx_expression": "RSALv2 OR SSPL-1.0 OR AGPL-3.0-only",
+      "spdx_expression": "LicenseRef-RSALv2 OR SSPL-1.0 OR AGPL-3.0-only",
       "primary_license_file": "LICENSE.txt",
       "binary_distribution_terms": "8.x tri-license at licensee's option. 7.4-7.8 RSALv2/SSPL only. 7.2 and earlier BSD-3-Clause.",
       "notice_obligations": "Per elected license",
