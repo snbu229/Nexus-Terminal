@@ -55,6 +55,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/HostResponse' } } },
           }
+        '400': { $ref: '#/components/responses/BadRequest' }
         '404': { $ref: '#/components/responses/NotFound' }
   /terminal-sessions:
     get:
@@ -88,7 +89,9 @@ paths:
                   { schema: { $ref: '#/components/schemas/TerminalSessionResponse' } },
               },
           }
+        '400': { $ref: '#/components/responses/BadRequest' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
   /terminal-sessions/{id}:
     get:
       operationId: getTerminalSession
@@ -141,6 +144,8 @@ paths:
                 application/json: { schema: { $ref: '#/components/schemas/AgentSessionResponse' } },
               },
           }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
   /agent-sessions/{id}:
     get:
       operationId: getAgentSession
@@ -168,6 +173,7 @@ paths:
                 application/json: { schema: { $ref: '#/components/schemas/AgentSessionResponse' } },
               },
           }
+        '400': { $ref: '#/components/responses/BadRequest' }
         '404': { $ref: '#/components/responses/NotFound' }
   /approvals:
     get:
@@ -195,6 +201,16 @@ components:
     Id:
       { name: id, in: path, required: true, schema: { type: string, minLength: 1, maxLength: 64 } }
   responses:
+    BadRequest:
+      {
+        description: Invalid request,
+        content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } },
+      }
+    PayloadTooLarge:
+      {
+        description: Request body too large,
+        content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } },
+      }
     NotFound:
       {
         description: Not found,
@@ -275,7 +291,7 @@ components:
         - type: object
           additionalProperties: false
           required: [type, data]
-          properties: { type: { const: input }, data: { type: string } }
+          properties: { type: { const: input }, data: { type: string, maxLength: 65536 } }
         - type: object
           additionalProperties: false
           required: [type, cols, rows]
@@ -295,7 +311,7 @@ components:
           properties:
             type: { const: output }
             seq: { type: integer, minimum: 0 }
-            data: { type: string, contentEncoding: base64 }
+            data: { type: string, contentEncoding: base64, maxLength: 262144 }
         - type: object
           additionalProperties: false
           required: [type, state]
@@ -357,7 +373,7 @@ components:
             seq: { type: integer, minimum: 0 }
             ts: { type: string, format: date-time }
             kind: { const: output }
-            text: { type: string }
+            text: { type: string, maxLength: 65536 }
         - type: object
           additionalProperties: false
           required: [seq, ts, kind, tool, summary]
@@ -365,8 +381,8 @@ components:
             seq: { type: integer, minimum: 0 }
             ts: { type: string, format: date-time }
             kind: { const: tool_call }
-            tool: { type: string, minLength: 1 }
-            summary: { type: string }
+            tool: { type: string, minLength: 1, maxLength: 128 }
+            summary: { type: string, maxLength: 2000 }
         - type: object
           additionalProperties: false
           required: [seq, ts, kind, prompt]
@@ -374,7 +390,7 @@ components:
             seq: { type: integer, minimum: 0 }
             ts: { type: string, format: date-time }
             kind: { const: needs_input }
-            prompt: { type: string }
+            prompt: { type: string, maxLength: 2000 }
         - type: object
           additionalProperties: false
           required: [seq, ts, kind, code]
@@ -391,8 +407,8 @@ components:
         id: { type: string, minLength: 1, maxLength: 64 }
         summary: { type: string, minLength: 1, maxLength: 512 }
         requestedBy: { type: string, minLength: 1, maxLength: 128 }
-        hostId: { type: [string, 'null'] }
-        agentSessionId: { type: [string, 'null'] }
+        hostId: { type: [string, 'null'], minLength: 1, maxLength: 64 }
+        agentSessionId: { type: [string, 'null'], minLength: 1, maxLength: 64 }
         risk: { enum: [low, medium, high] }
         status: { enum: [pending, expired] }
         createdAt: { type: string, format: date-time }
@@ -413,4 +429,6 @@ components:
           type: object
           additionalProperties: false
           required: [code, message]
-          properties: { code: { type: string }, message: { type: string } }
+          properties:
+            code: { type: string, minLength: 1, maxLength: 64 }
+            message: { type: string, maxLength: 1000 }
