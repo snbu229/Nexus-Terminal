@@ -1,6 +1,6 @@
 # Command editor behaviour spec (clean-room) — NX3-104 / EZF-8
 
-Status: DRAFT for C1 (A5) / C2 (A1). Author: A7. Research date: 2026-11-10.
+Status: DRAFT rev 2 (addresses C1 review of 6b4a4da) for C1 (A5) / C2 (A1). Author: A7. Research date: 2026-11-10.
 Clean-room statement: built only from public docs, standards and open-source project documentation listed below. No Warp code, assets, screenshots, private APIs or binaries were used; no Warp instance was run. All Warp behaviour here is **documented-only** (not black-box measured). Items tagged `[INFERENCE]` or `[UNVERIFIED]` are not confirmed by a source.
 
 ## 1. Sources (fetched 2026-11-10)
@@ -14,19 +14,22 @@ Clean-room statement: built only from public docs, standards and open-source pro
 | S6 | https://ghostty.org/docs/features/shell-integration | prompt jump, click-to-move, bar cursor at prompt, shells | MIT |
 | S7 | https://github.com/wavetermdev/waveterm | "command blocks" feature; Apache-2.0 | no implementation read yet |
 | S8 | freedesktop semantic-prompts proposal (gitlab.freedesktop.org/Per_Bothner/specifications) | normative OSC 133 | **fetch blocked (Anubis); [UNVERIFIED] — C1/A1 must read directly** |
+| S10 | https://code.visualstudio.com/docs/terminal/shell-integration (read 2026-11-10) | OSC 633 A/B/C/D/E/P; E carries an optional nonce "to verify the sequence came from the shell integration script"; docs say nothing on tmux or other forgery protection | docs only |
+| S11 | https://iterm2.com/documentation-escape-codes.html (read 2026-11-10) | FTCS = OSC 133 A/B/C/D semantics; states they "may not work properly in tmux or screen" | docs only |
+| S12 | https://github.com/tmux/tmux/wiki/FAQ (read 2026-11-10) | DCS `tmux;` passthrough needs `allow-passthrough on/all` since tmux 3.3; tmux is unaware of state changes made via passthrough | docs only |
 | S9 | Nexus kit: WARP_STYLE_EDITOR_SPEC.md, SESSION_PERSISTENCE.md, CLEAN_ROOM_RESEARCH_PLAYBOOK.md | requirements | internal |
 
-Not yet studied: Tabby source, Wave/WezTerm/Ghostty source (docs only), Warp Vim mode and block-filter pages. Follow-up study tickets needed before ADR sign-off.
+Not studied: Tabby; source code of Wave/WezTerm/Ghostty; Warp Vim-mode and block-filter pages. See §10 item 1 (deferral requested). S4 is cited only for A/C/D, `k=s`, `cmdline`, `cmdline_url`, `special_key`; it does not document `aid`/`cl`.
 
-## 2. Study records (playbook format)
-| study_id | product | function | decision | licence | notes |
-|---|---|---|---|---|---|
-| ST-104-1 | Warp | click-to-edit input + blocks | implement (independent) | proprietary | behaviour only; no trade dress |
-| ST-104-2 | CodeMirror 6 | draft editor | adopt | MIT | confirm in licence ledger |
-| ST-104-3 | xterm.js | PTY render + TUI | adopt | MIT | confirm in ledger |
-| ST-104-4 | OSC 133 | block boundaries | implement per standard | open standard | S8 unread — blocker for ADR |
-| ST-104-5 | Wave/Tabby/WezTerm/Ghostty | prior art | defer code study | Apache/MIT | docs-level only so far |
-Decision ADR: to be drafted (`docs/adr/`) after S8 is read.
+## 2. Study records (playbook fields)
+| study_id | product / version | platform | API / protocol surface | function | integration risks | security concerns | licence | decision | ADR |
+|---|---|---|---|---|---|---|---|---|---|
+| ST-104-1 | Warp (public docs, 2026-11-10, no version pinned) | macOS/Linux/Win app | none used; behaviour only | click-to-edit input + blocks | trade-dress similarity | none (not run) | proprietary | implement independently | ADR-TBD |
+| ST-104-2 | CodeMirror 6 (version TBD) | browser | JS editor API | draft editor | IME/a11y gaps unmeasured | XSS via widgets | MIT [UNVERIFIED in ledger] | **candidate** until ledger entry exists | ADR-TBD |
+| ST-104-3 | xterm.js (version TBD) | browser | JS terminal API, parser hooks | PTY render + TUI | parser hook coverage for OSC 133/633 | query-response injection (BR-14) | MIT [UNVERIFIED in ledger] | **candidate** until ledger entry exists | ADR-TBD |
+| ST-104-4 | OSC 133 / FTCS (S4, S10, S11; S8 unread) | any | OSC 133 A/B/C/D | block boundaries | tmux (BR-15), marker forgery (BR-12) | forged markers | open | implement per standard + Nexus hardening | ADR-TBD |
+| ST-104-5 | Wave / Tabby / WezTerm / Ghostty | various | docs only | prior art | n/a | n/a | Apache-2.0 / MIT | **deferred, approval requested** (§10) | n/a |
+ADR: `docs/adr/` entry to be drafted after S8 is read and tmux fixture results (TC-21..) exist.
 
 ## 3. Documented behaviours to reproduce (functional)
 Warp-documented (S1,S2): click-to-place cursor; multi-line editing with soft wrap; copy/cut/paste; select by char/word/line/all; word and line-boundary movement (Home/End, Ctrl+A/E); delete word/line/to cursor; optional auto-pair of quotes/brackets; Esc closes suggestion/history menu; triple-click selects logical (not visual) line; Vim keybindings optional; works over SSH. Blocks group each command+output; copy command/output separately; jump to output start; re-input a prior command; bookmark; find/filter in blocks; sticky command header.
@@ -37,60 +40,75 @@ Nexus-specific additions come from kit spec (S9): Shift+Enter newline, Run butto
 - BR-2 Enter submits when safe; Shift+Enter newline (configurable); multiline/elevated drafts require explicit Run/confirm.
 - BR-3 Editor undo/redo are draft-local and do not touch the PTY.
 - BR-4 Soft wrap is visual only; the submitted text has no inserted newlines.
-- BR-5 Paste: strip/reject C0/C1 control and ESC sequences except \n and \t; show raw preview with escapes visible; never auto-run.
-- BR-6 Submission uses bracketed paste if the PTY advertises DECSET 2004; otherwise send line-by-line with confirmation. No `sh -c` wrapper, no quoting changes: bytes sent == draft bytes (after BR-5) + final newline.
+- BR-5 Paste: strip/reject C0/C1 control and ESC sequences except \n and \t; normalise CRLF and lone `\r` to `\n` (a pasted `\r` is never sent raw because it would execute); flag (do not silently strip) bidi controls U+202A–202E and U+2066–2069, zero-width/invisible characters (U+200B–200F, U+2060, U+FEFF) and mixed-script homoglyphs (Trojan Source class); show raw preview with escapes and flagged characters made visible; never auto-run.
+- BR-6 Byte-exact framing. Single-line draft: draft bytes + `\r` (Enter is `\r`, never `\n`). Multiline draft when bracketed paste is active: `ESC[200~` + draft (with `\n` between lines) + `ESC[201~` + `\r`. Authoritative observation of bracketed-paste state: the connector's own parser tracks DECSET/DECRST 2004 **only from the PTY stream while in INPUT state (after `B`, before `C`)**, with the value reset to off at each `A`; output from RUNNING state never changes it. If state is off or unknown, multiline drafts are sent line by line, each requiring confirmation. No `sh -c` wrapper, no quoting changes. Any `ESC[201~` in the draft is removed under BR-5 before framing.
 - BR-7 One long-lived PTY; `cd`/exports persist across submissions.
 - BR-8 Block = {id, command, cwd, host/user, start, end, exit code, output cursor}. Block boundaries come only from verified OSC 133 markers emitted by Nexus's opt-in integration; output text can't forge them (see BR-12).
 - BR-9 Block actions: Copy command, Copy output, Edit as draft (never auto-run), Rerun (confirm if destructive or cross-host), Share redacted, attach to issue.
 - BR-10 Unknown shell / no markers → block grouping disabled, editor falls back to raw PTY with manual toggle.
 - BR-11 Unsent draft survives disconnect/refresh and is never auto-submitted after reconnect.
-- BR-12 Marker authentication: integration emits a per-session random nonce in OSC 133 params `[INFERENCE: standard has no nonce; Nexus extension]`; parser drops markers lacking it, bounds buffers, rejects unknown OSC from untrusted output for HTML/links.
+- BR-12 Marker authentication `[INFERENCE: OSC 133 has no nonce; VS Code's OSC 633;E nonce (S10) is the nearest prior art]`. The integration puts a random nonce (>=128 bit) in each marker's params; the parser drops markers without a valid nonce, bounds buffers, and rejects unknown OSC from untrusted output for HTML/links.
+  - Defends against: passive content (`cat`, `curl`, logs, MOTD, file contents) that does not know the nonce.
+  - Does NOT defend against: programs the user runs that can read the shell environment, and anything that can read the terminal's own earlier output.
+  - Required: (a) nonce held in a **non-exported** shell variable (never in the environment of children; verify `env` and `/proc/<pid>/environ` of a child lack it; note `set` in the same shell can print it, so the integration unsets/hides it from `set` output where the shell allows, else documents residual risk); (b) the connector strips nonce-bearing marker bytes from rendered output, scrollback, block records, shared/redacted output and Paperclip attachments; (c) rotate per session at minimum, per prompt where the shell allows (nonce for the next prompt is delivered on the side channel of BR-15 or in the prior authenticated `D`); (d) a marker with a previously used or expired nonce is ignored and logged (replay of a nonce leaked from earlier output yields no block).
+- BR-14 Terminal response-injection class. OSC 52 clipboard **read** is always denied; OSC 52 **write** is off by default and requires per-session user consent. Responses to queries (DA/DSR/CPR, `CSI 21 t` title report, DECRQSS, OSC 10/11 colour queries) must never contain attacker-controlled bytes (titles, text from the stream) and are generated only by the terminal core, never echoed from output into PTY input; `CSI 21 t` is not answered. OSC 0/2 titles are stripped of C0/C1 controls, length-capped and rendered as text only.
+- BR-15 tmux. Nexus sessions run in remote tmux (SESSION_PERSISTENCE.md §1). OSC 133 inside a pane is not relied upon to reach the client: per S11/S12 it may not work, and forwarding needs `allow-passthrough on` which lets any pane program emit arbitrary escapes to the outer terminal (and tmux can undo passthrough state, S12). `[UNVERIFIED-LOCAL: tmux 3.4+ consuming OSC 133 itself, older versions dropping it, come from the C1 review; no tmux/container runtime exists in this run's sandbox, so TC-21 must confirm.]` **Proposed decision:** `allow-passthrough off` (default); the shell integration inside the pane writes authenticated block events (A/B/C/D + cwd, exit, command id, nonce) to a **side channel**, a per-session append-only file/FIFO under a 0700 dir (`$XDG_RUNTIME_DIR/nexus/<session>/events`, fallback `~/.cache/nexus/…`) read by the connector over a separate SSH exec channel. Block records therefore do not depend on the pane byte stream. On reattach, tmux redraws the screen without markers; blocks are rebuilt from the event log (with a stored byte offset per block into a connector-side output ring, or marked "output unavailable" when the ring has expired), not from the redrawn screen. Alternative if the side channel is rejected: tmux hooks (`pane-*`/`alert-*`) plus `pipe-pane`; to be compared in the ADR. Trade-off: side channel adds a file the same-user processes can write to, so entries stay nonce-authenticated (BR-12); same-user malware is out of scope.
+- BR-16 Input routing. State machine of §5 gates all input: only in INPUT (after `B`, before `C`) are keystrokes captured into the draft. In RUNNING (after `C`, before `D`) and in any state where markers are missing/UNKNOWN, keystrokes go straight to the PTY and are never captured into the draft, history, suggestions or AI context. Ctrl+C is always delivered as `0x03`, Ctrl+D as `0x04`, Ctrl+Z as `0x1a`, in every state, never intercepted by the editor (the editor's own copy shortcut uses Ctrl+Shift+C / Cmd+C). This covers `read -p`, `apt` Y/n, `python3` REPL, `cat` waiting on stdin, and `sudo`/`ssh`/`su`/`mysql -p` secret prompts.
 - BR-13 Redaction before preview/notification/LLM; no terminal text to AI without explicit policy+consent.
 
 ## 5. OSC 133 marker model (S4; S8 to confirm)
 `A` prompt start → `B` prompt end/input start → `C` output start (command executing) → `D;<exit>` command end. kitty options: `aid`, `cl`, `k=s` (secondary prompt/PS2), `cmdline`/`cmdline_url` (S4). State machine: `PROMPT(A) → INPUT(B) → RUNNING(C) → PROMPT(D→A)`. Missing B (common) ⇒ treat A…C as prompt+input. Duplicate/out-of-order markers ⇒ reset to UNKNOWN and drop grouping for that block. Shells: bash (via PROMPT_COMMAND/DEBUG trap — Warp notes bash needs preexec shim, S3), zsh (precmd/preexec), fish (events). Support matrix to be proven in tests.
 
 ## 6. Mode switching: SMART_INPUT ↔ INTERACTIVE_PTY
-Enter INTERACTIVE_PTY when ANY: (a) DECSET 1049/1047/47 alt-screen set; (b) DECSET 1000–1006 mouse reporting on; (c) no prompt marker (`A`/`B`) seen within N ms after a command is `RUNNING` and PTY in non-canonical mode `[INFERENCE: needs probe via remote stty/ tcgetattr not available over plain PTY — use output heuristics]`; (d) prompt matches password heuristic (`[Pp]assword.*:` / `passphrase`, sudo) — raw mode, input not echoed to draft or stored; (e) user manual toggle (e.g. Ctrl+Shift+T, configurable).
-Return to SMART_INPUT when: alt-screen reset AND next `A/B` marker; or user toggle; or recovery action "Reset prompt detection".
-In INTERACTIVE_PTY: all keys incl. Esc, Ctrl combos, mouse and resize (SIGWINCH via PTY resize) go to xterm.js untouched; editor hidden or inert. Nested `ssh`, vim, nano, top, less, tmux-in-tmux, `bash -x` debugging: raw. Failure mode: if detection wrong, the toggle must always be reachable and never be captured by the app.
-Note: nested ssh prints no OSC 133 from the inner shell ⇒ stays raw by rule (c) unless inner integration installed.
+Safety is structural (BR-16): draft capture exists only in INPUT state. Everything below decides UX (editor visible vs hidden), not whether secrets are captured.
+Enter INTERACTIVE_PTY when ANY: (a) DECSET 1049/1047/47 alt-screen set; (b) DECSET 1000–1006 mouse reporting on; (c) RUNNING for more than N = 500 ms `[INFERENCE: initial value]` with no `A`/`D` marker and the foreground command not known to be line-oriented; the prototype must measure false positive/negative rates over the TC-08/TC-22 command set (vim, top, less, apt, python3, read, cat, sleep, ssh) and adjust N; (d) UX hint only: output tail matches a password-prompt regex (`[Pp]assword|passphrase|Passwort|\[sudo\]`), which shows a "secret input" indicator; a non-match does NOT make capture unsafe; (e) user manual toggle (Ctrl+Shift+T, configurable).
+Return to SMART_INPUT when: alt-screen reset AND next authenticated `A/B`; or user toggle; or "Reset prompt detection".
+In INTERACTIVE_PTY and RUNNING: all keys incl. Esc, Ctrl combos, mouse and resize (SIGWINCH via PTY resize) go to xterm.js untouched; editor hidden or inert. Nested `ssh`, vim, nano, top, less, tmux-in-tmux, `bash -x`: raw. If detection is wrong, the toggle must remain reachable and never be captured by the app.
+Nested ssh prints no authenticated markers from the inner shell ⇒ stays raw unless inner integration installed.
 
 ## 7. Threat model / negative tests (controlled fixtures only)
-Forged OSC 133/OSC 8/OSC 52 from `cat evil.txt`; HTML/JS in output; title-set sequences; over-long OSC; CSI cursor-report injection into draft; paste containing ESC[201~ (bracketed-paste breakout) — strip `\e[201~` from drafts.
+Forged OSC 133/633/OSC 8 from `cat evil.txt`; nonce replay (leaked from earlier output) and nonce read from child env; HTML/JS in output; title-set sequences; OSC 52 read/write; query responses (DA/DSR, `CSI 21 t`, DECRQSS, OSC 10/11) triggering PTY-input injection; over-long OSC; paste with `ESC[201~` (bracketed-paste breakout) and Trojan Source characters; secret prompts that evade the password regex; tmux passthrough abuse.
 
 ## 8. Executable test-case list
-Format: ID | layer | steps → expected. Layers: PW=Playwright, PTY=pty-fixture (local container), UNIT.
-| ID | layer | case |
-|---|---|---|
-| TC-01 | PW | 300-char draft, click at char 150 and type X → X at index 150; no execution |
-| TC-02 | PW | Home/End/Alt+←/→/Ctrl+A/word select behave; triple-click selects logical line across soft wrap |
-| TC-03 | PW | undo/redo over 20 edits restores exact text |
-| TC-04 | PTY | 100-line bash script w/ quotes, heredoc, `$()` → output byte-identical to running file; sent bytes == draft |
-| TC-05 | PTY | multiline draft requires Run; Enter doesn't execute it |
-| TC-06 | PTY | `cd /tmp` then `pwd` in two submissions → /tmp |
-| TC-07 | PTY | `sudo -k; sudo true` → mode RAW on prompt; password never in draft/history/logs |
-| TC-08 | PTY | vim/nano/top: alt-screen → RAW; keys, mouse, resize delivered; Esc not captured |
-| TC-09 | PTY | nested `ssh` to local sshd container → RAW, exit returns to SMART after marker |
-| TC-10 | UNIT | OSC 133 parser: A/B/C/D sequences, missing B, out-of-order, oversize, split across chunks |
-| TC-11 | PTY | bash, zsh, fish integration emit correct block (cmd, exit, cwd); unknown shell (dash) → grouping off |
-| TC-12 | PTY | `cat` of file containing forged 133 and nonce guess → no block created |
-| TC-13 | PW | output with `<script>`/OSC 8 javascript: URL → no DOM injection, no navigation |
-| TC-14 | UNIT | paste with ESC, \e[201~, NUL, C1 → rejected/stripped, preview shows raw |
-| TC-15 | PW | Edit-as-draft on block puts text in editor, no run; Rerun destructive (`rm -rf`) asks confirm |
-| TC-16 | PW+PTY | drop network with unsent draft → draft preserved; after reconnect not sent until Run |
-| TC-17 | PTY | refresh / gateway restart with tmux alive → same session, no duplicate execution (idempotency key) |
-| TC-18 | PW | manual raw toggle reachable inside vim; recovery when prompt detection fails (simulate dropped markers) |
-| TC-19 | PW | axe a11y: labels, focus order, 1.3x scaling, screen-reader live-region for block completion |
-| TC-20 | PW | second client is spectator (read-only) until approved lease takeover; audit event emitted |
+Layers: PW=Playwright, PTY=pty-fixture in local container, UNIT. Matrix rows: **L-b** = Linux bash 5, **L-z** = Linux zsh 5, **L-f** = Linux fish 3, **M-z** = macOS zsh (macOS runner/VM; tmux rows need tmux installed there), **L-d** = Linux dash (unsupported-shell control). Rows not listed run on L-b only. Fixtures live under `tests/fixtures/command-editor/` (to be created by NX3-114).
+| ID | layer | fixture | input | expected | matrix |
+|---|---|---|---|---|---|
+| TC-01 | PW | 300-char draft | click char 150, type `X` | `X` at index 150; no PTY bytes sent | browsers |
+| TC-02 | PW | 3-word draft `foo bar baz` and a 300-char soft-wrapped draft | Home, End, Alt+←, Alt+→, Ctrl+A, double-click word, triple-click on 2nd visual row | on `foo bar baz`: Home→caret 0; End→11; Alt+← from 11→8, again→4; Alt+→ from 0→3; double-click on `bar`→selection [4,7]; triple-click selection == whole logical line (length 300), not the visual row | browsers |
+| TC-03 | PW | empty draft | 20 scripted edits, then 20 undo, then 20 redo | text after undos == "" ; after redos == text before undos; PTY bytes sent == 0 | browsers |
+| TC-04 | PTY | 100-line script (quotes, heredoc, `$()`) as draft, bracketed-paste on/off variants | submit | captured PTY input == `ESC[200~`+draft+`ESC[201~`+`\r` (on) or per-line confirmed `\r`-terminated lines (off); command output sha256 == output of running the file | L-b L-z L-f M-z |
+| TC-05 | PTY | 2-line draft | press Enter | no bytes sent; after Run click, bytes sent per BR-6 | L-b |
+| TC-06 | PTY | none | submit `cd /tmp`, then `pwd` | output `/tmp` | L-b L-z L-f |
+| TC-07 | PTY | `sudo -k; sudo true`, plus fixture prompts: `sudo -p 'Passwort:'`, `ssh` passphrase key, `su`, `mysql -p`, a custom `read -s -p 'xyzzy> '` | type secret `S3cr3t-CANARY` | secret never matches in draft store, history store, logs, redaction pipeline input, suggestion/AI context buffers (grep for canary == 0 hits); secret bytes still delivered to PTY; holds for non-matching prompts too (BR-16) | L-b L-z |
+| TC-08 | PTY | vim, nano, top | keys, Esc, mouse click, window resize | RAW mode; PTY receives each byte; SIGWINCH size matches; Esc not captured | L-b M-z |
+| TC-09 | PTY | local sshd container | `ssh localhost`, then `exit` | RAW within N ms of run; SMART after next authenticated marker | L-b |
+| TC-10 | UNIT | marker byte streams | A/B/C/D, missing B, out-of-order, oversize (>4 KiB OSC), split at every byte offset, wrong/missing/replayed nonce | state transitions per §5; no throw; unauthenticated markers produce 0 blocks; buffer bounded | n/a |
+| TC-11 | PTY | integration scripts for each shell; command `false` in dir `/tmp` | run it | block == {command:`false`, exit:1, cwd:`/tmp`} for bash/zsh/fish; dash → grouping off (0 blocks) and raw toggle visible | L-b L-z L-f M-z L-d |
+| TC-12 | PTY | file with forged `OSC 133;A/C/D` w/o nonce, with guessed nonce, and with a nonce leaked from earlier output | `cat` it | 0 blocks created; child process env and `env`/`/proc/self/environ` lack nonce; nonce absent from scrollback/block record/export; replayed nonce ignored and logged | L-b L-z |
+| TC-13 | PW | output with `<script>` and `OSC 8` `javascript:` URL | render | no DOM script node, no navigation, link not clickable | browsers |
+| TC-14 | UNIT | pastes: ESC, `ESC[201~`, NUL, C1 (0x9b), CRLF, lone `\r`, U+202E, U+2066, U+200B, Cyrillic `а` in `ls` | paste | controls stripped/rejected, `\r` never emitted raw, CRLF→`\n`, bidi/zero-width/homoglyph flagged and visible in preview | n/a |
+| TC-15 | PW | block with `rm -rf /tmp/x` | Edit-as-draft; Rerun | Edit puts text in editor, 0 PTY bytes; Rerun shows confirm dialog | browsers |
+| TC-16 | PW+PTY | unsent draft | drop network 10 s, reconnect | draft text unchanged; 0 bytes sent until Run | L-b |
+| TC-17 | PTY | tmux session alive | refresh browser; restart gateway | same session id; command counter in shell unchanged (no duplicate execution); idempotency key reused | L-b |
+| TC-18 | PW | vim running; fixture dropping all markers | press toggle shortcut; use "Reset prompt detection" | toggle reachable and not captured; SMART restored after reset | L-b |
+| TC-19 | PW | axe-core run on editor+block list; viewport at 130% | audit; tab through; block completion | 0 serious/critical axe violations; focus order editor→Run→block list; live region announces `Command finished, exit N` once per block; no clipped controls at 130% | browsers |
+| TC-20 | PW | two clients | second client opens session; attempt to type | read-only until approved lease takeover; audit event emitted with both identities | browsers |
+| TC-21 | PTY | tmux 3.x container (versions pinned in fixture; ≥3.3 and the latest), pane runs integration | emit OSC 133 in pane with `allow-passthrough off` and `on`; then detach/reattach | records which versions deliver OSC 133 to client (validates BR-15 claims); with side channel: 100% of A/B/C/D reach connector with passthrough off; after reattach blocks rebuilt from event log == blocks before detach; redrawn screen contains no markers | L-b L-z M-z |
+| TC-22 | PTY | `read -p`, `apt-get install` (Y/n, in container), `python3`, `cat` (stdin), `sleep 100` | type text; Ctrl+C, Ctrl+D, Ctrl+Z | after `C`, every key reaches PTY and draft store unchanged; PTY receives `0x03`/`0x04`/`0x1a` exactly; editor never intercepts | L-b L-z |
+| TC-23 | PTY | fixture emitting DA, DSR, `CSI 21 t`, DECRQSS, OSC 10/11 `?`, and a title containing `;rm -rf ~\r` | run it | no attacker-controlled bytes in PTY input (title text never echoed); `CSI 21 t` unanswered; title rendered sanitised | L-b |
+| TC-24 | PTY+PW | fixture emitting OSC 52 read (`?`) and write | run it | read denied, nothing written to clipboard by default; write requires consent prompt; denial logged | L-b |
+| TC-25 | PTY | long-running `sleep 1000` command | a fixture program running inside the command emits `ESC[?2004h` during RUNNING | bracketed-paste state unchanged (BR-6); next submission framing follows state observed in INPUT only | L-b |
 
 ## 9. Platform / compatibility declaration
 Browser UI: Chromium/Firefox/WebKit latest via Playwright. Remote hosts: Linux and macOS with bash≥4 (macOS /bin/bash 3.2 untested ⇒ expect fallback; zsh native), zsh, fish. SSH-only fallback (no integration) = raw PTY. Windows shells out of scope (contract is macOS/Linux).
 
-## 10. Open items / blockers
-1. S8 (freedesktop OSC 133) unread — A1/C1 to review or provide a mirror before ADR.
-2. Nonce extension (BR-12) is Nexus invention; verify it doesn't break kitty/WezTerm/Ghostty if the integration is also used locally.
-3. Heuristic (c) in §6 is inference; needs prototype measurement.
-4. Spec inconsistencies I-1..I-7 from EZF-2 not re-read here; none obviously touched, A1 to confirm.
-5. Tabby and open-source implementation code not studied (docs-level only).
+## 10. Open items / deferrals
+1. **Open-source code study (scope item) — DEFERRAL REQUESTED.** Wave (Apache-2.0), WezTerm, Ghostty, Tabby (MIT) were studied at docs level only (S5–S7, S10, S11); per-project block-boundary detection, forgery handling and tmux behaviour at a pinned tag/commit are not recorded. Reading them is licence-permitted with attribution but is a separate, larger effort than the remaining budget allows. Needs explicit approval from Nexus CEO or A1 to split into a follow-up issue (suggested title: "NX3-104b: source-level study of OSC 133 handling in Wave/Tabby/WezTerm/Ghostty with pinned commits"); that issue should block the ADR. Not approved yet.
+2. S8 (freedesktop OSC 133) unread (Anubis). Alternatives S10/S11 read. A1/C1 to review S8 or provide a mirror before ADR.
+3. tmux claims (BR-15) are unverified locally: no tmux or container runtime in this run's sandbox. TC-21 is the verification and must pass before the ADR chooses side channel vs hooks.
+4. Heuristic §6(c) N=500 ms is an initial guess; prototype measurement per TC-22.
+5. CodeMirror 6 / xterm.js licence-ledger entries and versions needed (ST-104-2/3 are `candidate`).
+6. Nonce extension must be checked not to break kitty/WezTerm/Ghostty if used locally.
+7. I-1..I-7 from EZF-2 not re-read here; A1 to confirm none touched.
+8. Role revoked mid-session (WARP spec acceptance item) is out of scope here; tracked as NX3-111 (authorization on every reattach, role deletion mid-session) and NX3-140 (cross-OS role removal chaos test).
 Rollback: doc-only change, revert commit. Performance: n/a.
