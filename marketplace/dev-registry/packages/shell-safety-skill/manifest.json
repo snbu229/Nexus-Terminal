@@ -1,0 +1,27 @@
+{
+  "version": "0.1.0",
+  "publisher": "nexus-samples",
+  "license": "Apache-2.0",
+  "source": {
+    "registry": "local-dev",
+    "ref": "dev-fixture-1"
+  },
+  "id": "shell-safety-skill",
+  "kind": "skill",
+  "description": "Text skill: review shell commands for destructive effects before running.",
+  "categories": ["safety", "shell"],
+  "compatibility": {
+    "nexus": ">=0.0.0 <1.0.0",
+    "os": ["macos", "linux"],
+    "arch": ["arm64", "x64"],
+    "harness": ["any"]
+  },
+  "files": [
+    {
+      "path": "SKILL.md",
+      "sha256": "d76ec1df2eb5d0aabfa12757f091f95c55bb7e9bee95241bcba149a239e4edfe"
+    }
+  ],
+  "permissions": ["fs.read.workspace"],
+  "digest": "862746372799fb5d4cf2fd1cfa540f9a255af5a15b40597968c3bb96ad47e49e"
+}

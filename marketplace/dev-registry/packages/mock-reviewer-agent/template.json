@@ -1,0 +1,6 @@
+{
+  "name": "mock-reviewer",
+  "harness": "mock",
+  "task": "Review the current workspace diff and report findings.",
+  "notes": "Sample template for the M-D1 mock harness. Data only."
+}

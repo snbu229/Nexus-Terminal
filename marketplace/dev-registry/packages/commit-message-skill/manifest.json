@@ -1,0 +1,27 @@
+{
+  "version": "0.1.0",
+  "publisher": "nexus-samples",
+  "license": "Apache-2.0",
+  "source": {
+    "registry": "local-dev",
+    "ref": "dev-fixture-1"
+  },
+  "id": "commit-message-skill",
+  "kind": "skill",
+  "description": "Text skill: write concise commit messages from a staged diff.",
+  "categories": ["git", "writing"],
+  "compatibility": {
+    "nexus": ">=0.0.0 <1.0.0",
+    "os": ["macos", "linux"],
+    "arch": ["arm64", "x64"],
+    "harness": ["any"]
+  },
+  "files": [
+    {
+      "path": "SKILL.md",
+      "sha256": "1b861ee73c9791a4566d90ebb6b7ffe7d144e10863854abf0886275338c4a802"
+    }
+  ],
+  "permissions": ["fs.read.workspace"],
+  "digest": "039ab4bbb2928d68964b11f1115d7294666c8ab5d8fa85fc49fa2c85a957b1ec"
+}

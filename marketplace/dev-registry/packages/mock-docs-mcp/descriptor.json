@@ -1,0 +1,7 @@
+{
+  "name": "mock-docs",
+  "transport": "https",
+  "endpoint": "https://docs.example.invalid/mcp",
+  "tools": ["search_docs"],
+  "notes": "Metadata only. Not runnable; Nexus never starts or connects to this in dev."
+}

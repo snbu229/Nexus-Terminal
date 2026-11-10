@@ -1,0 +1,5 @@
+{
+  "name": "mock-harness",
+  "capabilities": ["start", "stop", "reattach"],
+  "notes": "Descriptor only. Describes the M-D1 mock harness adapter; contains no code."
+}
