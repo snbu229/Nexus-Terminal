@@ -1,10 +1,11 @@
 # Accessibility criteria: WCAG 2.2 Level AA
 
-Source: W3C WCAG 2.2 Recommendation (12 December 2024), https://www.w3.org/TR/WCAG22/, fetched 2026-11-10. (2.5.5 Target Size Enhanced is AAA, not AA; it is not required.)
+Source: W3C WCAG 2.2 Recommendation (12 December 2024), <https://www.w3.org/TR/WCAG22/>, fetched 2026-11-10. (2.5.5 Target Size Enhanced is AAA, not AA; it is not required.)
 
 Target: every shipped screen passes all A + AA success criteria; section 1 maps every one of them (applicable or N/A with reason), verified by automated (axe-core, Playwright) and manual checks. Criteria apply at 360dp touch, desktop keyboard, 200% zoom, and 1.3x editor text scale.
 
 ## 1. Criteria mapped to Nexus
+
 | SC | Requirement in Nexus |
 |---|---|
 | 1.1.1 Non-text | Icons have text labels; SVG diagrams have title/desc; status never icon-only |
@@ -52,6 +53,7 @@ Target: every shipped screen passes all A + AA success criteria; section 1 maps 
 | 4.1.3 Status messages | Live regions for connection state, approval result, toasts |
 
 ## 2. Terminal-specific
+
 - Command blocks exposed as a navigable structure independent of xterm canvas; each has command, host, exit status as text. Use xterm accessibility/screen-reader mode when enabled; offer "Accessible output view" (plain text list) as alternative.
 - Output live region is `role=log`, `aria-live=off` by default with user-togglable announce of command completion + exit code (avoid flooding).
 - CodeMirror draft: label "Command draft", announces mode (Smart/Raw), multiline, Run button name includes "Run command".
@@ -59,16 +61,20 @@ Target: every shipped screen passes all A + AA success criteria; section 1 maps 
 - Mobile: on-screen extra-key row operable by screen reader; soft keyboard does not hide the draft or Run.
 
 ## 3. Approval-specific
+
 - Details read in logical order: status, requester, host, command, diff, risk, rollback, then actions.
 - Approve disabled state includes reason text (not just dimmed). Step-up dialog traps focus legitimately, restores focus on close, Esc cancels.
 - Diff add/remove uses +/- text and not just color; copy button for command.
 - Result announced via `role=status`.
 
 ## 4. Offline / pending accuracy
+
 Each of `Stale`, `Queued - not sent`, `Reconnecting`, `Expired` is visible text and announced; no UI shows success until server confirms.
 
 ## 5. Automated gates (proposed for later implementation tickets)
+
 axe-core in Playwright for every route in light, dark, forced-colors; viewport 360x640 and 1280x800; keyboard-only e2e for onboarding, send command, approve; Lighthouse a11y >= 95 as smoke only (not a substitute).
 
 ## 6. Manual acceptance (not yet performed)
+
 VoiceOver iOS Safari, TalkBack Android Chrome, NVDA+Firefox/Chrome, VoiceOver macOS; 200% zoom; 1.3x editor scale; voice control smoke. Record results in issue evidence.

@@ -143,15 +143,15 @@ Environment: disposable local containers (two sshd targets, one provider), a thr
 
 ## 9. Sources (all fetched 2026-11-10 via the research tooling)
 
-- https://goteleport.com/docs/feature-matrix/ (CE vs Enterprise matrix)
-- https://goteleport.com/docs/identity-governance/access-requests/oss-role-requests/ (CE role requests)
-- https://goteleport.com/docs/zero-trust-access/sso/integrate-idp/github-sso/ (GitHub SSO)
-- https://goteleport.com/docs/identity-governance/locking/ (locks, shown as Enterprise)
-- https://github.com/gravitational/teleport/discussions/39158 (CE licence change, 2024-03-08)
-- https://goteleport.com/pricing/ (no public Enterprise price)
-- https://smallstep.com/docs/step-ca/provisioners/ (SSH provisioners, renewal and revocation)
-- step-ca licence and passive revocation: smallstep/certificates README (https://github.com/smallstep/certificates) via search result. Not fetched directly, so C1 should confirm.
-- Keycloak LICENSE.txt (Apache-2.0) fetched directly at commit 6fc1bebe693ae9b7bb943295182e9d28f5c4bb18 and step-ca LICENSE (Apache-2.0) at commit 6d5a251fbe010383c93ead1ab451a329986b80ca, both on 2026-11-10 (license only). GitHub brokering and token/session revocation remain search results only (https://www.keycloak.org/docs/, https://cncf.io/blog/2023/04/11/keycloak-joins-cncf-as-an-incubating-project). **Not fetched directly. C1 should verify.**
+- <https://goteleport.com/docs/feature-matrix/> (CE vs Enterprise matrix)
+- <https://goteleport.com/docs/identity-governance/access-requests/oss-role-requests/> (CE role requests)
+- <https://goteleport.com/docs/zero-trust-access/sso/integrate-idp/github-sso/> (GitHub SSO)
+- <https://goteleport.com/docs/identity-governance/locking/> (locks, shown as Enterprise)
+- <https://github.com/gravitational/teleport/discussions/39158> (CE licence change, 2024-03-08)
+- <https://goteleport.com/pricing/> (no public Enterprise price)
+- <https://smallstep.com/docs/step-ca/provisioners/> (SSH provisioners, renewal and revocation)
+- step-ca licence and passive revocation: smallstep/certificates README (<https://github.com/smallstep/certificates>) via search result. Not fetched directly, so C1 should confirm.
+- Keycloak LICENSE.txt (Apache-2.0) fetched directly at commit 6fc1bebe693ae9b7bb943295182e9d28f5c4bb18 and step-ca LICENSE (Apache-2.0) at commit 6d5a251fbe010383c93ead1ab451a329986b80ca, both on 2026-11-10 (license only). GitHub brokering and token/session revocation remain search results only (<https://www.keycloak.org/docs/>, <https://cncf.io/blog/2023/04/11/keycloak-joins-cncf-as-an-incubating-project>). **Not fetched directly. C1 should verify.**
 - Repo: `docs/reference/Nexus_Terminal_V3_1_Cross_Platform_Paperclip_Kit/TELEPORT_IDENTITY_ACCESS.md`, `CLEAN_ROOM_RESEARCH_PLAYBOOK.md`, `SECURITY_GATES_V3.md`.
 
 ## 10. License ledger entries (proposed)
