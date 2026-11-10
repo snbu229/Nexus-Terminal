@@ -1,8 +1,17 @@
 import type { AgentEvent, AgentSession, Approval, Host, TerminalSession } from '../schemas.js';
 
 // Dev-only fixtures: no real addresses, hostnames or credentials.
+// Deeply frozen at runtime so API and web tests cannot mutate shared state.
 
-export const hostFixtures: Host[] = [
+function deepFreeze<T>(value: T): T {
+  if (typeof value === 'object' && value !== null && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    for (const child of Object.values(value)) deepFreeze(child);
+  }
+  return value;
+}
+
+export const hostFixtures: readonly Host[] = deepFreeze([
   {
     id: 'host-dev-01',
     name: 'dev-linux-amd64-01',
@@ -83,9 +92,9 @@ export const hostFixtures: Host[] = [
     tags: [],
     terminalProvider: 'none',
   },
-];
+]);
 
-export const terminalSessionFixtures: TerminalSession[] = [
+export const terminalSessionFixtures: readonly TerminalSession[] = deepFreeze([
   {
     id: 'term-dev-01',
     hostId: 'host-dev-01',
@@ -100,9 +109,9 @@ export const terminalSessionFixtures: TerminalSession[] = [
     createdAt: '2026-11-10T08:30:00.000Z',
     title: 'zsh · dev-mac-arm64-01',
   },
-];
+]);
 
-export const agentSessionFixtures: AgentSession[] = [
+export const agentSessionFixtures: readonly AgentSession[] = deepFreeze([
   {
     id: 'agent-dev-01',
     harness: 'mock',
@@ -121,9 +130,9 @@ export const agentSessionFixtures: AgentSession[] = [
     createdAt: '2026-11-10T08:45:00.000Z',
     lastEventSeq: 4,
   },
-];
+]);
 
-export const agentEventFixtures: AgentEvent[] = [
+export const agentEventFixtures: readonly AgentEvent[] = deepFreeze([
   { seq: 1, ts: '2026-11-10T09:05:00.000Z', kind: 'status', state: 'running' },
   { seq: 2, ts: '2026-11-10T09:05:01.000Z', kind: 'output', text: 'Reading build script...' },
   {
@@ -140,9 +149,9 @@ export const agentEventFixtures: AgentEvent[] = [
     prompt: 'Overwrite scripts/build.sh? (mock)',
   },
   { seq: 5, ts: '2026-11-10T09:06:00.000Z', kind: 'exit', code: 0 },
-];
+]);
 
-export const approvalFixtures: Approval[] = [
+export const approvalFixtures: readonly Approval[] = deepFreeze([
   {
     id: 'appr-dev-01',
     summary: 'Run package update on dev-linux-amd64-01 (mock)',
@@ -176,4 +185,4 @@ export const approvalFixtures: Approval[] = [
     createdAt: '2026-11-10T07:00:00.000Z',
     devMock: true,
   },
-];
+]);

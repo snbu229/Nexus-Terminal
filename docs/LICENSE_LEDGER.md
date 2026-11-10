@@ -23,6 +23,9 @@ One line per dependency. Permissive licences only; versions pinned exactly.
 | @types/react, @types/react-dom | 19.3.0 | MIT | EZF-48 | Typings (dev) |
 | @playwright/test | 1.65.0 | Apache-2.0 | EZF-48 | Smoke e2e (dev); browsers downloaded at test time, not bundled |
 | axe-core | 4.14.0 | MPL-2.0 | EZF-48 | Accessibility checks in vitest and Playwright (dev only, not redistributed; file-level copyleft, same treatment as lightningcss). Flagged for CTO/legal confirmation |
+| fastify           | 5.12.8  | MIT        | EZF-45   | Dev API HTTP server (`@nexus/api`)                       |
+| @fastify/cors     | 11.4.1  | MIT        | EZF-45   | CORS limited to the configured web origin (`@nexus/api`) |
+| tsx               | 4.23.15 | MIT        | EZF-45   | Run/watch TypeScript in dev and the entrypoint test (dev) |
 
 Transitive dependencies are recorded in `pnpm-lock.yaml`. `pnpm licenses list` scan at EZF-44 (MIT 104, Apache-2.0 14, ISC 8, BSD-2-Clause 6, BSD-3-Clause 2, MPL-2.0 2, BlueOak-1.0.0 1; no AGPL/GPL) found these non-default licences:
 

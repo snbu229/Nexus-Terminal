@@ -16,7 +16,7 @@ export interface AgentEventSource {
 
 /** Mock source: replays fixture events up to `lastSeq` (no WebSocket involved). */
 export function createMockEventSource(
-  loadEvents: () => Promise<AgentEvent[]>,
+  loadEvents: () => Promise<readonly AgentEvent[]>,
   lastSeqOf: (id: string) => Promise<number>,
 ): AgentEventSource {
   return {

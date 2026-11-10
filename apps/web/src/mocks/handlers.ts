@@ -18,7 +18,7 @@ const notFound = (what: string) =>
 
 /** Handlers built from packages/contracts fixtures. Every response carries dev: true. */
 export function createHandlers() {
-  const terminals: TerminalSession[] = structuredClone(terminalSessionFixtures);
+  const terminals: TerminalSession[] = [...terminalSessionFixtures].map((s) => ({ ...s }));
   return [
     http.get(p('/hosts'), () => HttpResponse.json({ dev: true, hosts: hostFixtures })),
     http.get(p('/hosts/:id'), ({ params }) => {
