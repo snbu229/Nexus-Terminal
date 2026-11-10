@@ -213,6 +213,58 @@ describe('API restart recovery', () => {
     expect(events.some((e) => e.kind === 'output' && e.text.includes('reattached'))).toBe(false);
   });
 
+  it('resume whose start() rejects: failed, never labelled resumed (API view and event log)', async () => {
+    const adapter1 = mkAdapter({ stepDelayMs: 10, needsInputMs: 10_000 });
+    const reg1 = mkRegistry(adapter1);
+    const s = await reg1.create('x');
+    await waitFor(() => reg1.get(s.id)?.state === 'needs_input');
+    reg1.close();
+    adapter1.dispose();
+
+    class FailingStart extends MockHarnessAdapter {
+      override async start(): Promise<never> {
+        throw new Error('boom');
+      }
+    }
+    const adapter2 = new FailingStart(fast);
+    adapters.push(adapter2);
+    const reg2 = mkRegistry(adapter2);
+    const report = await reg2.recover();
+    expect(report).toMatchObject({ reattached: [], resumed: [], failed: [s.id] });
+    const view = reg2.get(s.id)!;
+    expect(view.state).toBe('exited');
+    expect(view.continuity).toBe('new');
+    const events = reg2.eventsAfter(s.id, 0);
+    assertContiguous(events);
+    expect(events.some((e) => e.kind === 'output' && /resumed from checkpoint/.test(e.text))).toBe(
+      false,
+    );
+    expect(events.at(-1)).toMatchObject({ kind: 'exit', code: 1 });
+    expect(diskEvents(s.id)).toEqual(events);
+  });
+
+  it('reattach whose attach() rejects: session failed, startup not aborted, never labelled reattached', async () => {
+    const adapter = mkAdapter({ stepDelayMs: 15, needsInputMs: 10_000 });
+    const reg1 = mkRegistry(adapter);
+    const s = await reg1.create('x');
+    await waitFor(() => reg1.eventsAfter(s.id, 0).length >= 2);
+    reg1.close();
+
+    adapter.attach = async () => {
+      throw new Error('boom');
+    };
+    const reg2 = mkRegistry(adapter);
+    const report = await reg2.recover();
+    expect(report).toMatchObject({ reattached: [], resumed: [], failed: [s.id] });
+    const view = reg2.get(s.id)!;
+    expect(view.state).toBe('exited');
+    expect(view.continuity).toBe('new');
+    const events = reg2.eventsAfter(s.id, 0);
+    assertContiguous(events);
+    expect(events.some((e) => e.kind === 'output' && /reattached/.test(e.text))).toBe(false);
+    expect(events.at(-1)).toMatchObject({ kind: 'exit', code: 1 });
+  });
+
   it('dead process, harness cannot resume: failed, labelled, not claimed as resumed', async () => {
     const adapter1 = mkAdapter({ stepDelayMs: 10, needsInputMs: 10_000 });
     const reg1 = mkRegistry(adapter1);

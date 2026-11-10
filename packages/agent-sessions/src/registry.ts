@@ -135,33 +135,44 @@ export class AgentSessionRegistry {
       if (isTerminal(meta.state)) continue;
       const alive = meta.handle !== null && (await this.adapter.probe(meta.handle)) === 'alive';
       if (alive && meta.handle) {
+        try {
+          await this.adapter.attach(meta.handle, this.sinkFor(entry));
+        } catch {
+          // A failed attach must not abort startup, nor leave a "reattached" claim behind.
+          this.failSession(entry, 'reattach failed');
+          report.failed.push(meta.id);
+          continue;
+        }
         meta.continuity = 'reattached';
         this.store.saveMeta(meta);
         this.append(entry, {
           kind: 'output',
           text: '[registry] reattached to the running process',
         });
-        await this.adapter.attach(meta.handle, this.sinkFor(entry));
         report.reattached.push(meta.id);
       } else if (meta.state === 'stopping') {
         this.finish(entry, 'exited', 'stopped', 143);
       } else if (this.adapter.capabilities.resumeFromCheckpoint && meta.checkpoint !== null) {
-        meta.continuity = 'resumed';
+        const checkpoint = meta.checkpoint;
         meta.handle = null;
-        this.append(entry, {
-          kind: 'output',
-          text: `[registry] process was lost; resumed from checkpoint ${meta.checkpoint.step} (new process)`,
-        });
         // Recovery re-entry: a new process is being started, so the session is 'starting' again.
         // This is the one deliberate bypass of the transition table.
         meta.state = 'starting';
         this.store.saveMeta(meta);
         try {
-          await this.launch(entry, meta.checkpoint);
-          report.resumed.push(meta.id);
+          await this.launch(entry, checkpoint);
         } catch {
+          // launch() already failed the session; continuity stays 'new' because nothing was resumed.
           report.failed.push(meta.id);
+          continue;
         }
+        meta.continuity = 'resumed';
+        this.store.saveMeta(meta);
+        this.append(entry, {
+          kind: 'output',
+          text: `[registry] process was lost; resumed from checkpoint ${checkpoint.step} (new process)`,
+        });
+        report.resumed.push(meta.id);
       } else {
         this.failSession(entry, 'process was lost and cannot be resumed');
         report.failed.push(meta.id);
