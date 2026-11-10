@@ -21,6 +21,8 @@ The doc fetcher summarizes pages through a small model, so quotes are secondhand
 
 ## 1. License fit
 
+**Version pin:** evaluation target is Teleport 18.x; latest GitHub release observed on 2026-11-10 is v18.10.0 (image digest to be recorded by the lab run).
+
 | Option | License | Fit for Nexus |
 |---|---|---|
 | Teleport CE 16 and later (binaries, images) | Commercial license: use is allowed only below 100 employees AND below US$10M annual revenue. No resale or embedding in products or services. **[doc]** (GitHub discussion #39158, announced 2024-03-08.) | Fits today only if the board confirms headcount and ARR are under both limits. The company must re-check this on growth. **The ban on embedding or reselling means Nexus must never ship or bundle Teleport.** Teleport can only be an *operator-installed external dependency*. This matches the existing rule not to redistribute Teleport binaries. |
@@ -58,7 +60,7 @@ The doc fetcher summarizes pages through a small model, so quotes are secondhand
 | Network of trust without a direct-SSH bypass | Yes. Hosts trust the Teleport CA, and Nexus holds no host keys. | Same | Hosts trust the step-ca CA. Nexus must never hold a user key that works. |
 | Tolerable below the company cap | Yes | Unknown | Yes |
 | Does not require bundling the vendor binaries | Yes, as an external dependency | Yes | Yes |
-| Supported platforms (macOS and Linux hosts) | Teleport documents macOS install and Linux packages. Confirm the OS/arch matrix against `compat/supported-platforms.yaml` **[unverified]**. | Same | step-ca is a Go binary for both. Confirm **[unverified]**. |
+| Supported platforms (macOS and Linux hosts) | Teleport documents macOS and Linux (amd64/arm64) packages **[unverified]**. Declaration against `compat/supported-platforms.yaml` (v0.1-proposed, evidence_status pending): control plane Linux amd64/arm64 and remote hosts macOS (launchd) and Linux (systemd) are the targets. SSH-only fallback applies: hosts keep standard sshd trusting the provider CA, so unsupported or conditional distros (fedora, sles, alpine-musl, etc.) stay in ssh-sftp mode. No OS support is claimed until CI passes. | Same | step-ca is a Go binary for macOS/Linux (amd64/arm64) **[unverified]**. Same SSH-only fallback and no-claim rule. |
 
 ## 4. `AccessProvider` mapping
 
@@ -149,7 +151,7 @@ Environment: disposable local containers (two sshd targets, one provider), a thr
 - https://goteleport.com/pricing/ (no public Enterprise price)
 - https://smallstep.com/docs/step-ca/provisioners/ (SSH provisioners, renewal and revocation)
 - step-ca licence and passive revocation: smallstep/certificates README (https://github.com/smallstep/certificates) via search result. Not fetched directly, so C1 should confirm.
-- Keycloak Apache-2.0, GitHub brokering and token/session revocation: search results only (https://www.keycloak.org/docs/, https://cncf.io/blog/2023/04/11/keycloak-joins-cncf-as-an-incubating-project). **Not fetched directly. C1 should verify.**
+- Keycloak LICENSE.txt (Apache-2.0) fetched directly at commit 6fc1bebe693ae9b7bb943295182e9d28f5c4bb18 and step-ca LICENSE (Apache-2.0) at commit 6d5a251fbe010383c93ead1ab451a329986b80ca, both on 2026-11-10 (license only). GitHub brokering and token/session revocation remain search results only (https://www.keycloak.org/docs/, https://cncf.io/blog/2023/04/11/keycloak-joins-cncf-as-an-incubating-project). **Not fetched directly. C1 should verify.**
 - Repo: `docs/reference/Nexus_Terminal_V3_1_Cross_Platform_Paperclip_Kit/TELEPORT_IDENTITY_ACCESS.md`, `CLEAN_ROOM_RESEARCH_PLAYBOOK.md`, `SECURITY_GATES_V3.md`.
 
 ## 10. License ledger entries (proposed)
