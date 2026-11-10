@@ -1,0 +1,416 @@
+openapi: 3.1.0
+info:
+  title: Nexus Terminal dev API (v0)
+  version: 0.0.0
+  description: >-
+    Dev-only contract for the M-D1 local demo. No authentication; mock data only.
+    The WebSocket endpoints are documented in x-websockets because OpenAPI 3.1 has no
+    native WebSocket support. There is deliberately no approve/deny endpoint.
+servers:
+  - url: http://127.0.0.1:3000/api/v0
+paths:
+  /healthz:
+    get:
+      operationId: getHealthz
+      summary: Liveness
+      responses:
+        '200':
+          {
+            description: OK,
+            content: { application/json: { schema: { $ref: '#/components/schemas/Healthz' } } },
+          }
+  /readyz:
+    get:
+      operationId: getReadyz
+      summary: Dependencies ready
+      responses:
+        '200':
+          {
+            description: Ready,
+            content: { application/json: { schema: { $ref: '#/components/schemas/Readyz' } } },
+          }
+        '503':
+          {
+            description: Not ready,
+            content: { application/json: { schema: { $ref: '#/components/schemas/Readyz' } } },
+          }
+  /hosts:
+    get:
+      operationId: listHosts
+      responses:
+        '200':
+          {
+            description: Fixture hosts,
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/HostListResponse' } } },
+          }
+  /hosts/{id}:
+    get:
+      operationId: getHost
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          {
+            description: Host,
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/HostResponse' } } },
+          }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /terminal-sessions:
+    get:
+      operationId: listTerminalSessions
+      responses:
+        '200':
+          {
+            description: Sessions,
+            content:
+              {
+                application/json:
+                  { schema: { $ref: '#/components/schemas/TerminalSessionListResponse' } },
+              },
+          }
+    post:
+      operationId: createTerminalSession
+      requestBody:
+        required: true
+        content:
+          {
+            application/json:
+              { schema: { $ref: '#/components/schemas/CreateTerminalSessionRequest' } },
+          }
+      responses:
+        '201':
+          {
+            description: Created,
+            content:
+              {
+                application/json:
+                  { schema: { $ref: '#/components/schemas/TerminalSessionResponse' } },
+              },
+          }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /terminal-sessions/{id}:
+    get:
+      operationId: getTerminalSession
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          {
+            description: Session,
+            content:
+              {
+                application/json:
+                  { schema: { $ref: '#/components/schemas/TerminalSessionResponse' } },
+              },
+          }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      operationId: deleteTerminalSession
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /agent-sessions:
+    get:
+      operationId: listAgentSessions
+      responses:
+        '200':
+          {
+            description: Sessions,
+            content:
+              {
+                application/json:
+                  { schema: { $ref: '#/components/schemas/AgentSessionListResponse' } },
+              },
+          }
+    post:
+      operationId: createAgentSession
+      requestBody:
+        required: true
+        content:
+          {
+            application/json:
+              { schema: { $ref: '#/components/schemas/CreateAgentSessionRequest' } },
+          }
+      responses:
+        '201':
+          {
+            description: Created,
+            content:
+              {
+                application/json: { schema: { $ref: '#/components/schemas/AgentSessionResponse' } },
+              },
+          }
+  /agent-sessions/{id}:
+    get:
+      operationId: getAgentSession
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          {
+            description: Session,
+            content:
+              {
+                application/json: { schema: { $ref: '#/components/schemas/AgentSessionResponse' } },
+              },
+          }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /agent-sessions/{id}/stop:
+    post:
+      operationId: stopAgentSession
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          {
+            description: Stopped,
+            content:
+              {
+                application/json: { schema: { $ref: '#/components/schemas/AgentSessionResponse' } },
+              },
+          }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /approvals:
+    get:
+      operationId: listApprovals
+      summary: Read-only mock approvals (dev mock, no authority)
+      responses:
+        '200':
+          {
+            description: Approvals,
+            content:
+              {
+                application/json: { schema: { $ref: '#/components/schemas/ApprovalListResponse' } },
+              },
+          }
+x-websockets:
+  /terminal-sessions/{id}/stream:
+    clientFrames: { $ref: '#/components/schemas/TerminalClientFrame' }
+    serverFrames: { $ref: '#/components/schemas/TerminalServerFrame' }
+    notes: Origin is checked. On reconnect send resume {afterSeq}; the session outlives the socket.
+  /agent-sessions/{id}/events:
+    clientFrames: { $ref: '#/components/schemas/AgentClientFrame' }
+    serverFrames: { $ref: '#/components/schemas/AgentEvent' }
+components:
+  parameters:
+    Id:
+      { name: id, in: path, required: true, schema: { type: string, minLength: 1, maxLength: 64 } }
+  responses:
+    NotFound:
+      {
+        description: Not found,
+        content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } },
+      }
+  schemas:
+    Healthz:
+      type: object
+      additionalProperties: false
+      required: [status, dev]
+      properties: { status: { const: ok }, dev: { const: true } }
+    Readyz:
+      type: object
+      additionalProperties: false
+      required: [status, dev, checks]
+      properties:
+        status: { enum: [ready, not_ready] }
+        dev: { const: true }
+        checks: { type: object, additionalProperties: { enum: [ok, fail] } }
+    Host:
+      type: object
+      additionalProperties: false
+      required: [id, name, os, arch, environment, status, tags, terminalProvider]
+      properties:
+        id: { type: string, minLength: 1, maxLength: 64 }
+        name: { type: string, minLength: 1, maxLength: 128 }
+        os: { enum: [linux, darwin] }
+        arch: { enum: [amd64, arm64] }
+        environment: { const: dev }
+        status: { enum: [online, offline, unknown] }
+        tags: { type: array, items: { type: string, minLength: 1, maxLength: 64 } }
+        terminalProvider: { enum: [local-sandbox, ssh-dev, none] }
+    HostResponse:
+      type: object
+      additionalProperties: false
+      required: [dev, host]
+      properties: { dev: { const: true }, host: { $ref: '#/components/schemas/Host' } }
+    HostListResponse:
+      type: object
+      additionalProperties: false
+      required: [dev, hosts]
+      properties:
+        dev: { const: true }
+        hosts: { type: array, items: { $ref: '#/components/schemas/Host' } }
+    TerminalSession:
+      type: object
+      additionalProperties: false
+      required: [id, hostId, state, createdAt, title]
+      properties:
+        id: { type: string, minLength: 1, maxLength: 64 }
+        hostId: { type: string, minLength: 1, maxLength: 64 }
+        state: { enum: [starting, running, exited] }
+        createdAt: { type: string, format: date-time }
+        title: { type: string, maxLength: 256 }
+    CreateTerminalSessionRequest:
+      type: object
+      additionalProperties: false
+      required: [hostId, cols, rows]
+      properties:
+        hostId: { type: string, minLength: 1, maxLength: 64 }
+        cols: { type: integer, minimum: 1, maximum: 1000 }
+        rows: { type: integer, minimum: 1, maximum: 1000 }
+    TerminalSessionResponse:
+      type: object
+      additionalProperties: false
+      required: [dev, session]
+      properties:
+        { dev: { const: true }, session: { $ref: '#/components/schemas/TerminalSession' } }
+    TerminalSessionListResponse:
+      type: object
+      additionalProperties: false
+      required: [dev, sessions]
+      properties:
+        dev: { const: true }
+        sessions: { type: array, items: { $ref: '#/components/schemas/TerminalSession' } }
+    TerminalClientFrame:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [type, data]
+          properties: { type: { const: input }, data: { type: string } }
+        - type: object
+          additionalProperties: false
+          required: [type, cols, rows]
+          properties:
+            type: { const: resize }
+            cols: { type: integer, minimum: 1, maximum: 1000 }
+            rows: { type: integer, minimum: 1, maximum: 1000 }
+        - type: object
+          additionalProperties: false
+          required: [type, afterSeq]
+          properties: { type: { const: resume }, afterSeq: { type: integer, minimum: 0 } }
+    TerminalServerFrame:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [type, seq, data]
+          properties:
+            type: { const: output }
+            seq: { type: integer, minimum: 0 }
+            data: { type: string, contentEncoding: base64 }
+        - type: object
+          additionalProperties: false
+          required: [type, state]
+          properties: { type: { const: state }, state: { enum: [starting, running, exited] } }
+        - type: object
+          additionalProperties: false
+          required: [type, code]
+          properties: { type: { const: exit }, code: { type: integer } }
+    AgentSession:
+      type: object
+      additionalProperties: false
+      required: [id, harness, task, state, continuity, createdAt, lastEventSeq]
+      properties:
+        id: { type: string, minLength: 1, maxLength: 64 }
+        harness: { const: mock }
+        task: { type: string, minLength: 1, maxLength: 2000 }
+        state: { enum: [starting, running, needs_input, stopped, exited] }
+        continuity: { enum: [new, reattached, resumed] }
+        createdAt: { type: string, format: date-time }
+        lastEventSeq: { type: integer, minimum: 0 }
+    CreateAgentSessionRequest:
+      type: object
+      additionalProperties: false
+      required: [harness, task]
+      properties:
+        harness: { const: mock }
+        task: { type: string, minLength: 1, maxLength: 2000 }
+    AgentSessionResponse:
+      type: object
+      additionalProperties: false
+      required: [dev, session]
+      properties: { dev: { const: true }, session: { $ref: '#/components/schemas/AgentSession' } }
+    AgentSessionListResponse:
+      type: object
+      additionalProperties: false
+      required: [dev, sessions]
+      properties:
+        dev: { const: true }
+        sessions: { type: array, items: { $ref: '#/components/schemas/AgentSession' } }
+    AgentClientFrame:
+      type: object
+      additionalProperties: false
+      required: [type, afterSeq]
+      properties: { type: { const: resume }, afterSeq: { type: integer, minimum: 0 } }
+    AgentEvent:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [seq, ts, kind, state]
+          properties:
+            seq: { type: integer, minimum: 0 }
+            ts: { type: string, format: date-time }
+            kind: { const: status }
+            state: { enum: [starting, running, needs_input, stopped, exited] }
+        - type: object
+          additionalProperties: false
+          required: [seq, ts, kind, text]
+          properties:
+            seq: { type: integer, minimum: 0 }
+            ts: { type: string, format: date-time }
+            kind: { const: output }
+            text: { type: string }
+        - type: object
+          additionalProperties: false
+          required: [seq, ts, kind, tool, summary]
+          properties:
+            seq: { type: integer, minimum: 0 }
+            ts: { type: string, format: date-time }
+            kind: { const: tool_call }
+            tool: { type: string, minLength: 1 }
+            summary: { type: string }
+        - type: object
+          additionalProperties: false
+          required: [seq, ts, kind, prompt]
+          properties:
+            seq: { type: integer, minimum: 0 }
+            ts: { type: string, format: date-time }
+            kind: { const: needs_input }
+            prompt: { type: string }
+        - type: object
+          additionalProperties: false
+          required: [seq, ts, kind, code]
+          properties:
+            seq: { type: integer, minimum: 0 }
+            ts: { type: string, format: date-time }
+            kind: { const: exit }
+            code: { type: integer }
+    Approval:
+      type: object
+      additionalProperties: false
+      required: [id, summary, requestedBy, hostId, agentSessionId, risk, status, createdAt, devMock]
+      properties:
+        id: { type: string, minLength: 1, maxLength: 64 }
+        summary: { type: string, minLength: 1, maxLength: 512 }
+        requestedBy: { type: string, minLength: 1, maxLength: 128 }
+        hostId: { type: [string, 'null'] }
+        agentSessionId: { type: [string, 'null'] }
+        risk: { enum: [low, medium, high] }
+        status: { enum: [pending, expired] }
+        createdAt: { type: string, format: date-time }
+        devMock: { const: true }
+    ApprovalListResponse:
+      type: object
+      additionalProperties: false
+      required: [dev, approvals]
+      properties:
+        dev: { const: true }
+        approvals: { type: array, items: { $ref: '#/components/schemas/Approval' } }
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message]
+          properties: { code: { type: string }, message: { type: string } }

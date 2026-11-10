@@ -1,1 +1,9 @@
 nexus-terminal-paperclip-kit.zip
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.claude/

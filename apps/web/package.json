@@ -1,0 +1,13 @@
+{
+  "name": "@nexus/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "dev": "echo \"no dev server yet\"",
+    "build": "echo \"nothing to build yet\"",
+    "test": "vitest run"
+  }
+}
