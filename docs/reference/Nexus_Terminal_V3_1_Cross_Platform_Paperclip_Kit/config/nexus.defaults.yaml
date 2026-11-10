@@ -1,0 +1,70 @@
+# DESIGN EXAMPLE — Nexus application configuration, not a Paperclip or Connector installer config.
+app:
+  name: Nexus Terminal
+  environment: staging
+  public_url: https://nexus.example.internal
+  tls_required: true
+security:
+  oidc_required_for_production: true
+  ssh_host_key_policy: strict-pin
+  browser_attach_token_ttl_seconds: 90
+  forbid_agent_production_root: true
+  require_step_up_mfa_for_privileged_actions: true
+  approval_single_use: true
+  approval_plan_hash_binding: true
+  signature_verify_before_install: true
+session_policy:
+  idle_disconnect_enabled: false
+  terminate_session_on_browser_close: false
+  terminal_backend: tmux
+  allow_writer_takeover: false
+  persist_log_events: true
+  reconnect:
+    enabled: true
+    stop_retry_after_minutes: null   # indefinite while user/host credentials valid; no retries after hard revocation
+    initial_delay_seconds: 1
+    max_retry_delay_seconds: 60
+    use_jitter: true
+    probe_timeout_seconds: 15        # probe timeout is not a session-expiration policy
+notifications:
+  providers: [in_app, email, web_push]
+  optional_providers: [ntfy, gotify, telegram, slack, webhook]
+  connection_warning_after_minutes: 5
+  offline_escalation_after_minutes: 30
+  alert_repeat_cooldown_minutes: 120
+  recovery_notification_enabled: true
+connector:
+  optional: true
+  supported_os: [macos, ubuntu, debian, rhel, rocky, almalinux, fedora, opensuse]
+  platform_feature_gating: true
+  unsupported_host_fallback: ssh_sftp_only
+  install_adapter_macos: signed_notarized_pkg_launchd
+  install_adapter_linux: signed_deb_rpm_systemd
+  install_requires_human_owner_on_production: true
+  run_as_user: nexus-connector
+  transport: outbound_mtls_443
+  package_signing_required: true
+  install_approval_ttl_minutes: 15
+  one_time_enroll_ttl_minutes: 10
+agent_harness:
+  prefer_acp: true
+  feature_detect_resume: true
+  allow_unsafe_unrestricted_mcp: false
+  workspace_mode: isolated_worktree
+  require_budget_cap_per_agent: true
+  log_sensitive_arguments: redacted
+operations:
+  workflow_engine: temporal
+  auto_execute_production_changes: false
+  require_idempotency_key: true
+  always_recheck_policy_after_reconnect: true
+
+# OS support is validated by compat/supported-platforms.yaml, not by this example config.
+platforms:
+  self_host:
+    macos: [native-launchd, validated-container-vm]
+    linux: [native-systemd, validated-docker-compose]
+  remote:
+    macos: [ssh-sftp, optional-connector]
+    linux: [ssh-sftp, optional-connector]
+  validate_capability_before_mutation: true

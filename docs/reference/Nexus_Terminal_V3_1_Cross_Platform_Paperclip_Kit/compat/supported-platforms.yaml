@@ -1,0 +1,40 @@
+# Product intent; empirical support must be confirmed by test evidence before marking GA.
+version: '0.1-proposed'
+release_policy:
+  os_support_claim_requires_passed_ci: true
+  unsupported_os_blocks_connector_install: true
+  ssh_only_fallback_when_possible: true
+  eol_versions: deny_connector_by_default
+control_plane:
+  macos:
+    architectures: [arm64, amd64]
+    release_tier: current-and-previous-two-supported-major
+    installation_modes: [native-launchd, validated-container-vm]
+    evidence_status: pending
+  linux:
+    architectures: [amd64, arm64]
+    distributions: [ubuntu-lts, debian-stable, rhel-compatible]
+    installation_modes: [validated-docker-compose, native-systemd]
+    evidence_status: pending
+remote_hosts:
+  macos:
+    architectures: [arm64, amd64]
+    service_manager: launchd
+    installer: signed-notarized-pkg
+    modes: [ssh-sftp, connector]
+    evidence_status: pending
+  linux:
+    architectures: [amd64, arm64]
+    service_manager: systemd
+    installers: [signed-deb, signed-rpm]
+    modes: [ssh-sftp, connector]
+    evidence_status: pending
+  conditional:
+    distributions: [fedora, opensuse, sles, arch, amazon-linux, alpine-musl]
+    default_mode: ssh-sftp
+    connector: require-platform-specific-review
+paperclip_runtime:
+  os: [macos-intel, macos-arm64, linux-amd64, linux-arm64]
+  native_runner_linux_glibc_min: '2.39'
+  legacy_fallback_requires_test: true
+  linux_arm64_opencode_pi_legacy: true
