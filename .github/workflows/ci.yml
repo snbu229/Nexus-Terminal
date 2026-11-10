@@ -1,0 +1,161 @@
+# Repo CI baseline and merge gate (EZF-28). Policy: docs/process/git-workflow.md
+#
+# `ci-required` is the single required status check for `main`. Keep that job
+# name stable; renaming it silently disables the branch-protection gate.
+#
+# Hardening: read-only token, no pull_request_target, actions pinned to full
+# commit SHAs, tool binaries pinned by SHA-256 in scripts/ci/install-tools.sh,
+# checkout without persisted credentials, no repository secrets used.
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  # One group per PR; one per commit on main, so every main commit gets a run.
+  group: ci-${{ github.event.pull_request.number || github.sha }}
+  # Superseded PR runs are cancelled; runs on main always finish.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  workflow-lint:
+    name: workflow-lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install actionlint (pinned, sha256-verified)
+        run: scripts/ci/install-tools.sh actionlint
+      - name: actionlint (runs shellcheck on run blocks)
+        run: |
+          shellcheck --version | head -n 2
+          actionlint -color -shellcheck shellcheck
+      - name: shellcheck CI scripts
+        run: shellcheck scripts/ci/*.sh
+
+  docs:
+    name: docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Markdown lint (config in .markdownlint-cli2.jsonc; docs/reference excluded)
+        uses: DavidAnson/markdownlint-cli2-action@696eb3f2509270d7b882d2aa68347bc676e7af34 # v25.0.0
+        with:
+          globs: |
+            **/*.md
+            .github/**/*.md
+      - name: Install lychee (pinned, sha256-verified)
+        run: scripts/ci/install-tools.sh lychee
+      - name: Relative link and anchor check, offline (includes docs/reference)
+        # --offline: no external URL is fetched, so this job cannot flake on
+        # third-party sites. Local files and #fragments are checked. The file
+        # list comes from git so dot-dirs (.github/) are included, and an empty
+        # list fails instead of passing vacuously.
+        run: |
+          mapfile -d '' files < <(git ls-files -z -- '*.md')
+          if [[ ${#files[@]} -eq 0 ]]; then echo "::error::no Markdown files found"; exit 1; fi
+          echo "Checking links in ${#files[@]} Markdown files"
+          lychee --offline --include-fragments --no-progress -- "${files[@]}"
+
+  security:
+    name: security
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install gitleaks and osv-scanner (pinned, sha256-verified)
+        run: scripts/ci/install-tools.sh gitleaks osv-scanner
+      - name: Gate-config guard self-test
+        run: scripts/ci/test-gate-config-guard.sh
+      - name: Flag gitleaks suppressions and merge-gate file changes
+        # The PR's own files configure gitleaks, so a PR can switch findings
+        # off and stay green. This step cannot stop that; it raises a
+        # ::warning per file/line so reviewers see it (human-approval class).
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.event.after }}
+        run: |
+          if [[ "$EVENT" == "pull_request" ]]; then
+            scripts/ci/gate-config-guard.sh "$PR_BASE" "$PR_HEAD"
+          else
+            scripts/ci/gate-config-guard.sh "$PUSH_BEFORE" "$PUSH_AFTER"
+          fi
+      - name: Secret-scan self-test (.gitattributes cannot hide a secret)
+        run: scripts/ci/test-secret-scan.sh
+      - name: gitleaks secret scan of the change range
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.event.after }}
+        run: |
+          if [[ "$EVENT" == "pull_request" ]]; then
+            range="${PR_BASE}..${PR_HEAD}"
+          elif [[ -z "$PUSH_BEFORE" || "$PUSH_BEFORE" =~ ^0+$ ]]; then
+            range="$PUSH_AFTER"   # new ref: scan all history reachable from it
+          else
+            range="${PUSH_BEFORE}..${PUSH_AFTER}"
+          fi
+          # Uses `git log -p --text`, so .gitattributes cannot hide content.
+          scripts/ci/secret-scan.sh "$range"
+      - name: osv-scanner dependency vulnerability + licence summary
+        # --allow-no-lockfiles: passes cleanly while the repo has no manifests.
+        # Licence allowlist enforcement follows once the licence ledger fixes it.
+        run: osv-scanner scan source --recursive --allow-no-lockfiles --licenses .
+
+  code:
+    name: code
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Code gate self-test
+        run: scripts/ci/test-code-gate.sh
+      - name: make ci (fails if code exists without a ci target)
+        run: scripts/ci/code-gate.sh
+
+  ci-required:
+    name: ci-required
+    if: ${{ always() }}
+    needs: [workflow-lint, docs, security, code]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - name: Require every gate job to succeed
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        # Anything other than success (failure, cancelled, skipped) fails.
+        # The count must equal the length of `needs` above (update both).
+        run: |
+          echo "$NEEDS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          if echo "$NEEDS" | jq -e 'to_entries | length == 4 and all(.value.result == "success")' >/dev/null; then
+            echo "All gate jobs succeeded."
+          else
+            echo "::error title=ci-required::One or more gate jobs did not succeed."
+            exit 1
+          fi
