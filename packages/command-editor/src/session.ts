@@ -10,7 +10,13 @@
  */
 import { BlockBuilder, type CommandBlock, type MarkerEvent } from './blocks.js';
 import type { Draft } from './draft.js';
-import { EncodeError, encodeSubmit, isComplete, type BracketedPaste } from './encode.js';
+import {
+  EncodeError,
+  encodeSubmit,
+  isComplete,
+  type BracketedPaste,
+  type Encoded,
+} from './encode.js';
 
 export type ShellState = 'UNKNOWN' | 'PROMPT' | 'INPUT' | 'PENDING' | 'RUNNING';
 export type EditorMode = 'SMART_INPUT' | 'INTERACTIVE_PTY';
@@ -28,14 +34,15 @@ export type RouteResult =
 export type EnterResult = { action: 'submit' } | { action: 'newline' } | { action: 'needs-run' };
 
 export type SubmitResult =
-  | { ok: true; frames: string[] }
+  | { ok: true; frame: string; remainder: string }
   | { ok: false; reason: 'not-in-input' | 'needs-confirmation' | 'incomplete' | 'invalid-bytes' };
 
 export interface SessionSnapshot {
   state: ShellState;
   latched: boolean;
-  lastSeq: number;
-  submitSeq: number;
+  /** null = no event seen yet (JSON-safe; never -Infinity). */
+  lastSeq: number | null;
+  submitSeq: number | null;
   bracketedPaste: BracketedPaste;
 }
 
@@ -47,8 +54,9 @@ const RAW_KEY_BYTES = { 'ctrl-c': '\x03', 'ctrl-d': '\x04', 'ctrl-z': '\x1a' } a
 export class EditorSession {
   private st: ShellState = 'UNKNOWN';
   private latch = false;
-  private last = -Infinity;
-  private submitSeq = -Infinity;
+  private last: number | null = null;
+  private submitSeq: number | null = null;
+  private prev: MarkerEvent['kind'] | null = null;
   private paste: BracketedPaste = 'unknown';
   private override: EditorMode | null = null;
   private altScreen = false;
@@ -56,8 +64,6 @@ export class EditorSession {
   private awaitingMarker = false;
   private readonly builder = new BlockBuilder();
   readonly anomalies: Anomaly[] = [];
-  /** Nothing is ever queued for the PTY: submitting is always an explicit call. */
-  readonly pendingFrames: readonly string[] = [];
 
   get state(): ShellState {
     return this.st;
@@ -88,34 +94,50 @@ export class EditorSession {
 
   // ---- markers ----
 
+  /** Fail closed: unknown state, no grouping for the open block, capability forgotten. */
+  private toUnknown(anomaly: Anomaly): void {
+    this.anomalies.push(anomaly);
+    this.st = 'UNKNOWN';
+    this.prev = null;
+    this.paste = 'unknown';
+    this.builder.abandon();
+  }
+
   ingest(e: MarkerEvent): void {
-    if (e.seq <= this.last) {
-      this.anomalies.push('reordered');
+    if (this.last !== null && e.seq <= this.last) {
+      this.toUnknown('reordered'); // duplicate or out-of-order (spec §5)
       return;
     }
-    const gap = Number.isFinite(this.last) && e.seq !== this.last + 1;
+    const gap = this.last !== null && e.seq !== this.last + 1;
     this.last = e.seq;
-    this.builder.ingest(e);
     if (gap) {
-      this.anomalies.push('gap');
-      this.st = 'UNKNOWN';
-      return;
+      this.toUnknown('gap');
+      if (e.kind !== 'A') return;
     }
+    const before = this.prev;
+    this.prev = e.kind;
     switch (e.kind) {
       case 'A':
+        this.builder.ingest(e);
+        this.paste = 'unknown'; // BR-6: reset at each A
         this.st = 'PROMPT';
         break;
       case 'B':
-        // INPUT only from PROMPT (an A was seen) and only for a B newer than the last submission
-        if (this.st === 'PROMPT' && e.seq > this.submitSeq) {
+        // BR-12(e): B is accepted only immediately after an A, in order; any other B is UNKNOWN
+        if (before === 'A' && this.st === 'PROMPT' && this.last > (this.submitSeq ?? -1)) {
+          this.builder.ingest(e);
           this.st = 'INPUT';
-          if (this.awaitingMarker) this.awaitingMarker = false;
+          this.awaitingMarker = false;
+        } else {
+          this.toUnknown('reordered');
         }
         break;
       case 'C':
+        this.builder.ingest(e);
         this.st = 'RUNNING';
         break;
       case 'D':
+        this.builder.ingest(e);
         this.st = 'PROMPT';
         break;
     }
@@ -208,17 +230,19 @@ export class EditorSession {
     if (!this.captureAllowed) return { ok: false, reason: 'not-in-input' };
     if (draft.isMultiline && !opts.confirmed) return { ok: false, reason: 'needs-confirmation' };
     if (!isComplete(draft.text)) return { ok: false, reason: 'incomplete' };
-    let frames: string[];
+    let enc: Encoded;
     try {
-      frames = encodeSubmit(draft.text, this.paste);
+      enc = encodeSubmit(draft.text, this.paste);
     } catch (e) {
       if (e instanceof EncodeError) return { ok: false, reason: 'invalid-bytes' };
       throw e;
     }
-    this.builder.recordCommand(draft.text);
+    this.builder.recordCommand(
+      enc.remainder ? draft.text.slice(0, -enc.remainder.length - 1) : draft.text,
+    );
     this.submitSeq = this.last;
     this.st = 'PENDING';
-    return { ok: true, frames };
+    return { ok: true, frame: enc.frame, remainder: enc.remainder };
   }
 
   // ---- persistence (server-side session record; holds no keystrokes or draft text) ----

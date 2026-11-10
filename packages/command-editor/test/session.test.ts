@@ -42,18 +42,46 @@ describe('state machine (spec §5)', () => {
   it('PENDING leaves to INPUT only on a B with seq > submit_seq, after an A (TC-10)', () => {
     const s = inInput();
     s.submit(new Draft()); // submit_seq = 2
-    s.ingest(ev('B', 2)); // duplicate of the current prompt's B
-    expect(s.state).toBe('PENDING');
     s.ingest(ev('A', 3));
     expect(s.state).toBe('PROMPT');
     s.ingest(ev('B', 4)); // A->B with no C/D (empty/comment-only submission)
     expect(s.state).toBe('INPUT');
   });
-  it('a B straight after submit without a fresh A is ignored even if seq is higher', () => {
+  it('a stale B (seq <= submit_seq) is never accepted and fails closed to UNKNOWN (TC-10)', () => {
+    const s = inInput();
+    s.submit(new Draft());
+    s.ingest(ev('B', 2));
+    expect(s.state).toBe('UNKNOWN');
+    expect(s.captureAllowed).toBe(false);
+  });
+  it('a B straight after submit without a fresh A is UNKNOWN (TC-10)', () => {
     const s = inInput();
     s.submit(new Draft());
     s.ingest(ev('B', 3));
-    expect(s.state).toBe('PENDING');
+    expect(s.state).toBe('UNKNOWN');
+  });
+  it('B1: D then B with no A is UNKNOWN, not INPUT', () => {
+    const s = inInput();
+    s.submit(new Draft());
+    s.ingest(ev('C', 3));
+    s.ingest(ev('D', 4));
+    s.ingest(ev('B', 5));
+    expect(s.state).toBe('UNKNOWN');
+    expect(s.captureAllowed).toBe(false);
+  });
+  it('B1: a B while RUNNING is UNKNOWN', () => {
+    const s = inInput();
+    s.submit(new Draft());
+    s.ingest(ev('C', 3));
+    s.ingest(ev('B', 4));
+    expect(s.state).toBe('UNKNOWN');
+  });
+  it('B1: A, C, B (B not immediately after A) is UNKNOWN', () => {
+    const s = new EditorSession();
+    s.ingest(ev('A', 1));
+    s.ingest(ev('C', 2));
+    s.ingest(ev('B', 3));
+    expect(s.state).toBe('UNKNOWN');
   });
   it('a late C while PENDING advances to RUNNING', () => {
     const s = inInput();
@@ -61,13 +89,34 @@ describe('state machine (spec §5)', () => {
     s.ingest(ev('C', 3));
     expect(s.state).toBe('RUNNING');
   });
-  it('duplicate/reordered events are ignored; a gap drops to UNKNOWN and is recorded', () => {
+  it('B5: a duplicate/reordered event fails closed to UNKNOWN; a gap does too; both recorded', () => {
     const s = inInput();
-    s.ingest(ev('A', 2));
+    s.ingest(ev('A', 2)); // replayed A
+    expect(s.state).toBe('UNKNOWN');
+    expect(s.captureAllowed).toBe(false);
+    s.ingest(ev('A', 3));
+    s.ingest(ev('B', 4));
     expect(s.state).toBe('INPUT');
-    s.ingest(ev('C', 5)); // 3,4 missing
+    s.ingest(ev('C', 7)); // 5,6 missing
     expect(s.state).toBe('UNKNOWN');
     expect(s.anomalies).toEqual(['reordered', 'gap']);
+  });
+  it('N3: a sequence gap inside a block closes it as incomplete, not finished', () => {
+    const s = inInput();
+    s.submit(new Draft());
+    s.ingest(ev('C', 3));
+    s.ingest(ev('D', 5)); // 4 missing
+    expect(s.blocks.map((b) => b.status)).toEqual(['incomplete']);
+    expect(s.blocks[0]!.exitCode).toBe('unknown');
+  });
+  it('N1: snapshot survives a JSON round trip, gap detection included', () => {
+    const fresh = JSON.parse(JSON.stringify(new EditorSession().snapshot()));
+    expect(fresh.lastSeq).toBeNull();
+    const s = inInput();
+    const r = EditorSession.restore(JSON.parse(JSON.stringify(s.snapshot())));
+    r.ingest(ev('C', 9)); // gap after restore
+    expect(r.anomalies).toEqual(['gap']);
+    expect(EditorSession.restore(fresh).state).toBe('UNKNOWN');
   });
   it('UNKNOWN recovers on the next A->B', () => {
     const s = inInput();
@@ -92,7 +141,7 @@ describe('submit (BR-2, BR-6, BR-16)', () => {
     const s = inInput();
     expect(s.pressEnter(draftOf('ls'))).toEqual({ action: 'submit' });
     const r = s.submit(draftOf('ls'));
-    expect(r).toEqual({ ok: true, frames: ['ls\r'] });
+    expect(r).toEqual({ ok: true, frame: 'ls\r', remainder: '' });
     expect(s.latched).toBe(false); // framing of a confirmed draft never sets the latch
   });
   it('Enter on an incomplete draft inserts a newline instead of submitting', () => {
@@ -106,15 +155,64 @@ describe('submit (BR-2, BR-6, BR-16)', () => {
     expect(s.state).toBe('INPUT');
     s.setBracketedPaste('on');
     const r = s.submit(draftOf('a\nb'), { confirmed: true });
-    expect(r).toEqual({ ok: true, frames: ['\x1b[200~a\nb\x1b[201~\r'] });
+    expect(r).toEqual({ ok: true, frame: '\x1b[200~a\nb\x1b[201~\r', remainder: '' });
     expect(s.state).toBe('PENDING');
+  });
+  it('B2: multiline without bracketed paste sends ONE line; the next needs a new B and confirmation', () => {
+    const s = inInput();
+    s.setBracketedPaste('off');
+    const d = draftOf('sudo true\nrm -rf /tmp/x');
+    const r = s.submit(d, { confirmed: true });
+    expect(r).toEqual({ ok: true, frame: 'sudo true\r', remainder: 'rm -rf /tmp/x' });
+    expect(s.submit(draftOf('rm -rf /tmp/x'), { confirmed: true })).toEqual({
+      ok: false,
+      reason: 'not-in-input',
+    });
+    s.ingest(ev('C', 3));
+    s.ingest(ev('D', 4));
+    s.ingest(ev('A', 5));
+    s.ingest(ev('B', 6));
+    expect(s.submit(draftOf('rm -rf /tmp/x'), { confirmed: true }).ok).toBe(true);
+  });
+  it('B2: first line incomplete (heredoc) without bracketed paste is refused', () => {
+    const s = inInput();
+    s.setBracketedPaste('off');
+    expect(s.submit(draftOf('cat <<EOF\nhi\nEOF'), { confirmed: true })).toEqual({
+      ok: false,
+      reason: 'invalid-bytes',
+    });
+    expect(s.state).toBe('INPUT');
+  });
+  it('B3: TAB is refused unless bracketed paste is on', () => {
+    const s = inInput();
+    s.setBracketedPaste('off');
+    expect(s.submit(draftOf('rm -r /tmp/bu\t'))).toEqual({ ok: false, reason: 'invalid-bytes' });
+    s.setBracketedPaste('on');
+    expect(s.submit(draftOf('rm -r /tmp/bu\t'))).toEqual({
+      ok: true,
+      frame: '\x1b[200~rm -r /tmp/bu\t\x1b[201~\r',
+      remainder: '',
+    });
+  });
+  it('B4: bracketed paste resets to unknown at every A (TC-25)', () => {
+    const s = inInput();
+    s.setBracketedPaste('on');
+    s.submit(draftOf('x'));
+    s.ingest(ev('C', 3));
+    s.ingest(ev('D', 4));
+    s.ingest(ev('A', 5));
+    s.ingest(ev('B', 6));
+    expect(s.snapshot().bracketedPaste).toBe('unknown');
+    const r = s.submit(draftOf('a\nb'), { confirmed: true });
+    expect(r).toEqual({ ok: true, frame: 'a\r', remainder: 'b' });
   });
   it('multiline uses the supplied bracketed-paste capability', () => {
     const s = inInput();
     s.setBracketedPaste('off');
     expect(s.submit(draftOf('a\nb'), { confirmed: true })).toEqual({
       ok: true,
-      frames: ['a\r', 'b\r'],
+      frame: 'a\r',
+      remainder: 'b',
     });
   });
   it('bracketed paste observed after B inside a command (RUNNING) is never used (TC-25)', () => {
@@ -128,7 +226,8 @@ describe('submit (BR-2, BR-6, BR-16)', () => {
     s.ingest(ev('B', 6));
     expect(s.submit(draftOf('a\nb'), { confirmed: true })).toEqual({
       ok: true,
-      frames: ['a\r', 'b\r'],
+      frame: 'a\r',
+      remainder: 'b',
     });
   });
   it('refuses to submit once the latch is set (no draft can exist)', () => {
@@ -246,7 +345,6 @@ describe('BR-16 key routing', () => {
     const s = inInput();
     const r = EditorSession.restore(s.snapshot());
     expect(r.state).toBe('INPUT');
-    expect(r.pendingFrames).toEqual([]);
   });
   it('captured text never reaches history unless submitted: session exposes no raw-key log', () => {
     const s = inInput();

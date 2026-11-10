@@ -9,20 +9,36 @@ const PASTE_END = '\x1b[201~';
 // eslint-disable-next-line no-control-regex
 const BAD_BYTES = /[\u0000-\u0008\u000b-\u001f\u007f-\u009f]/;
 
+export interface Encoded {
+  /** The single frame to send now. Exactly one confirmed submission per frame (BR-6). */
+  frame: string;
+  /** Draft text still unsent (multiline, bracketed paste off/unknown). Needs a new B and a new confirmation. */
+  remainder: string;
+}
+
 /**
- * Returns the frames to send, in order.
- * - single line: `draft\r`
- * - multiline, bracketed paste on: one frame `ESC[200~ draft ESC[201~ \r`
- * - multiline, off/unknown: one `line\r` frame per line; each needs its own user confirmation
- *   (the caller sends them one at a time). No `sh -c`, no quoting changes.
+ * Returns the one frame to send for this confirmation.
+ * - single line, no TAB: `draft\r`
+ * - bracketed paste on: one frame `ESC[200~ draft ESC[201~ \r` (multiline or TAB)
+ * - multiline, off/unknown: only the first line goes (`line\r`); the rest comes back as `remainder`
+ *   and must be confirmed again once the shell shows a new prompt (captureAllowed). The first line
+ *   must be complete on its own, otherwise the shell would read the next lines while PENDING.
+ * - TAB outside bracketed paste is refused: readline/zle/fish would complete instead of insert.
  * Any `ESC[201~` in the draft is removed first; any other control byte is refused.
  */
-export function encodeSubmit(draft: string, paste: BracketedPaste): string[] {
+export function encodeSubmit(draft: string, paste: BracketedPaste): Encoded {
   const text = draft.split(PASTE_END).join('');
   if (BAD_BYTES.test(text)) throw new EncodeError('draft contains control bytes');
-  if (!text.includes('\n')) return [`${text}\r`];
-  if (paste === 'on') return [`${PASTE_START}${text}${PASTE_END}\r`];
-  return text.split('\n').map((line) => `${line}\r`);
+  const multiline = text.includes('\n');
+  if (paste === 'on' && (multiline || text.includes('\t'))) {
+    return { frame: `${PASTE_START}${text}${PASTE_END}\r`, remainder: '' };
+  }
+  if (text.includes('\t')) throw new EncodeError('TAB needs bracketed paste');
+  if (!multiline) return { frame: `${text}\r`, remainder: '' };
+  const nl = text.indexOf('\n');
+  const first = text.slice(0, nl);
+  if (!isComplete(first)) throw new EncodeError('first line is incomplete without bracketed paste');
+  return { frame: `${first}\r`, remainder: text.slice(nl + 1) };
 }
 
 /**

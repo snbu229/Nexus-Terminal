@@ -27,6 +27,8 @@ export interface CommandBlock {
   trust: typeof MARKER_TRUST_LABEL;
   promptSeq: number | null;
   command: string;
+  /** C.cmdline as reported by the (unauthenticated) integration; never overrides `command` once recorded. */
+  reportedCommand: string | 'unknown';
   cwd: string;
   outputRange: { start: number | null; end: number | null };
   exitCode: number | 'unknown';
@@ -37,6 +39,7 @@ export interface CommandBlock {
 interface Working extends CommandBlock {
   startTs: number | null;
   hasRun: boolean;
+  recorded: boolean;
 }
 
 export class BlockBuilder {
@@ -44,6 +47,8 @@ export class BlockBuilder {
   private cur: Working | null = null;
   private lastSeq = -Infinity;
   private counter = 0;
+  /** After an anomaly, events are dropped until the next A (spec §5: drop grouping for that block). */
+  private skipping = false;
 
   /** Finished and incomplete blocks, oldest first. Bare prompts never appear here. */
   get blocks(): readonly CommandBlock[] {
@@ -56,14 +61,25 @@ export class BlockBuilder {
 
   /** Attach the confirmed command text to the open block (the connector knows what it sent). */
   recordCommand(text: string): void {
-    if (this.cur) this.cur.command = text;
+    if (this.cur) {
+      this.cur.command = text;
+      this.cur.recorded = true;
+    }
+  }
+
+  /** Drop grouping for the open block: a run block closes as `incomplete`, a bare prompt is discarded. */
+  abandon(): void {
+    this.closeOpen();
+    this.skipping = true;
   }
 
   ingest(e: MarkerEvent): void {
     if (e.seq <= this.lastSeq) return; // duplicate or reordered
     this.lastSeq = e.seq;
+    if (this.skipping && e.kind !== 'A') return;
     switch (e.kind) {
       case 'A':
+        this.skipping = false;
         this.closeOpen();
         this.cur = this.fresh(e.seq);
         if (e.cwd !== undefined) this.cur.cwd = e.cwd;
@@ -78,7 +94,10 @@ export class BlockBuilder {
         b.hasRun = true;
         b.startTs = e.ts;
         b.outputRange.start = e.outputOffset ?? null;
-        if (e.cmdline !== undefined) b.command = e.cmdline;
+        if (e.cmdline !== undefined) {
+          b.reportedCommand = e.cmdline;
+          if (!b.recorded) b.command = e.cmdline;
+        }
         return;
       }
       case 'D': {
@@ -101,6 +120,7 @@ export class BlockBuilder {
       trust: MARKER_TRUST_LABEL,
       promptSeq,
       command: 'unknown',
+      reportedCommand: 'unknown',
       cwd: 'unknown',
       outputRange: { start: null, end: null },
       exitCode: 'unknown',
@@ -108,6 +128,7 @@ export class BlockBuilder {
       status: 'prompt',
       startTs: null,
       hasRun: false,
+      recorded: false,
     };
   }
 
@@ -121,9 +142,10 @@ export class BlockBuilder {
   }
 
   private close(b: Working): void {
-    const { startTs: _s, hasRun: _h, ...block } = b;
+    const { startTs: _s, hasRun: _h, recorded: _r, ...block } = b;
     void _s;
     void _h;
+    void _r;
     this.done.push(block);
   }
 }
