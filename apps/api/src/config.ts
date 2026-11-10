@@ -12,6 +12,8 @@ export interface ApiConfig {
   /** The single web origin allowed by CORS and the Origin check. */
   allowedOrigin: string;
   devCompose: boolean;
+  /** Exact Host header values accepted (DNS-rebinding guard). Lower-case, no wildcards. */
+  allowedHosts: readonly string[];
   logLevel: string;
 }
 
@@ -42,6 +44,24 @@ function parseOrigin(raw: string): string {
   return url.origin;
 }
 
+const HOST_ENTRY =
+  /^(?:[a-z0-9]([a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*|\[[0-9a-f:]+\]):[0-9]{1,5}$/;
+
+function parseAllowedHosts(raw: string | undefined): string[] {
+  const entries = (raw ?? '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter((e) => e !== '');
+  for (const e of entries) {
+    if (!HOST_ENTRY.test(e)) {
+      throw new GuardError(
+        `NEXUS_API_ALLOWED_HOSTS entry ${JSON.stringify(e)} must be an exact host:port (no wildcards, no scheme).`,
+      );
+    }
+  }
+  return entries;
+}
+
 /** Reads and validates configuration. Throws GuardError when the guard rules are not met. */
 export function loadConfig(env: NodeJS.ProcessEnv): ApiConfig {
   if (env.NEXUS_DEV_MODE !== '1') {
@@ -59,11 +79,25 @@ export function loadConfig(env: NodeJS.ProcessEnv): ApiConfig {
   if (!Number.isInteger(port) || port < 0 || port > 65535) {
     throw new GuardError(`NEXUS_API_PORT is not a valid port: ${JSON.stringify(rawPort)}`);
   }
+  // Loopback mode accepts only loopback Host names on our port. Compose mode has no safe default: the
+  // operator must list the exact Host values the web container uses.
+  let allowedHosts: string[];
+  if (devCompose) {
+    allowedHosts = parseAllowedHosts(env.NEXUS_API_ALLOWED_HOSTS);
+    if (allowedHosts.length === 0) {
+      throw new GuardError(
+        'NEXUS_DEV_COMPOSE=1 requires NEXUS_API_ALLOWED_HOSTS (exact host:port list).',
+      );
+    }
+  } else {
+    allowedHosts = [`127.0.0.1:${port}`, `localhost:${port}`, `[::1]:${port}`];
+  }
   return {
     host,
     port,
     allowedOrigin: parseOrigin(env.NEXUS_WEB_ORIGIN?.trim() || DEFAULT_WEB_ORIGIN),
     devCompose,
+    allowedHosts,
     logLevel: env.NEXUS_LOG_LEVEL?.trim() || 'info',
   };
 }

@@ -27,9 +27,46 @@ describe('dev-mode guard', () => {
   });
 
   it('allows a non-loopback bind only with NEXUS_DEV_COMPOSE=1', () => {
-    const c = loadConfig({ ...dev, NEXUS_API_HOST: '0.0.0.0', NEXUS_DEV_COMPOSE: '1' });
-    expect(c).toMatchObject({ host: '0.0.0.0', devCompose: true });
+    const c = loadConfig({
+      ...dev,
+      NEXUS_API_HOST: '0.0.0.0',
+      NEXUS_DEV_COMPOSE: '1',
+      NEXUS_API_ALLOWED_HOSTS: 'api:3000, Web-Proxy.local:3000',
+    });
+    expect(c).toMatchObject({
+      host: '0.0.0.0',
+      devCompose: true,
+      allowedHosts: ['api:3000', 'web-proxy.local:3000'],
+    });
   });
+
+  it('defaults allowed Hosts to loopback names on the configured port', () => {
+    expect(loadConfig({ ...dev, NEXUS_API_PORT: '4000' }).allowedHosts).toEqual([
+      '127.0.0.1:4000',
+      'localhost:4000',
+      '[::1]:4000',
+    ]);
+  });
+
+  it('compose mode requires an explicit allowed-Host list', () => {
+    expect(() => loadConfig({ ...dev, NEXUS_API_HOST: '0.0.0.0', NEXUS_DEV_COMPOSE: '1' })).toThrow(
+      /NEXUS_API_ALLOWED_HOSTS/,
+    );
+  });
+
+  it.each(['*', '*.example:3000', 'http://api:3000', 'api', 'api:3000/x'])(
+    'rejects allowed-Host entry %s',
+    (entry) => {
+      expect(() =>
+        loadConfig({
+          ...dev,
+          NEXUS_API_HOST: '0.0.0.0',
+          NEXUS_DEV_COMPOSE: '1',
+          NEXUS_API_ALLOWED_HOSTS: entry,
+        }),
+      ).toThrow(GuardError);
+    },
+  );
 
   it('does not treat lookalike hosts as loopback', () => {
     expect(isLoopbackHost('127.0.0.1.evil.com')).toBe(false);

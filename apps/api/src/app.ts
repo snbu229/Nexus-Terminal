@@ -1,5 +1,5 @@
 import cors from '@fastify/cors';
-import Fastify, { type FastifyInstance } from 'fastify';
+import Fastify, { type FastifyInstance, type FastifyReply } from 'fastify';
 import {
   API_PREFIX,
   HealthzSchema,
@@ -25,6 +25,11 @@ const errorBody = (code: string, message: string): ErrorResponse => ({ error: { 
 export function buildApp(config: ApiConfig, options: BuildOptions = {}): FastifyInstance {
   const app = Fastify({
     bodyLimit: BODY_LIMIT_BYTES,
+    // Router-level failures (over-long params, bad percent-encoding) otherwise bypass the error handler
+    // and echo the URL back. Answer with the contract shape and no input.
+    frameworkErrors: (_err, _req, reply) => {
+      void (reply as FastifyReply).code(400).send(errorBody('bad_request', 'Invalid request.'));
+    },
     // Never log bodies, headers (cookies/authorization) or env: only method, path and status.
     logger: {
       level: config.logLevel,
@@ -37,6 +42,15 @@ export function buildApp(config: ApiConfig, options: BuildOptions = {}): Fastify
         res: (res: { statusCode?: number }) => ({ statusCode: res.statusCode ?? 0 }),
       },
     },
+  });
+
+  // DNS-rebinding guard: the API is unauthenticated, so only answer to known Host values.
+  const allowedHosts = new Set(config.allowedHosts);
+  app.addHook('onRequest', async (req, reply) => {
+    const host = req.headers.host?.toLowerCase();
+    if (host === undefined || !allowedHosts.has(host)) {
+      return reply.code(403).send(errorBody('host_not_allowed', 'Host is not allowed.'));
+    }
   });
 
   // Reject browser requests from any other origin outright (CORS alone only hides the response).

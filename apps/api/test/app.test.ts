@@ -11,6 +11,7 @@ import {
 import { BODY_LIMIT_BYTES, buildApp } from '../src/app.js';
 import { loadConfig } from '../src/config.js';
 
+const HOST = '127.0.0.1:3000';
 const ORIGIN = 'http://127.0.0.1:5173';
 const config = loadConfig({ NEXUS_DEV_MODE: '1', NEXUS_LOG_LEVEL: 'info' });
 let app: FastifyInstance;
@@ -20,6 +21,12 @@ const logStream = { write: (m: string) => void logs.push(m) };
 async function make(setup?: (a: FastifyInstance) => void) {
   logs = [];
   app = buildApp(config, { logStream });
+  const rawInject = app.inject.bind(app) as (o: object) => unknown;
+  // Default to an allowed Host so tests exercise one thing at a time; tests can override it.
+  (app as { inject: unknown }).inject = (o: string | { url: string; headers?: object }) => {
+    const opts: { url: string; headers?: object } = typeof o === 'string' ? { url: o } : o;
+    return rawInject({ ...opts, headers: { host: HOST, ...opts.headers } });
+  };
   setup?.(app);
   await app.ready();
   return app;
@@ -196,5 +203,65 @@ describe('logging', () => {
     } finally {
       delete process.env.NEXUS_TEST_SECRET;
     }
+  });
+});
+
+describe('Host header guard (DNS rebinding)', () => {
+  it.each([
+    'attacker.example:3000',
+    '127.0.0.1:4000',
+    '127.0.0.1',
+    'localhost.evil.example:3000',
+    '',
+  ])('rejects Host %j without an Origin header', async (host) => {
+    await make();
+    const res = await app.inject({ url: '/api/v0/hosts', headers: { host } });
+    expect(res.statusCode).toBe(403);
+    expect(ErrorResponseSchema.parse(res.json()).error.code).toBe('host_not_allowed');
+  });
+
+  it.each(['127.0.0.1:3000', 'localhost:3000', 'LOCALHOST:3000', '[::1]:3000'])(
+    'accepts Host %s',
+    async (host) => {
+      await make();
+      expect((await app.inject({ url: '/healthz', headers: { host } })).statusCode).toBe(200);
+    },
+  );
+
+  it('compose mode uses only the configured list', async () => {
+    logs = [];
+    app = buildApp(
+      loadConfig({
+        NEXUS_DEV_MODE: '1',
+        NEXUS_DEV_COMPOSE: '1',
+        NEXUS_API_HOST: '0.0.0.0',
+        NEXUS_API_ALLOWED_HOSTS: 'api:3000',
+      }),
+      { logStream },
+    );
+    await app.ready();
+    const at = (host: string) => app.inject({ url: '/healthz', headers: { host } });
+    expect((await at('api:3000')).statusCode).toBe(200);
+    expect((await at('127.0.0.1:3000')).statusCode).toBe(403);
+    expect((await at('localhost:3000')).statusCode).toBe(403);
+  });
+});
+
+describe('framework errors use the ErrorResponse contract', () => {
+  it('a 120-character id returns 400 bad_request without echoing the URL', async () => {
+    await make();
+    const id = 'a'.repeat(120);
+    const res = await app.inject(`/api/v0/hosts/${id}`);
+    expect(res.statusCode).toBe(400);
+    expect(ErrorResponseSchema.parse(res.json()).error.code).toBe('bad_request');
+    expect(res.body).not.toContain(id);
+  });
+
+  it('malformed percent-encoding returns 400 bad_request', async () => {
+    await make();
+    const res = await app.inject('/api/v0/hosts/%E0%A4%A');
+    expect(res.statusCode).toBe(400);
+    expect(ErrorResponseSchema.parse(res.json()).error.code).toBe('bad_request');
+    expect(res.body).not.toContain('%E0');
   });
 });
