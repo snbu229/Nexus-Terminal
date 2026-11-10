@@ -1,0 +1,17 @@
+// markdownlint-cli2 configuration used by the `docs` CI job (EZF-28).
+// Structural rules stay on; purely stylistic rules that fight prose and wide
+// tables are off. Change this file through a reviewed PR like any other gate.
+{
+  "config": {
+    "default": true,
+    // Prose paragraphs and tables are not hard-wrapped in this repo.
+    "MD013": false,
+    // Table pipe alignment is cosmetic and churns on every cell edit.
+    "MD060": false
+  },
+  "ignores": [
+    // Read-only V3.1 spec kit: excluded from lint (still link-checked).
+    "docs/reference/**",
+    "node_modules/**"
+  ]
+}
