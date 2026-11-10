@@ -9,8 +9,13 @@
 #   E2 gateway restart   gateway container is SIGKILLed and restarted
 #   E3 network outage    both nodes are disconnected from the network
 #   E4 output burst      BURST_LINES lines at once while attached
-#   E5 second user       uid 2002 tries to reach uid 2001's session socket
-#   E6 host reboot       node containers restart: honest "process lost" check
+#   E5 second user       uid 2002 probes uid 2001's sessions at two layers (outer:
+#                        default socket path; server: socket exposed 0666 in a
+#                        traversable dir), each with an owner positive control
+#   E6 container restart (simulated reboot): node containers restart. The PID
+#                        namespace is new, but the container filesystem (/tmp,
+#                        ~/.config/herdr) survives and no systemd-logind
+#                        shutdown runs, so this is not a full host reboot
 #
 # Results land in results/<UTC timestamp>/ (summary.md, summary.json, raw/).
 # Requires on the host: Docker Engine with compose v2, ssh-keygen, python3.
@@ -27,7 +32,7 @@ NODES=(node1 node2)
 MUXES=(tmux herdr)
 
 if [ "${1:-}" = "--self-test" ]; then
-  cd "$HERE/lib" && exec python3 -m unittest -v test_check_continuity test_summarize
+  cd "$HERE/lib" && exec python3 -m unittest -v test_check_continuity test_summarize test_probe
 fi
 
 TS=$(date -u +%Y%m%dT%H%M%SZ)
@@ -48,6 +53,10 @@ gw()      { "${DC[@]}" exec -T -u gw gateway "$@"; }
 SSH_OPTS="-o BatchMode=yes -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/home/gw/.ssh/known_hosts -o ConnectTimeout=5"
 on()      { local user=$1 node=$2; shift 2; gw ssh $SSH_OPTS -i "/home/gw/.ssh/$user" "$user@$node" /opt/nx/remote.sh "$@"; }
 sid()     { printf 'nx-%s' "$1"; }
+xid()     { printf 'nx-exp-%s' "$1"; }   # E5 server-layer session with an exposed socket
+jget()    { python3 -c 'import json,sys; d=json.load(open(sys.argv[1]))
+for k in sys.argv[2].split("."): d=(d or {}).get(k)
+print("" if d is None else d)' "$1" "$2" 2>/dev/null || true; }
 
 cleanup() {
   if [ "${KEEP:-0}" != 1 ]; then
@@ -120,21 +129,36 @@ done
 "${DC[@]}" exec -T -u 0 gateway sh -c 'chown gw:gw /home/gw/.ssh/* && chmod 0600 /home/gw/.ssh/*'
 for node in "${NODES[@]}"; do wait_ssh "$node" || { echo "sshd on $node not reachable" >&2; exit 1; }; done
 
-{
-  echo "{"
-  echo "\"run\":\"$TS\",\"host_uname\":\"$(uname -srm)\",\"docker\":\"$(docker version --format '{{.Server.Version}}' 2>/dev/null)\","
-  for node in "${NODES[@]}"; do
-    echo "\"$node\":{\"os\":\"$(gw ssh $SSH_OPTS -i /home/gw/.ssh/alice "alice@$node" '. /etc/os-release; echo $PRETTY_NAME')\",\"kernel\":\"$(gw ssh $SSH_OPTS -i /home/gw/.ssh/alice "alice@$node" 'uname -rm')\",\"tmux\":\"$(gw ssh $SSH_OPTS -i /home/gw/.ssh/alice "alice@$node" 'tmux -V')\",\"herdr\":\"$(gw ssh $SSH_OPTS -i /home/gw/.ssh/alice "alice@$node" 'herdr --version 2>&1 | head -n1')\",\"openssh\":\"$(gw ssh $SSH_OPTS -i /home/gw/.ssh/alice "alice@$node" 'ssh -V 2>&1')\"},"
+# environment.json is built with json.dumps so quotes in tool output cannot corrupt it.
+env_args=(run "$TS" host_uname "$(uname -srm)" docker "$(docker version --format '{{.Server.Version}}' 2>&1)"
+  params.DETACH_SECS "$DETACH_SECS" params.OUTAGE_SECS "$OUTAGE_SECS" params.BURST_LINES "$BURST_LINES" params.BACKFILL_LINES "$BACKFILL_LINES")
+for node in "${NODES[@]}"; do
+  for kv in "os|. /etc/os-release; echo \$PRETTY_NAME" "kernel|uname -rm" "tmux|tmux -V" "tmux_pkg|dpkg-query -W -f='\${Version}' tmux" \
+            "herdr|herdr --version 2>&1 | head -n1" "openssh|ssh -V 2>&1" "useradd_home_mode|stat -c %a /home/alice" "login_defs_home_mode|grep -E '^HOME_MODE|^UMASK' /etc/login.defs | tr -s ' \t' ' ' | paste -sd ';'"; do
+    env_args+=("$node.${kv%%|*}" "$(gw ssh $SSH_OPTS -i /home/gw/.ssh/alice "alice@$node" "${kv#*|}" 2>&1 || true)")
   done
-  echo "\"params\":{\"DETACH_SECS\":$DETACH_SECS,\"OUTAGE_SECS\":$OUTAGE_SECS,\"BURST_LINES\":$BURST_LINES,\"BACKFILL_LINES\":$BACKFILL_LINES}"
-  echo "}"
-} > "$NX_RUN_DIR/environment.json"
+done
+python3 -c '
+import json, sys
+out, a = {}, sys.argv[1:]
+for k, v in zip(a[::2], a[1::2]):
+    d = out
+    *path, leaf = k.split(".")
+    for p in path:
+        d = d.setdefault(p, {})
+    d[leaf] = int(v) if k.startswith("params.") else v
+print(json.dumps(out, indent=1))' "${env_args[@]}" > "$NX_RUN_DIR/environment.json"
 
 for node in "${NODES[@]}"; do for mux in "${MUXES[@]}"; do
   if on alice "$node" start "$mux" "$(sid "$mux")" >>"$RAW/start-$node-$mux.log" 2>&1; then
     event "start_ok" "{\"node\":\"$node\",\"mux\":\"$mux\"}"
   else
     event "start_failed" "{\"node\":\"$node\",\"mux\":\"$mux\"}"
+  fi
+  if on alice "$node" start-exposed "$mux" "$(xid "$mux")" >>"$RAW/start-exposed-$node-$mux.log" 2>&1; then
+    event "start_exposed_ok" "{\"node\":\"$node\",\"mux\":\"$mux\"}"
+  else
+    event "start_exposed_failed" "{\"node\":\"$node\",\"mux\":\"$mux\"}"
   fi
 done; done
 sleep 3
@@ -189,9 +213,23 @@ backfill_all E4
 event "E4_end"
 
 # --- E5 second user ----------------------------------------------------------
+# Per layer: owner status of the target (pre-state, no CLI side effects), owner
+# positive control, bob's identical probe, owner status again. lib/probe.py
+# grades it; only a permission refusal with a passing control counts as denied.
+probe_layer() { # probe_layer <layer> <node> <mux> <session id>
+  local layer=$1 node=$2 mux=$3 id=$4 p="$RAW/probe-$1-$2-$3" target expect
+  on alice "$node" status "$mux" "$id" > "$p-target-pre.json" 2>>"$RAW/errors.log" || echo '{"error":"status failed"}' > "$p-target-pre.json"
+  target=$(jget "$p-target-pre.json" socket.path)
+  expect=$(on alice "$node" expect "$mux" "$id" 2>>"$RAW/errors.log" || true)
+  for who in alice bob; do
+    on "$who" "$node" probe "$mux" "$target" "$expect" > "$p-$who.json" 2>>"$RAW/errors.log" \
+      || echo '{"error":"probe failed to run"}' > "$p-$who.json"
+  done
+  on alice "$node" status "$mux" "$id" > "$p-target-post.json" 2>>"$RAW/errors.log" || echo '{"error":"status failed"}' > "$p-target-post.json"
+}
 for node in "${NODES[@]}"; do for mux in "${MUXES[@]}"; do
-  on bob "$node" probe-foreign "$mux" alice "$(sid "$mux")" > "$RAW/foreign-$node-$mux.json" 2>>"$RAW/errors.log" \
-    || echo '{"error":"probe failed to run"}' > "$RAW/foreign-$node-$mux.json"
+  probe_layer outer "$node" "$mux" "$(sid "$mux")"
+  probe_layer server "$node" "$mux" "$(xid "$mux")"
 done; done
 event "E5_done"
 
@@ -199,8 +237,9 @@ collect_logs pre_reboot
 detach_all
 "${DC[@]}" cp gateway:/capture/. "$RAW/capture/" >/dev/null
 
-# --- E6 host reboot ----------------------------------------------------------
-event "E6_reboot_begin"
+# --- E6 container restart (simulated reboot) ---------------------------------
+# Not a full reboot: /tmp and ~/.config survive, no logind delayed shutdown.
+event "E6_container_restart_begin"
 "${DC[@]}" restart -t 5 "${NODES[@]}" >/dev/null
 for node in "${NODES[@]}"; do wait_ssh "$node"; done
 snapshot E6

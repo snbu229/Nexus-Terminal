@@ -12,11 +12,13 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib"))
 import check_continuity as cc  # noqa: E402
+import probe  # noqa: E402
 
 NODES = ["node1", "node2"]
 MUXES = ["tmux", "herdr"]
 OWNER_UID = 2001
 ATTACH_ENDS = ("E1_browser_close_begin", "E2_gateway_restart_begin", "E3_outage_begin", "E5_done")
+OWNERSHIP_PHASES = ["baseline", "E1", "E2", "E3"]
 DETACH_EVENTS = [
     ("E1", "E1_browser_close_begin", "E1_reattach"),
     ("E2", "E2_gateway_restart_begin", "E2_reattach"),
@@ -63,7 +65,7 @@ def pct(cov):
 
 
 def classify(base, after):
-    if not after or after.get("error"):
+    if not after or after.get("error") or after.get("alive") is None:
         return "UNKNOWN"
     bp = (base or {}).get("producer") or {}
     ap = after.get("producer") or {}
@@ -113,7 +115,11 @@ def summarize(run_dir):
                              "max_interval_ms": max(gaps_ms) if gaps_ms else None}
 
             base = load_json(os.path.join(raw, f"status-baseline-{node}-{mux}.json"))
-            r["ownership"] = ownership(base)
+            by_phase = {ph: ownership(base if ph == "baseline" else
+                                      load_json(os.path.join(raw, f"status-{ph}-{node}-{mux}.json")))
+                        for ph in OWNERSHIP_PHASES}
+            r["ownership"] = dict(by_phase["baseline"], ok=all(o["ok"] for o in by_phase.values()),
+                                  failed_phases=[ph for ph, o in by_phase.items() if not o["ok"]])
             log_lines = read_lines(os.path.join(raw, f"log-pre_reboot-{node}-{mux}.txt"))
             log_seqs = cc.extract(log_lines)
             stream_lines = read_lines(os.path.join(raw, "capture", f"{node}-{mux}.stream"))
@@ -158,9 +164,16 @@ def summarize(run_dir):
                 "durable_log_coverage_pct": pct(cc.coverage(bl, log_seqs)["coverage"]) if log_lines else None,
             }
             r["durable_log"] = "present" if log_lines else "none"
-            r["second_user"] = load_json(os.path.join(raw, f"foreign-{node}-{mux}.json"), {"error": "missing"})
-            r["host_reboot"] = {
-                "after_reboot": classify(base, load_json(os.path.join(raw, f"status-E6-{node}-{mux}.json"))),
+            r["second_user"] = {}
+            for layer in ("outer", "server"):
+                p = os.path.join(raw, f"probe-{layer}-{node}-{mux}")
+                g = probe.grade(layer, load_json(p + "-alice.json"), load_json(p + "-bob.json"),
+                                load_json(p + "-target-pre.json"))
+                g["foreign_output"] = (load_json(p + "-bob.json") or {}).get("output")
+                r["second_user"][layer] = g
+            # E6 is a container restart: new PID namespace, filesystem kept, no logind shutdown.
+            r["container_restart"] = {
+                "after_restart": classify(base, load_json(os.path.join(raw, f"status-E6-{node}-{mux}.json"))),
                 "after_server_restart": classify(base, load_json(os.path.join(raw, f"status-E6_herdr_restarted-{node}-{mux}.json"))),
             }
             out["results"][key] = r
@@ -182,17 +195,23 @@ def to_markdown(s):
             L.append(f"| {k} | {name} | {e['verdict']} | {fmt(e['detached_ms'])} | {fmt(e['lines_while_detached'])} | "
                      f"{fmt(e['backfill_coverage_pct'])} | {fmt(e['durable_log_coverage_pct'])} | {fmt(e['time_to_first_output_ms'])} |")
     L += ["", "## Stream, burst, logging, ownership", "",
-          "| node/mux | started | producer missing / max gap ms | stream steady % | burst stream % | burst backfill % | burst log % | durable log | ownership ok | 2nd user denied | reboot | after server restart |",
-          "|---|---|---|---|---|---|---|---|---|---|---|---|"]
+          "| node/mux | started | producer missing / max gap ms | stream steady % | burst stream % | burst backfill % | burst log % | durable log | ownership ok (baseline–E3) | 2nd user: outer | 2nd user: server | E6 container restart | after server restart |",
+          "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for k in keys:
         r = s["results"][k]
         L.append(f"| {k} | {r['started']} | {fmt(r['producer']['missing_in_truth'])} / {fmt(r['producer']['max_interval_ms'])} | "
                  f"{fmt(r['stream_steady_coverage_pct'])} | {fmt(r['burst']['stream_coverage_pct'])} | {fmt(r['burst']['backfill_coverage_pct'])} | "
                  f"{fmt(r['burst']['durable_log_coverage_pct'])} | {r['durable_log']} | {r['ownership']['ok']} | "
-                 f"{fmt(r['second_user'].get('denied'))} | {r['host_reboot']['after_reboot']} | {r['host_reboot']['after_server_restart']} |")
+                 f"{r['second_user']['outer']['verdict']} | {r['second_user']['server']['verdict']} | "
+                 f"{r['container_restart']['after_restart']} | {r['container_restart']['after_server_restart']} |")
     L += ["", "Ownership details:", ""]
     for k in keys:
         L.append(f"- `{k}`: {json.dumps(s['results'][k]['ownership'])}")
+    L += ["", "Second-user probes (verdict, owner control, foreign attempt, reason):", ""]
+    for k in keys:
+        for layer, g in s["results"][k]["second_user"].items():
+            L.append(f"- `{k}` {layer}: {g['verdict']}; control={g['control']}; foreign={g['foreign']}; {g['reason']}; "
+                     f"output={json.dumps((g.get('foreign_output') or '')[:160])}")
     return "\n".join(L) + "\n"
 
 

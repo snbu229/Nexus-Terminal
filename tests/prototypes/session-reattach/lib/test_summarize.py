@@ -57,12 +57,27 @@ class SummarizeFixture(unittest.TestCase):
             w(f"truth-pre_reboot-node1-{mux}.txt", truth)
             w(f"status-baseline-node1-{mux}.json", json.dumps(status))
         w("status-E1-node1-tmux.json", json.dumps(status))
-        w("status-E1-node1-herdr.json", json.dumps(dict(status, producer={"pid": 99, "uid": 2001, "started": "B"})))
+        w("status-E1-node1-herdr.json", json.dumps(dict(status, producer={"pid": 99, "uid": 2001, "started": "B"},
+                                                        socket={"owner_uid": 2001, "mode": "666"})))
         w("status-E6-node1-tmux.json", json.dumps({"alive": False, "producer": None}))
         w("log-pre_reboot-node1-tmux.txt", truth)
         w("backfill-E1-node1-tmux.txt", truth)
         w("backfill-E1-node1-herdr.txt", "")
-        w("foreign-node1-tmux.json", json.dumps({"denied": True}))
+        # E5 node1/tmux: control ok, bob refused at both layers. node1/herdr: bob's
+        # call failed for an unrelated reason, which must not count as denied.
+        ok = {"rc": 0, "expect": "NXPROBE nx-tmux", "output": "NXPROBE nx-tmux", "prober_servers_after": []}
+        exposed = {"socket": {"path": "/tmp/nx-exposed-tmux/tmux.sock", "exists": True, "mode": "666"},
+                   "socket_dir": {"exists": True, "mode": "755"}}
+        w("probe-outer-node1-tmux-alice.json", json.dumps(ok))
+        w("probe-outer-node1-tmux-bob.json", json.dumps(dict(ok, rc=1, output="error connecting to /tmp/tmux-2001/default (Permission denied)")))
+        w("probe-server-node1-tmux-target-pre.json", json.dumps(exposed))
+        w("probe-server-node1-tmux-alice.json", json.dumps(ok))
+        w("probe-server-node1-tmux-bob.json", json.dumps(dict(ok, output="access not allowed")))
+        w("probe-outer-node1-herdr-alice.json", json.dumps(dict(ok, expect="w1:p1", output="w1:p1")))
+        w("probe-outer-node1-herdr-bob.json", json.dumps(dict(ok, expect="w1:p1", rc=1, output="error: no such session")))
+        # Ownership regresses at E1 for herdr (socket opened to others after baseline).
+        w("status-E2-node1-tmux.json", json.dumps(status))
+        w("status-E3-node1-tmux.json", json.dumps(status))
 
         # tmux stream: every line while attached, padded so the 2nd attach starts at line 1000.
         first = [f"{ms(i)}\t%output %0 {seq_line(i)}\\015\\012\n" for i in range(10, 100)]
@@ -84,8 +99,9 @@ class SummarizeFixture(unittest.TestCase):
         self.assertEqual(e1["time_to_first_output_ms"], 40)
         self.assertEqual(r["stream_steady_coverage_pct"], 100.0)
         self.assertTrue(r["ownership"]["ok"])
-        self.assertTrue(r["second_user"]["denied"])
-        self.assertEqual(r["host_reboot"]["after_reboot"], "REMOTE_PROCESS_EXITED")
+        self.assertEqual(r["second_user"]["outer"]["verdict"], "DENIED")
+        self.assertEqual(r["second_user"]["server"]["verdict"], "DENIED_BY_SERVER")
+        self.assertEqual(r["container_restart"]["after_restart"], "REMOTE_PROCESS_EXITED")
         self.assertEqual(r["producer"]["missing_in_truth"], 0)
         self.assertEqual(r["producer"]["max_interval_ms"], 100)
 
@@ -97,11 +113,33 @@ class SummarizeFixture(unittest.TestCase):
         self.assertEqual(r["durable_log"], "none")
         self.assertEqual(r["stream_steady_coverage_pct"], 0.0)
 
+    def test_unrelated_probe_failure_is_not_denied(self):
+        su = self.s["results"]["node1/herdr"]["second_user"]
+        self.assertEqual(su["outer"]["verdict"], "INCONCLUSIVE")
+        self.assertEqual(su["server"]["verdict"], "INCONCLUSIVE")  # no probe files at all
+
+    def test_ownership_is_graded_in_every_phase(self):
+        o = self.s["results"]["node1/herdr"]["ownership"]
+        self.assertFalse(o["ok"])
+        self.assertIn("E1", o["failed_phases"])  # baseline was fine, E1 regressed
+        self.assertNotIn("baseline", o["failed_phases"])
+
     def test_missing_node_is_reported_not_invented(self):
         r = self.s["results"]["node2/tmux"]
         self.assertFalse(r["started"])
         self.assertEqual(r["events"]["E1"]["verdict"], "UNKNOWN")
         self.assertFalse(r["ownership"]["ok"])
+
+    def test_pid_reuse_after_restart_is_not_reattached(self):
+        # A restart resets the PID namespace, so the new producer can get the same pid number.
+        base = {"alive": True, "producer": {"pid": 10, "uid": 2001, "started": "Tue Nov 10 09:00:00 2026"}}
+        after = {"alive": True, "producer": {"pid": 10, "uid": 2001, "started": "Tue Nov 10 09:05:00 2026"}}
+        self.assertEqual(summarize.classify(base, after), "RESTORED_NEW_PROCESS")
+        self.assertEqual(summarize.classify(base, dict(after, producer=dict(after["producer"], started=None))),
+                         "RESTORED_NEW_PROCESS")
+        self.assertEqual(summarize.classify(base, base), "REATTACHED_ORIGINAL")
+        # Liveness lookup unavailable: unknown, never "exited".
+        self.assertEqual(summarize.classify(base, dict(after, alive=None)), "UNKNOWN")
 
     def test_markdown_renders(self):
         md = summarize.to_markdown(self.s)
