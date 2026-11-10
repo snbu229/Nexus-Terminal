@@ -21,7 +21,7 @@ COLUMNS = [
     "head_commit_at_check", "primary_license_file", "primary_license_url", "primary_license_sha256",
     "license_files_found", "spdx_expression", "binary_distribution_terms", "notice_obligations",
     "network_copyleft_trigger", "redistribution_limits", "recommendation", "alternatives",
-    "upstream_archived", "verified_utc", "license_carveouts", "notes",
+    "upstream_archived", "verified_utc", "license_carveouts", "license_election", "notes",
 ]
 
 
@@ -51,6 +51,8 @@ def main():
             "license_carveouts": "; ".join(
                 "%s in %s (reviewed for %s): %s" % (c["license"], c["file"], c["recommendation"], c["reason"])
                 for c in d.get("license_carveouts", [])),
+            "license_election": "%(elected)s per %(file)s line %(line)s (reviewed for %(recommendation)s): %(reason)s"
+                                % d["license_election"] if d.get("license_election") else "",
         })
     with open(CSV_PATH, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=COLUMNS, lineterminator="\n")

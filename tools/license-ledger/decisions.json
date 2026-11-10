@@ -358,7 +358,15 @@
       "redistribution_limits": "Elect Apache-2.0 and record the election. iOS instant delivery relays through the upstream ntfy.sh/APNs path (a service dependency, not a license issue).",
       "recommendation": "adopt",
       "alternatives": "Gotify (MIT)",
-      "notes": "README: 'dual licensed under the Apache License 2.0 and the GPLv2 License'. No 'or later' grant found, so GPL-2.0-only."
+      "notes": "README: 'dual licensed under the Apache License 2.0 and the GPLv2 License'. No 'or later' grant found, so GPL-2.0-only. The Apache-2.0 election is recorded as a license_election entry. The same README section lists bundled third-party assets (Mixkit sounds under the Mixkit Free License, notificationsounds.com sounds under CC attribution, Roboto font under Apache-2.0); their notices apply only if Nexus redistributes ntfy builds and are left to the CI SBOM scan (section 9).",
+      "license_election": {
+        "elected": "Apache-2.0",
+        "file": "README.md",
+        "line": "344",
+        "file_sha256": "21bf864495bb1ec5bd7c0bd6f48e95fb9f4f6dcbe2644e94197e53ab8ba4fc08",
+        "recommendation": "adopt",
+        "reason": "README.md line 344 ('## License' section): 'The project is dual licensed under the [Apache License 2.0](LICENSE) and the [GPLv2 License](LICENSE.GPLv2).' Dual licensing lets the recipient choose; Nexus elects Apache-2.0 so it stays compatible with an Apache-2.0/MIT outbound licence (ledger F9) and records the election in THIRD_PARTY_NOTICES."
+      }
     },
     {
       "component_id": "gotify",

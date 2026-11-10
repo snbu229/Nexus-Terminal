@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-11-10T08:53:19Z",
+  "generated_at_utc": "2026-11-10T09:19:18Z",
   "generator": "tools/license-ledger/fetch_evidence.py",
   "components": {
     "acp-spec": {
@@ -761,6 +761,14 @@
             "GPL-2.0"
           ],
           "first_line": "GNU GENERAL PUBLIC LICENSE"
+        },
+        {
+          "path": "README.md",
+          "url": "https://raw.githubusercontent.com/binwiederhier/ntfy/05109571fd0931affb6f92b17bbfd62c4d2ea68a/README.md",
+          "bytes": 34695,
+          "sha256": "21bf864495bb1ec5bd7c0bd6f48e95fb9f4f6dcbe2644e94197e53ab8ba4fc08",
+          "detected_spdx": [],
+          "first_line": "![ntfy](web/public/static/images/ntfy.png)"
         }
       ],
       "primary_license_path": "LICENSE",
@@ -770,7 +778,7 @@
         "changed_since_pin": false
       },
       "archived": null,
-      "fetched_at_utc": "2026-11-10T08:42:49Z"
+      "fetched_at_utc": "2026-11-10T09:19:18Z"
     },
     "opencode": {
       "repo": "https://github.com/anomalyco/opencode",

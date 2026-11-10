@@ -10,9 +10,14 @@ Checks
       license file appears in the expression, or decisions.json records a carve-out for that
       licence + file with a reason. A carve-out is bound to the file's sha256 and to the row's
       recommendation; if either changes the carve-out must be re-reviewed;
+  4c. an `adopt` row whose expression has an OR branch with a copyleft / source-available /
+      proprietary licence must record a `license_election` in decisions.json: the elected
+      (unrestricted) branch, the upstream file and line that grant the choice, that file's sha256
+      and a reason. Bound to the file sha256 and the recommendation like a carve-out; stale
+      elections fail. Without this, writing OR where upstream means AND would pass rule 5;
   5. policy: copyleft-network / source-available / proprietary licenses are never `adopt`,
      archived upstreams are never `adopt`, and the plan's fixed decisions hold
-     (Teleport external-service-only, MinIO/Redis reject, Valkey adopt, HAPI no reuse).
+     (Teleport/Grafana external-service-only, MinIO/Redis/Warp reject, Valkey adopt, HAPI no reuse).
 
 Usage: python3 tools/license-ledger/check_ledger.py [--selftest]
 Exit 0 = ledger consistent; non-zero = list of violations printed.
@@ -48,6 +53,8 @@ NEVER_ADOPT = re.compile(r"AGPL|SSPL|RSAL|BUSL|LicenseRef-")
 MUST_DECLARE = re.compile(r"GPL|SSPL|RSAL|BUSL|LicenseRef-")
 FIXED = {
     "teleport": "external-service-only",
+    "grafana": "external-service-only",  # governance: no AGPL code reuse
+    "warp": "reject",  # clean-room rule; ledger F1
     "minio": "reject",
     "redis": "reject",
     "valkey": "adopt",
@@ -62,9 +69,10 @@ def load():
     with open(EVIDENCE) as f:
         ev = json.load(f)["components"]
     with open(DECISIONS) as f:
-        carveouts = {d["component_id"]: d["license_carveouts"]
-                     for d in json.load(f)["rows"] if d.get("license_carveouts")}
-    return rows, ev, carveouts
+        decisions = json.load(f)["rows"]
+    carveouts = {d["component_id"]: d["license_carveouts"] for d in decisions if d.get("license_carveouts")}
+    elections = {d["component_id"]: d["license_election"] for d in decisions if d.get("license_election")}
+    return rows, ev, carveouts, elections
 
 
 def norm(sid):
@@ -104,7 +112,45 @@ def check_undeclared(cid, r, e, carveouts):
     return errs
 
 
-def check(rows, ev, carveouts):
+def or_branches(expr):
+    return [b.strip("() ") for b in expr.split(" OR ")]
+
+
+def check_election(cid, r, e, el):
+    """Rule 4c: an adopt row may rely on an OR choice only if upstream grants it and the election is recorded."""
+    branches = or_branches(r["spdx_expression"])
+    restricted = [b for b in branches if MUST_DECLARE.search(b)] if len(branches) > 1 else []
+    if el is None:
+        if r["recommendation"] == "adopt" and restricted:
+            return ["%s: adopt relies on an OR choice over %s but decisions.json records no license_election"
+                    % (cid, ", ".join(restricted))]
+        return []
+    errs = []
+    if not restricted:
+        errs.append("%s: stale license_election (expression has no restricted OR branch)" % cid)
+    if el.get("recommendation") != r["recommendation"]:
+        errs.append("%s: license_election was reviewed for recommendation %r, row says %r; re-review"
+                    % (cid, el.get("recommendation"), r["recommendation"]))
+    elected = el.get("elected")
+    if elected not in branches:
+        errs.append("%s: license_election elects %r, which is not an OR branch of %r"
+                    % (cid, elected, r["spdx_expression"]))
+    elif MUST_DECLARE.search(elected):
+        errs.append("%s: license_election elects restricted branch %r" % (cid, elected))
+    f = next((x for x in e["license_files"] if x["path"] == el.get("file")), None)
+    if f is None:
+        errs.append("%s: license_election grant file %r not in upstream evidence" % (cid, el.get("file")))
+    elif el.get("file_sha256") != f["sha256"]:
+        errs.append("%s: license_election grant file %s was reviewed for a different file version; re-review"
+                    % (cid, el.get("file")))
+    if not str(el.get("line") or "").strip():
+        errs.append("%s: license_election has no grant line" % cid)
+    if not (el.get("reason") or "").strip():
+        errs.append("%s: license_election has no reason" % cid)
+    return errs
+
+
+def check(rows, ev, carveouts, elections):
     errs = []
     by_id = {}
     for r in rows:
@@ -145,6 +191,7 @@ def check(rows, ev, carveouts):
             if sid not in detected:
                 errs.append("%s: SPDX %s not detected in upstream license files %s" % (cid, sid, sorted(detected)))
         errs += check_undeclared(cid, r, e, carveouts.get(cid, []))
+        errs += check_election(cid, r, e, elections.get(cid))
         # adopt needs at least one OR-branch free of network-copyleft/source-available/proprietary terms
         if rec == "adopt" and all(NEVER_ADOPT.search(b) for b in expr.split(" OR ")):
             errs.append("%s: %s may not be 'adopt'" % (cid, expr))
@@ -156,10 +203,13 @@ def check(rows, ev, carveouts):
     for cid in carveouts:
         if cid not in by_id:
             errs.append("%s: carve-out for a component with no ledger row" % cid)
+    for cid in elections:
+        if cid not in by_id:
+            errs.append("%s: license_election for a component with no ledger row" % cid)
     return errs
 
 
-def selftest(rows, ev, carveouts):
+def selftest(rows, ev, carveouts, elections):
     """Each mutation must be caught for the intended reason; proves the gate is not vacuous."""
     def mutate(cid, **kw):
         rs = copy.deepcopy(rows)
@@ -174,8 +224,14 @@ def selftest(rows, ev, carveouts):
             c.update(kw)
         return cs
 
+    def mutate_election(cid, **kw):
+        es = copy.deepcopy(elections)
+        es[cid].update(kw)
+        return es
+
     no_ceph_carveout = {k: v for k, v in carveouts.items() if k != "ceph"}
-    # name: (rows, carveouts, substring the violation must contain)
+    no_ntfy_election = {k: v for k, v in elections.items() if k != "ntfy"}
+    # name: (rows, carveouts[, elections], substring the violation must contain)
     cases = {
         "teleport adopted": (mutate("teleport", recommendation="adopt"), carveouts, "teleport: AGPL"),
         "grafana (AGPL) adopted": (mutate("grafana", recommendation="adopt"), carveouts, "grafana: AGPL"),
@@ -208,26 +264,45 @@ def selftest(rows, ev, carveouts):
                                 "ceph: carve-out for AGPL-3.0 in COPYING has no reason"),
         "stale carve-out": (rows, dict(carveouts, valkey=[{"license": "AGPL-3.0", "file": "COPYING",
                                                           "reason": "x"}]), "valkey: stale carve-out"),
+        # rule 4c: an OR choice must be granted upstream and recorded, not just written
+        "warp AND->OR + adopt": (mutate("warp", spdx_expression="AGPL-3.0-only OR MIT", recommendation="adopt"),
+                                 carveouts, "warp: adopt relies on an OR choice over AGPL-3.0-only"),
+        "grafana AND->OR + adopt": (mutate("grafana", spdx_expression="AGPL-3.0-only OR Apache-2.0",
+                                           recommendation="adopt"),
+                                    carveouts, "grafana: adopt relies on an OR choice over AGPL-3.0-only"),
+        "ntfy election removed": (rows, carveouts, no_ntfy_election,
+                                  "ntfy: adopt relies on an OR choice over GPL-2.0-only"),
+        "ntfy election file changed": (rows, carveouts, mutate_election("ntfy", file_sha256="0" * 64),
+                                       "ntfy: license_election grant file README.md was reviewed for a different"),
+        "ntfy elects GPL branch": (rows, carveouts, mutate_election("ntfy", elected="GPL-2.0-only"),
+                                   "ntfy: license_election elects restricted branch"),
+        "ntfy election no grant line": (rows, carveouts, mutate_election("ntfy", line=""),
+                                        "ntfy: license_election has no grant line"),
+        "ntfy rejected, election kept": (mutate("ntfy", recommendation="reject"), carveouts,
+                                         "ntfy: license_election was reviewed for recommendation"),
+        "stale election": (rows, carveouts, dict(elections, tauri=dict(elections["ntfy"], elected="MIT")),
+                           "tauri: stale license_election"),
     }
     failed = []
-    for name, (rs, cs, want) in cases.items():
-        errs = check(rs, ev, cs)
+    for name, case in cases.items():
+        rs, cs, es, want = case if len(case) == 4 else (case[0], case[1], elections, case[2])
+        errs = check(rs, ev, cs, es)
         ok = any(want in e for e in errs)
         if not ok:
             failed.append(name)
-        print("selftest %-26s %s" % (name, "caught" if ok else "NOT CAUGHT %r" % errs))
+        print("selftest %-29s %s" % (name, "caught" if ok else "NOT CAUGHT %r" % errs))
     print("selftest: %d/%d mutations caught for the intended reason" % (len(cases) - len(failed), len(cases)))
     return failed
 
 
 def main():
-    rows, ev, carveouts = load()
-    errs = check(rows, ev, carveouts)
+    rows, ev, carveouts, elections = load()
+    errs = check(rows, ev, carveouts, elections)
     for e in errs:
         print("FAIL", e)
     print("%d rows, %d evidence records, %d violations" % (len(rows), len(ev), len(errs)))
     if "--selftest" in sys.argv:
-        if selftest(rows, ev, carveouts):
+        if selftest(rows, ev, carveouts, elections):
             return 2
     return 1 if errs else 0
 

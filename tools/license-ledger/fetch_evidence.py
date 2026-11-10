@@ -56,7 +56,7 @@ COMPONENTS = [
     ("redis", GH + "redis/redis", None, []),
     ("grafana", GH + "grafana/grafana", None, []),
     ("prometheus", GH + "prometheus/prometheus", None, []),
-    ("ntfy", GH + "binwiederhier/ntfy", None, []),
+    ("ntfy", GH + "binwiederhier/ntfy", None, ["README.md"]),  # README grants the dual licence
     ("gotify", GH + "gotify/server", None, []),
     ("headscale", GH + "juanfont/headscale", None, []),
     ("xtermjs", GH + "xtermjs/xterm.js", None, []),

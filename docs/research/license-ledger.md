@@ -125,7 +125,7 @@ Totals: **36 adopt · 5 external-service-only · 6 reject** (47 rows). The per-r
 | F6 | **Teleport:** the source `LICENSE` is AGPL-3.0 (headers: "or any later version"). `api/LICENSE` is Apache-2.0. `build.assets/LICENSE-community` at the pinned v18 tag contains the CE terms: <100 employees **and** <US$10M revenue, no resale or embedding. | Files at pinned tag; goteleport.com blog | `external-service-only` confirmed. D3 (company size) is still needed. |
 | F7 | **MCP spec licence is mid-transition** from MIT to Apache-2.0. Non-spec docs are CC-BY-4.0. | `LICENSE` preamble | Recorded as `Apache-2.0 AND MIT AND CC-BY-4.0` until the transition completes. |
 | F8 | **Valkey head drift:** `COPYING` at HEAD merges two BSD-3-Clause blocks into one. No change of licence. | `head_drift` in evidence | None. The drift detector works as intended. |
-| F9 | **ntfy** is `Apache-2.0 OR GPL-2.0-only`. The GPL-2.0-only branch is incompatible with Apache-2.0 code. | README; `LICENSE.GPLv2` | Elect Apache-2.0 and record the election in `THIRD_PARTY_NOTICES`. |
+| F9 | **ntfy** is `Apache-2.0 OR GPL-2.0-only`. The GPL-2.0-only branch is incompatible with Apache-2.0 code. | `README.md` line 344; `LICENSE.GPLv2` | Elect Apache-2.0 (recorded as a `license_election`, §6) and record the election in `THIRD_PARTY_NOTICES`. |
 | F10 | **WezTerm's newest stable tag is from 2024-02-03.** Only nightlies since. | `git ls-remote` tags | Use it as a reference only. Do not depend on it. |
 | F11 | Fast release cadence: HAPI moved v0.34.4 → v0.34.5 between two evidence runs on the same day. | evidence runs | Pins go stale quickly. Re-run `fetch_evidence.py` at every dependency bump (§9). |
 
@@ -134,8 +134,9 @@ Totals: **36 adopt · 5 external-service-only · 6 reject** (47 rows). The per-r
 1. **Never `adopt`** a row whose every licence branch includes AGPL, SSPL, RSAL (`LicenseRef-RSALv2`;
    RSALv2 is not on the SPDX License List), BUSL or a `LicenseRef-` (proprietary or custom) term. Allowed outcomes: `external-service-only` or `reject`.
 2. **Never `adopt`** an archived upstream.
-3. Fixed decisions from the plan and agent rules: Teleport = `external-service-only`, MinIO = `reject`,
-   Redis = `reject`, Valkey = `adopt`, HAPI = `reject`.
+3. Fixed decisions from the plan and agent rules: Teleport = `external-service-only`, Grafana =
+   `external-service-only` (no AGPL code reuse), MinIO = `reject`, Redis = `reject`, Warp = `reject` (clean-room
+   rule, F1), Valkey = `adopt`, HAPI = `reject`.
 4. The SPDX expression must agree with what the evidence actually detected in upstream licence files,
    **in both directions**:
    - every ID in the expression must have been detected upstream;
@@ -146,6 +147,12 @@ Totals: **36 adopt · 5 external-service-only · 6 reject** (47 rows). The per-r
      the carve-out is reviewed again. Carve-outs that no longer match are reported as stale. The CSV
      `license_carveouts` column shows them. The only carve-out today is Ceph `COPYING`, where AGPL-3.0 applies
      only to the `src/script/backport-*` developer scripts.
+   - an `adopt` row whose expression has an `OR` branch with one of those licences must record a
+     `license_election` in `decisions.json`: the elected (unrestricted) branch, the upstream file and line that
+     grant the choice, that file's sha256, and a reason. Otherwise writing `OR` where upstream means `AND` would
+     pass rule 1. The election is bound to the file sha256 and the recommendation in the same way as a carve-out,
+     and stale elections fail. The CSV `license_election` column shows it. The only election today is ntfy
+     (Apache-2.0, `README.md` line 344, F9). The grant file is fetched as evidence like any licence file.
 5. `pinned_commit`, `pinned_ref` and `primary_license_sha256` must match the evidence file.
 
 Architecture boundary for `external-service-only` (Teleport, Grafana, Garage, Ceph, Claude Code):
@@ -186,7 +193,7 @@ authority must review these questions:
 - Warp licensing: `README.md` "Licensing" section and `Cargo.toml` (`license = "AGPL-3.0-only"`) at the pinned HEAD.
 - codex-acp move: `README.md` of <https://github.com/zed-industries/codex-acp> at its final commit.
 - Redis tri-licence and version history: `LICENSE.txt` and `README.md` at the pinned tag.
-- ntfy dual licence: `README.md` "License" section.
+- ntfy dual licence: `README.md` "License" section, line 344, at the pinned `v2.37.2` (`05109571fd`); file sha256 in `evidence.json`.
 - Grafana licence scoping: `LICENSING.md` at the pinned tag.
 - CodeMirror new host: <https://code.haverbeke.berlin/codemirror>.
 - Hermes Agent `pyproject.toml` (`license = "MIT"`) and Codex CLI `NOTICE` at their pinned tags.
