@@ -4,7 +4,7 @@ Status: **Proposed – not in R1.** Owner: **A1 (CTO)**. Author of the record: A
 Supersedes: `ADR-PROPOSED-typeahead-restricted-enter-clear.md` (removed; its content is option 2 below). No other file describes restricted Enter as a separate live option.
 
 ## Context
-R1 (spec rev 9) latches the typed-ahead flag per shell session. Once any raw byte is forwarded during PENDING, RUNNING, UNKNOWN or the typed-ahead state, the smart editor stays off until the user opens a new shell (new PTY, fresh BR-12 nonce handshake). No event clears the latch: not Ctrl+C, Enter, `A`/`B`/`C`/`D`, a prompt with an empty queue or an alt-screen exit; reconnect, reload, tmux reattach, nested shells, `exec bash` and integration re-init do not reset it. Cost: after vim, less, apt Y/n or a stray key the user opens a new tab.
+R1 (spec rev 9) latches the typed-ahead flag per shell session. Once any byte reaches the PTY other than the BR-6 framing of a confirmed draft, in every state and mode (PROMPT between `A` and `B`, INPUT under INTERACTIVE_PTY or mouse reporting, PENDING, RUNNING, UNKNOWN, typed-ahead; the only exception is the empty-draft `0x03`/`0x04` sent from SMART INPUT), the smart editor stays off until the user opens a new shell (new PTY, fresh BR-12 nonce handshake). No event clears the latch: not Ctrl+C, Enter, `A`/`B`/`C`/`D`, a prompt with an empty queue or an alt-screen exit; reconnect, reload, tmux reattach, nested shells, `exec bash` and integration re-init do not reset it. Cost: after vim, less, apt Y/n or a stray key the user opens a new tab.
 
 This ADR records the ways to bring the editor back inside the same session. None may ship until every row under "Requirements before enabling" has passed.
 
