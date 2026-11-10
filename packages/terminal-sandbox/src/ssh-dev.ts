@@ -113,13 +113,26 @@ export interface SshTestServer {
   close(): Promise<void>;
 }
 
+/** ssh2's generateKeyPairSync occasionally (~0.3%) emits a private key its own parser rejects; retry. */
+function generateParseableKeyPair() {
+  for (let i = 0; i < 10; i++) {
+    const kp = utils.generateKeyPairSync('ed25519');
+    if (
+      !(utils.parseKey(kp.private) instanceof Error) &&
+      !(utils.parseKey(kp.public) instanceof Error)
+    )
+      return kp;
+  }
+  throw new Error('key generation failed');
+}
+
 /**
  * In-process ssh2 server on 127.0.0.1:<random> for dev and tests. Ephemeral ed25519 host and client keys live
  * in memory only. Accepts only the one client public key; every shell is a local-sandbox shell.
  */
 export async function startSshTestServer(): Promise<SshTestServer> {
-  const hostKey = utils.generateKeyPairSync('ed25519');
-  const clientKey = utils.generateKeyPairSync('ed25519');
+  const hostKey = generateParseableKeyPair();
+  const clientKey = generateParseableKeyPair();
   const parsedHost = utils.parseKey(hostKey.private);
   const parsedClient = utils.parseKey(clientKey.public);
   if (parsedHost instanceof Error || parsedClient instanceof Error)
