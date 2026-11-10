@@ -1,0 +1,9 @@
+/usr/local/lib
++-- @anthropic-ai/claude-code@2.1.322
++-- @google/gemini-cli@0.67.0
++-- @moonshot-ai/kimi-code@2.5.2
++-- @openai/codex@0.167.0
++-- corepack@0.36.0
++-- npm@11.19.1
+`-- opencode-ai@1.19.5
+
