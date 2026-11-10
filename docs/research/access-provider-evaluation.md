@@ -87,11 +87,19 @@ The contract is `listHostResources()`, `authorize()`, `issueEphemeralSession()`,
 | T11 | Enrollment of an OpenSSH node breaks sshd | Hosts | Validate with `sshd -t`, keep the previous config, roll back on failure. | T-09 |
 | T12 | Audit tampering or gaps | Audit | Append-only audit stream. Every grant, removal and denied attempt is logged. | T-10 |
 | T13 | Licence breach through bundling Teleport | Legal | Never bundle. Document that the operator installs it. Re-check the headcount and ARR thresholds at each quarter. | Process control |
+| T14 | Agent or bot principal obtains a human role, a `root` login or a prod label | Hosts | Mapping applies to human GitHub users only. Bot, App and machine accounts are excluded by an explicit deny list and by account type. Spec role matrix: AI build agent is sandbox-only, SRE AI agent is read-only. No role mapped from a team may carry `root` or a prod label for agent principals. | T-12 |
+| T15 | GitHub org owner or team maintainer edits a mapped team and thereby grants SSH roles | Hosts | Restrict who can edit mapped teams (owners only, named). Require org-level 2FA. Audit membership changes (GitHub audit log, org webhooks). Prod roles are reachable only via an access request, never by direct team mapping. Dev/staging roles may map directly. | T-13 |
+| T16 | Forged or unverified GitHub org webhook (team or membership events) | Role state | Verify `X-Hub-Signature-256` HMAC over the raw body with a constant-time compare. Reject missing signature, bad signature and replayed delivery IDs. Webhooks only trigger a re-check against the GitHub API, they are never the source of truth. | T-14 |
+| T17 | Outdated policy cache, or a disabled user resumes a detached tmux session | Hosts | Policy cache has a maximum age and is invalidated on webhook or deprovision. Reattach to a Nexus-managed stream requires fresh `authorize()`. The remote tmux process keeps running (Nexus cannot kill it, stated in the UI). Access to the stream is denied. | T-15 |
+| T18 | Credentials leak into session recordings | Audit, recordings | Recordings are access-controlled and encrypted at rest. Redaction rules for known secret patterns. Warn users that typed passwords echo-off are not captured but pasted or printed secrets are. Retention limit. | T-16 |
+| T19 | Several accounts or aliases of one person approve the same request | Prod | Approver identity is the verified human (MFA-bound), deduplicated across linked accounts. Two approvers must be distinct humans and neither the requester. Provider-level: CE has no dual auth, so Nexus ledger records it and gates only Nexus-mediated actions. | T-17 |
+| T20 | GitHub API or OAuth outage during login or team lookup | Availability, authz | Fail closed. No cached team membership may create a new grant. Existing grants end at cert expiry. Break-glass is a documented human procedure, not an automatic bypass. | T-18 |
+| T21 | Teleport Auth or Proxy unreachable | Availability, authz | No new certs can be issued. Existing sessions: documented per observed behaviour (TTL-bound). Nexus must not fall back to direct SSH or cached keys. | T-19 |
 
 ## 6. Identity and revocation workflow (design)
 
 1. **Login.** The browser is redirected to GitHub (or Keycloak). The callback checks `state`. Nexus reads org and team membership with `read:org`. The result becomes a short-lived Nexus session. No reusable provider admin credential reaches the browser.
-2. **Role mapping.** `org/team-slug` maps to a limited role. There is no mapping, so the result is deny. Dual roles resolve to the union of allows, with explicit deny winning.
+2. **Role mapping.** `org/team-slug` maps to a limited role. If no mapping matches, deny. Dual roles resolve to the union of allows, with explicit deny winning.
 3. **Connect.** `authorize(user, host labels, login, time)` returns a `PolicyDecision`. If allowed, `issueEphemeralSession()` returns a cert with a TTL that is no longer than both the role and the approval window.
 4. **Elevation (JIT).** CE: the user runs a CLI role request and a named admin approves it with `tctl`. Enterprise: a reviewer approves, with dual authorization for prod. Nexus ledger: records the request digest and approvers. It can gate Nexus-mediated actions but never grants SSH on its own.
 5. **Offboarding.** (a) Disable the GitHub membership or team mapping. (b) Provider revoke: Enterprise lock, or CE/step-ca TTL expiry. (c) Nexus detaches interactive streams it controls. (d) Audit the event with the latest-possible-end time. Previously running remote processes are not killed by Nexus and must be stated as such in the UI.
@@ -114,13 +122,21 @@ Environment: disposable local containers (two sshd targets, one provider), a thr
 | T-09 | Enroll a node with an invalid sshd config | Rolls back and the node stays reachable |
 | T-10 | Check the audit stream for each of the above | Complete events, no secrets |
 | T-11 | **CE `tctl lock` exists or not?** Run it on the CE container. | Resolves the conflict flagged in §2. |
+| T-12 | Bot/App/agent account in a mapped team requests a cert; request `root` and a prod label | Denied, audited |
+| T-13 | Non-owner edits a mapped team; owner edits it. Check org 2FA setting and that prod roles are not directly mapped | Non-owner denied. Change appears in audit. Prod needs a request |
+| T-14 | Send webhooks with missing, wrong and replayed signatures | All rejected and logged. Valid one only triggers a re-check |
+| T-15 | Disable user, then reattach a detached tmux session through Nexus, and use a stale policy cache | Stream access denied. Remote process state documented |
+| T-16 | Print and paste a canary secret in a recorded session | Result recorded as-is. Confirm redaction and access controls, document the gap |
+| T-17 | Two aliases of one human approve one prod request | Second approval does not count |
+| T-18 | Block GitHub API/OAuth during login and team lookup | Login denied, no new grant, existing grant ends at TTL |
+| T-19 | Stop Teleport Auth, then Proxy | No new certs. Record behaviour of live sessions. No direct SSH fallback |
 
 ## 8. Recommendation (for C1 and board decision)
 
 1. **Proceed with Teleport CE as the Phase-1 access provider, conditional on three things.** (a) The board confirms headcount below 100 and ARR below US$10M, and records a re-check trigger. (b) Nexus never bundles or redistributes Teleport. (c) The board accepts the CE gaps: no dual authorization and no UI for requests, so prod elevation is CLI plus `tctl` by a human, and revocation may be TTL-bound.
 2. **Do not buy Enterprise now.** Request a quote only as a trigger-based option: the company crosses a threshold, the board requires dual authorization or immediate lock for prod, or a non-GitHub IdP is needed. Cost is unknown and must not be assumed to fit the USD 300/month cap.
 3. **Keycloak + step-ca stays the open-source exit path.** It gives up recording, RBAC and audit, which Nexus would have to build. Do not choose it now. Keep the `AccessProvider` interface neutral so it remains possible.
-4. **Do not rely on the §2 lock claim until T-11 passes.** If CE has no lock, set a short role TTL (candidate: 1h for prod, 8h for dev) and state the exposure window in the UI.
+4. **Do not rely on the §2 lock claim until T-11 passes.** If CE has no lock, set a short role TTL (candidate values, **board decision**: 1h for prod, 8h for dev) and state the exposure window in the UI.
 5. Write an ADR after the lab run. Inconsistencies I-1 to I-7 from the EZF-2 plan were not reviewed here. Flag any that this ADR depends on.
 
 ## 9. Sources (all fetched 2026-11-10 via the research tooling)
